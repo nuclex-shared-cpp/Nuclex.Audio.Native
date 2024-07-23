@@ -22,12 +22,52 @@ limitations under the License.
 
 #include "Nuclex/Audio/Config.h"
 
+#include <optional>
+#include <string>
+
 namespace Nuclex { namespace Audio {
 
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Audio track containing a variable number of channels</summary>
   class NUCLEX_AUDIO_TYPE Track {
+
+
+    /// <summary>The name of this audio track, if provided by the container</summary>
+    /// <returns>The audio track's name, if present</returns>
+    /// <remarks>
+    ///   For single track containers such as .wav, .flac or .opus, there will only be
+    ///   a track name if the file uses music tagging. For multi-track containers such
+    ///   as .mka, there is a wealth of information about each audio track, usually
+    ///   also including a human-readable name. Use to aid in selection by the user,
+    ///   but anticipate that this string may be missing.
+    /// </remarks>
+    public: NUCLEX_AUDIO_API const std::optional<std::string> &GetName() const {
+      return this->name;
+    }
+
+    /// <summary>Updates the name of the audio track</summary>
+    /// <param name="newName">New name the audio track will receive</param>
+    public: NUCLEX_AUDIO_API void SetName(
+      const std::optional<std::string> &newName = std::optional<std::string>()
+    );
+
+    /// <summary>The language of this audio track in rfc-5646 format</summary>
+    /// <returns>The audio track's language, if present</returns>
+    /// <remarks>
+    ///   The rfc-5646 format defines language tags as you may have seen in mkv
+    ///   files and other uses on the internet. They look like this: en-us,
+    ///   en-uk or de-de (or just de).
+    /// </remarks>
+    public: NUCLEX_AUDIO_API const std::optional<std::string> &GetLanguageCode() const {
+      return this->languageCode;
+    }
+
+    /// <summary>Updates the language code of the audio track</summary>
+    /// <param name="newName">New language the audio track will receive</param>
+    public: NUCLEX_AUDIO_API void SetLanguageCode(
+      const std::optional<std::string> &newLanguageCode = std::optional<std::string>()
+    );
 
     // Plan
     //
@@ -69,6 +109,11 @@ namespace Nuclex { namespace Audio {
     // - Channel has inherent type, either defined at load time or changeable?
     //   * No extra bookkeeping and conversion for Channel<T>
     //   * But if changeable, might invalidate existing Channel<T>
+
+    /// <summary>Human-readable name for the audio track</summary>
+    private: std::optional<std::string> name;
+    /// <summary>Language tag in rfc-5646 format</summary>
+    private: std::optional<std::string> languageCode;
 
   };
 
