@@ -28,7 +28,7 @@ namespace Nuclex { namespace Audio {
   // ------------------------------------------------------------------------------------------- //
 
   void Track::SetName(
-    const std::optional<std::string> &newName = std::optional<std::string>()
+    const std::optional<std::string> &newName /* = std::optional<std::string>() */
   ) {
     this->name = newName;
   }
@@ -36,7 +36,7 @@ namespace Nuclex { namespace Audio {
   // ------------------------------------------------------------------------------------------- //
 
   void Track::SetLanguageCode(
-    const std::optional<std::string> &newLanguageCode = std::optional<std::string>()
+    const std::optional<std::string> &newLanguageCode /* = std::optional<std::string>() */
   ) {
     this->languageCode = newLanguageCode;
   }

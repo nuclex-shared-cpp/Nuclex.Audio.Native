@@ -1,0 +1,107 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx;h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>
+      </Extensions>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source\Platform">
+      <UniqueIdentifier>{295eb632-2d53-4d60-aadc-3989cec9b923}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Storage">
+      <UniqueIdentifier>{48cc11bc-9406-4eb0-9ad7-edc9ab551a7d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Storage">
+      <UniqueIdentifier>{51be23ae-c9dc-4ecc-9de5-735aeca4a5c4}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\Config.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Platform\LinuxFileApi.cpp">
+      <Filter>Source\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Platform\PosixApi.cpp">
+      <Filter>Source\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Platform\PosixFileApi.cpp">
+      <Filter>Source\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Platform\WindowsApi.cpp">
+      <Filter>Source\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Platform\WindowsFileApi.cpp">
+      <Filter>Source\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\RealFile.cpp">
+      <Filter>Source\Storage</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\VirtualFile.cpp">
+      <Filter>Source\Storage</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Track.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Documents\EventBenchmark.md" />
+    <Text Include="ReadMe.md" />
+    <Text Include="Notice.md" />
+    <Text Include="License.md" />
+    <Text Include="Dependencies.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Include\Nuclex\Audio\Config.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Platform\LinuxFileApi.h">
+      <Filter>Source\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Platform\PosixApi.h">
+      <Filter>Source\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Platform\PosixFileApi.h">
+      <Filter>Source\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Platform\WindowsApi.h">
+      <Filter>Source\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Platform\WindowsFileApi.h">
+      <Filter>Source\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Storage\RealFile.h">
+      <Filter>Source\Storage</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\Storage\VirtualFile.h">
+      <Filter>Include\Storage</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\Storage\AudioReader.h">
+      <Filter>Include\Storage</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\Storage\AudioCodec.h">
+      <Filter>Include\Storage</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\Channel.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\Track.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\TrackInfo.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Nuclex.Support.Native.ref" />
+  </ItemGroup>
+</Project>

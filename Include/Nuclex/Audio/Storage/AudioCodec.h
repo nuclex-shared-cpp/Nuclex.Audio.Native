@@ -48,6 +48,11 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// <returns>The commonly used file extensions in order of preference</returns>
     public: virtual const std::vector<std::string> &GetFileExtensions() const = 0;
 
+    // CreateDecoder
+    // CreateDecodingContext
+    // CreateStreamer
+    // CreateStreamDecoder
+
   };
 
   // ------------------------------------------------------------------------------------------- //
