@@ -55,7 +55,7 @@ namespace Nuclex { namespace Audio { namespace Errors {
   ///     This error will be thrown if anything went wrong accessing the data of a
   ///     virtual file (<see cref="Nuclex.Audio.Storage.VirtualFile" />). If you implement
   ///     your own data sources/sinks using the virtual file interface, all exceptions
-  ///     thrown should ideally inherit from this esception.
+  ///     thrown should ideally inherit from this exception
   ///   </para>
   ///   <para>
   ///     If you get this error while working with Nuclex.Audio, it means that your
