@@ -17,8 +17,8 @@ limitations under the License.
 */
 #pragma endregion // Apache License 2.0
 
-#ifndef NUCLEX_AUDIO_STORAGE_AUDIOREADER_H
-#define NUCLEX_AUDIO_STORAGE_AUDIOREADER_H
+#ifndef NUCLEX_AUDIO_STORAGE_AUDIOLOADER_H
+#define NUCLEX_AUDIO_STORAGE_AUDIOLOADER_H
 
 #include "Nuclex/Audio/Config.h"
 
@@ -42,8 +42,15 @@ limitations under the License.
 //   - Bad. While BitmapSerializer is neat, lossy compression is not serialization
 //     and it doesn't fit into the audio jargon well.
 //
+// AudioLoader
+//   - Maybe.
+//   - Perhaps this is the best choice? The term "loader" says to me that it will
+//     load whole audio file, neutral about whether it's streamed or loaded whole.
+//
 // AudioReader
 //   - Maybe.
+//   - Might mislead people into thinking this is the stream decoder since reader
+//     is commonly used for such things (StreamReader, FileReader, etc.).
 //
 // AudioStreamer
 //   - Could be. Since decoding an entire file probably will be done via
@@ -52,6 +59,8 @@ limitations under the License.
 //
 // AudioDecompressor
 //   - Maybe.
+//   - Too close to decoder? Might give users the idea that this is doing
+//     the actual decoding work rather than being the hub decoders are registered to.
 //
 // AudioDecoder
 //   - Nope, term contained in AudioCodec, would be terribly confusing
@@ -61,7 +70,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
   // ------------------------------------------------------------------------------------------- //
 
-  class NUCLEX_AUDIO_TYPE AudioReader {
+  class NUCLEX_AUDIO_TYPE AudioLoader {
 
 
   };
@@ -70,4 +79,4 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
 }}} // namespace Nuclex::Audio::Storage
 
-#endif // NUCLEX_AUDIO_STORAGE_AUDIOREADER_H
+#endif // NUCLEX_AUDIO_STORAGE_AUDIOLOADER_H
