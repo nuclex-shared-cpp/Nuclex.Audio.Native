@@ -20,11 +20,20 @@ limitations under the License.
 // If the library is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_AUDIO_SOURCE 1
 
-#include "Nuclex/Audio/Errors/FileAccessError.h"
+#include "Nuclex/Audio/ChannelPlacement.h"
 
-// --------------------------------------------------------------------------------------------- //
+#include <gtest/gtest.h>
 
-// This file is only here to guarantee that its associated header has no hidden
-// dependencies and can be included on its own
+namespace Nuclex { namespace Audio {
 
-// --------------------------------------------------------------------------------------------- //
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(ChannelPlacementTest, PlacementCanBeConvrtedToString) {
+    std::string frontLeft = StringFromChannelPlacement(ChannelPlacement::FrontLeft);
+    EXPECT_TRUE(frontLeft.find(u8"front") != std::string::npos);
+    EXPECT_TRUE(frontLeft.find(u8"left") != std::string::npos);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+}} // namespace Nuclex::Audio
