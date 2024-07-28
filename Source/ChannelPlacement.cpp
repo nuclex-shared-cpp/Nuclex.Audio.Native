@@ -24,12 +24,15 @@ limitations under the License.
 
 #include <Nuclex/Support/BitTricks.h> // for BitTricks
 
+#include <string_view> // for std::string_view
+#include <stdexcept> // for std::runtime_error
+
 namespace {
 
   // ------------------------------------------------------------------------------------------- //
 
+  /// <summary>Names of the possible channel placements, ordered by bit index</summary>
   const std::string channelNames[] = {
-    u8"unknown",
     u8"front left",
     u8"front right",
     u8"front center",
@@ -78,15 +81,17 @@ namespace Nuclex { namespace Audio {
       }
     }
 
+    if(result.empty()) {
+      result.append(u8"none", 4);
+    }
+
     return result;
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-  ChannelPlacement ChannelPlacementFromString(
-    const std::string &channelPlacementAsText
-  ) {
-
+  ChannelPlacement ChannelPlacementFromString(const std::string &channelPlacementAsText) {
+    throw std::runtime_error(u8"Not implemented yet");
   }
 
   // ------------------------------------------------------------------------------------------- //

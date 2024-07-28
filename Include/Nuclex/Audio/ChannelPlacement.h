@@ -23,6 +23,7 @@ limitations under the License.
 #include "Nuclex/Audio/Config.h"
 
 #include <string> // for std::string
+#include <cstddef> // for std::size_t
 
 // Reference 1:
 // There are three generations of Microsoft's well-known .wav audio format, using different
@@ -93,7 +94,7 @@ namespace Nuclex { namespace Audio {
   /// <remarks>
   ///   The first 
   /// </remarks>
-  enum class ChannelPlacement {
+  enum class ChannelPlacement : std::size_t {
 
     /// <summary>Placement not determined yet or wasn't specified</summary>
     Unknown = 0,
@@ -246,6 +247,30 @@ namespace Nuclex { namespace Audio {
     TopBackRight = 131072 // matches SPEAKER_TOP_BACK_RIGHT in WAVE files
 
   };
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Returns the bitwise or of two channel placement flags, combining them</summary>
+  /// <param name="first">First channel placement flag that will be combined</param>
+  /// <param name="second">Second channel placement flag that will be combined</param>
+  /// <returns>The channel placements flags combined via a bitwise or</returns>
+  inline ChannelPlacement operator |(ChannelPlacement first, ChannelPlacement second) {
+    return static_cast<ChannelPlacement>(
+      static_cast<std::size_t>(first) | static_cast<std::size_t>(second)
+    );
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Returns the bitwise and of two channel placement flags, limiting them</summary>
+  /// <param name="first">First channel placement flag that will be limited</param>
+  /// <param name="second">Second channel placement flag that will be limited</param>
+  /// <returns>The channel placements flags limited via a bitwise and</returns>
+  inline ChannelPlacement operator &(ChannelPlacement first, ChannelPlacement second) {
+    return static_cast<ChannelPlacement>(
+      static_cast<std::size_t>(first) & static_cast<std::size_t>(second)
+    );
+  }
 
   // ------------------------------------------------------------------------------------------- //
 
