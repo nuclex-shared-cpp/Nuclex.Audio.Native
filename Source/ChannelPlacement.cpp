@@ -22,9 +22,73 @@ limitations under the License.
 
 #include "Nuclex/Audio/ChannelPlacement.h"
 
-// --------------------------------------------------------------------------------------------- //
+#include <Nuclex/Support/BitTricks.h> // for BitTricks
 
-// This file is only here to guarantee that its associated header has no hidden
-// dependencies and can be included on its own
+namespace {
 
-// --------------------------------------------------------------------------------------------- //
+  // ------------------------------------------------------------------------------------------- //
+
+  const std::string channelNames[] = {
+    u8"unknown",
+    u8"front left",
+    u8"front right",
+    u8"front center",
+    u8"low frequency effects",
+    u8"back left",
+    u8"back right",
+    u8"front center left",
+    u8"front center right",
+    u8"back center",
+    u8"side left",
+    u8"side right",
+    u8"top center",
+    u8"top front left",
+    u8"top front center",
+    u8"top front right",
+    u8"top back left",
+    u8"top back center",
+    u8"top back right"
+  };
+
+  // ------------------------------------------------------------------------------------------- //
+
+} // anonymous namespace
+
+namespace Nuclex { namespace Audio {
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::string StringFromChannelPlacement(ChannelPlacement placement) {
+    std::string result;
+    {
+      std::size_t channelCount = Nuclex::Support::BitTricks::CountBits(
+        static_cast<std::size_t>(placement) & 0x3FFFF
+      );
+      result.reserve(channelCount * 12); // channel names average 12 characters
+    }
+
+    for(std::size_t bitIndex = 0; bitIndex < 17; ++bitIndex) {
+      if((static_cast<std::size_t>(placement) & (1 << bitIndex)) != 0) {
+        if(result.empty()) {
+          result.append(channelNames[bitIndex]);
+        } else {
+          result.append(u8", ", 2);
+          result.append(channelNames[bitIndex]);
+        }
+      }
+    }
+
+    return result;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  ChannelPlacement ChannelPlacementFromString(
+    const std::string &channelPlacementAsText
+  ) {
+
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+}} // namespace Nuclex::Audio

@@ -25,7 +25,7 @@ limitations under the License.
 #if !defined(NUCLEX_AUDIO_WINDOWS)
 
 #include "PosixApi.h"
-#include "Nuclex/Audio/Errors/FileAccessError.h" // for FileAccessError
+#include <Nuclex/Support/Errors/FileAccessError.h> // for FileAccessError
 
 #include <cstdio> // for fopen() and fclose()
 #include <cerrno> // To access ::errno directly
@@ -165,7 +165,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
     combinedErrorMessage.append(u8" - ");
     combinedErrorMessage.append(PosixApi::GetErrorMessage(errorNumber));
 
-    throw Errors::FileAccessError(
+    throw Nuclex::Support::Errors::FileAccessError(
       std::error_code(errorNumber, std::system_category()), combinedErrorMessage
     );
   }
