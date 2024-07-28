@@ -22,6 +22,8 @@ limitations under the License.
 
 #include "Nuclex/Audio/Config.h"
 
+#include <string> // for std::string
+
 // Reference 1:
 // There are three generations of Microsoft's well-known .wav audio format, using different
 // headers: WAVEFORMAT, WAVEFORMATEX and WAVEFORMATEXTENSIBLE. The lattermost one includes
@@ -108,8 +110,8 @@ namespace Nuclex { namespace Audio {
     ///     a bit (by mixing a percentage of the opposite channel in).
     ///   </para>
     ///   <para>
-    ///     In a 5.1 or higher setup, this channel should play 30 degrees to the front left of
-    ///     the direction the listener is facing in.
+    ///     In a 5.1 or higher setup, this channel should play around 22.5 to 30 degrees
+    ///     to the front left of the direction the listener is facing in.
     ///   </para>
     /// </remarks>
     FrontLeft = 1, // matches SPEAKER_FRONT_LEFT in WAVE files
@@ -126,8 +128,8 @@ namespace Nuclex { namespace Audio {
     ///     a bit (by mixing a percentage of the opposite channel in).
     ///   </para>
     ///   <para>
-    ///     In a 5.1 or higher setup, this channel should play 30 degrees to the front right of
-    ///     the direction the listener is facing in.
+    ///     In a 5.1 or higher setup, this channel should play around 22.5 to 30 degrees
+    ///     to the front right of the direction the listener is facing in.
     ///   </para>
     /// </remarks>
     FrontRight = 2, // matches SPEAKER_FRONT_RIGHT in WAVE files
@@ -143,23 +145,134 @@ namespace Nuclex { namespace Audio {
     /// </remarks>
     LowFrequencyEffects = 8, // matches SPEAKER_LOW_FREQUENCY in WAVE files
 
+    /// <summary>Channel should be played to the rear left of the listener</summary>
+    /// <remarks>
+    ///   <para>
+    ///     In a 5.1 surround setup, this is just the left side speaker. It should be
+    ///     placed between 100 and 120 degrees to the listener's left side. Some audio
+    ///     formats differentiate between 5.1 and 5.1(side), this would be the former.
+    ///   </para>
+    ///   <para>
+    ///     In a 7.1 surround setup, this is the true rear left speaker and it should
+    ///     be placed farther in the rear, around 130 to 150 deghrees to the left.
+    ///   </para>
+    /// </remarks>
     BackLeft = 16, // matches SPEAKER_BACK_LEFT in WAVE files
+
+    /// <summary>Channel should be played to the rear right of the listener</summary>
+    /// <remarks>
+    ///   <para>
+    ///     In a 5.1 surround setup, this is just the right side speaker. It should be
+    ///     placed between 100 and 120 degrees to the listener's right side. Some audio
+    ///     formats differentiate between 5.1 and 5.1(side), this would be the former.
+    ///   </para>
+    ///   <para>
+    ///     In a 7.1 surround setup, this is the true rear right speaker and it should
+    ///     be placed farther in the rear, around 130 to 150 deghrees to the right.
+    ///   </para>
+    /// </remarks>
     BackRight = 32, // matches SPEAKER_BACK_RIGHT in WAVE files
+
+    /// <summary>Channel should be placed between center and front left</summary>
     FrontCenterLeft = 64, // matches SPEAKER_FRONT_LEFT_OF_CENTER in WAVE files
+
+    /// <summary>Channel should be placed between center and front right</summary>
     FrontCenterRight = 128, // matches SPEAKER_FRONT_RIGHT_OF_CENTER in WAVE files
+
+    /// <summary>Channel should be placed behind the listener</summary>
     BackCenter = 256, // matches SPEAKER_BACK_CENTER in WAVE files
+
+    /// <summary>Channel should be played to the right side of the listener</summary>
+    /// <remarks>
+    ///   <para>
+    ///     In both a 5.1 or 7.1 surround setup, this is the left side speaker.
+    ///   </para>
+    ///   <para>
+    ///     For a 5.1 system using side speakers (rather the rear side speakers),
+    ///     this channel should be played around 100 to 120 degrees to the left
+    ///     of the listener.
+    ///   </para>
+    ///   <para>
+    ///     In a 7.1 system where the rear left/right speakers are further back,
+    ///     this speaker can be placed in a range from 60 to 100 degrees to
+    ///     the left side of the listener.
+    ///   </para>
+    /// </remarks>
     SideLeft = 512, // matches SPEAKER_SIDE_LEFT in WAVE files
+
+    /// <summary>Channel should be played to the right side of the listener</summary>
+    /// <remarks>
+    ///   <para>
+    ///     In both a 5.1 or 7.1 surround setup, this is the right side speaker.
+    ///   </para>
+    ///   <para>
+    ///     For a 5.1 system using side speakers (rather the rear side speakers),
+    ///     this channel should be played around 100 to 120 degrees to the right
+    ///     of the listener.
+    ///   </para>
+    ///   <para>
+    ///     In a 7.1 system where the rear left/right speakers are further back,
+    ///     this speaker can be placed in a range from 60 to 100 degrees to
+    ///     the right side of the listener.
+    ///   </para>
+    /// </remarks>
     SideRight = 1024, // matches SPEAKER_SIDE_RIGHT in WAVE files
+
+    /// <summary>Channel should be played from above the listener</summary>
     TopCenter = 2048, // matches SPEAKER_TOP_CENTER in WAVE files
+
+    /// <summary>Speaker is at an elevated placement on the front left</summary>
+    /// <remarks>
+    ///   This is found in an alternative 7.1 setup that doesn't seem to be too common.
+    /// </remarks>
     TopFrontLeft = 4096, // matches SPEAKER_TOP_FRONT_LEFT in WAVE files
+
+    /// <summary>Speaker that is in front and above the listener</summary>
     TopFrontCenter = 8192, // matches SPEAKER_TOP_FRONT_CENTER in WAVE files
+
+    /// <summary>Speaker is at an elevated placement on the front right</summary>
+    /// <remarks>
+    ///   This is found in an alternative 7.1 setup that doesn't seem to be too common.
+    /// </remarks>
     TopFrontRight = 16384, // matches SPEAKER_TOP_FRONT_RIGHT in WAVE files
+
+    /// <summary>Speaker is at an elevated placement on the back left</summary>
     TopBackLeft = 32768, // matches SPEAKER_TOP_BACK_LEFT in WAVE files
+
+    /// <summary>Speaker that is in the rear and above the listener</summary>
     TopBackCenter = 65536, // matches SPEAKER_TOP_BACK_CENTER in WAVE files
+
+    /// <summary>Speaker is at an elevated placement on the back right</summary>
     TopBackRight = 131072 // matches SPEAKER_TOP_BACK_RIGHT in WAVE files
 
   };
 
+  // ------------------------------------------------------------------------------------------- //
+#if 0
+  /// <summary>Generates a string describing the specified channel placement</summary>
+  /// <param name="placement">Channel placement for which a string will be generated</param>
+  /// <returns>A string containing the specified channel placement as text</returns>
+  /// <remarks>
+  ///  This is a small helper. You can use it for debugging, to output channel placements
+  ///  in log files, error messages or perhaps even to the user in command line programs.
+  /// </remarks>
+  std::string NUCLEX_AUDIO_API StringFromChannelPlacement(ChannelPlacement placement);
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>
+  ///   Parses a string generated by <see cref="StringFromChannelPlacement" /> and returns
+  ///   the channel placement contained in it
+  /// </summary>
+  /// <param name="channelPlacementAsText">
+  ///   String describing channel placements as generated by
+  ///   <see cref="StringFromChannelPlacement" />.
+  /// </param>
+  /// <returns>The channel placement flags parsed from the string</returns>
+  ChannelPlacement NUCLEX_AUDIO_API ChannelPlacementFromString(
+    const std::string &channelPlacementAsText
+  );
+#endif
   // ------------------------------------------------------------------------------------------- //
 
 }} // namespace Nuclex::Audio
