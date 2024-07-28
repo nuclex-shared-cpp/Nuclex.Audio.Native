@@ -30,8 +30,29 @@ namespace Nuclex { namespace Audio {
 
   TEST(ChannelPlacementTest, PlacementCanBeConvrtedToString) {
     std::string frontLeft = StringFromChannelPlacement(ChannelPlacement::FrontLeft);
+
     EXPECT_TRUE(frontLeft.find(u8"front") != std::string::npos);
     EXPECT_TRUE(frontLeft.find(u8"left") != std::string::npos);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(ChannelPlacementTest, PlacementMaskCanBeConvrtedToString) {
+    std::string fiveDotOne = StringFromChannelPlacement(
+      ChannelPlacement::FrontLeft |
+      ChannelPlacement::FrontRight |
+      ChannelPlacement::FrontCenter |
+      ChannelPlacement::LowFrequencyEffects |
+      ChannelPlacement::BackLeft |
+      ChannelPlacement::BackRight
+    );
+
+    EXPECT_TRUE(fiveDotOne.find(u8"front left") != std::string::npos);
+    EXPECT_TRUE(fiveDotOne.find(u8"front right") != std::string::npos);
+    EXPECT_TRUE(fiveDotOne.find(u8"front center") != std::string::npos);
+    EXPECT_TRUE(fiveDotOne.find(u8"low frequency") != std::string::npos);
+    EXPECT_TRUE(fiveDotOne.find(u8"back left") != std::string::npos);
+    EXPECT_TRUE(fiveDotOne.find(u8"back right") != std::string::npos);
   }
 
   // ------------------------------------------------------------------------------------------- //
