@@ -24,7 +24,7 @@ limitations under the License.
 
 #if defined(NUCLEX_AUDIO_WINDOWS)
 
-#include "Nuclex/Audio/Errors/FileAccessError.h" // for FileAccessError
+#include <Nuclex/Support/Errors/FileAccessError.h> // for FileAccessError
 
 #include "Nuclex/Support/Text/UnicodeHelper.h" // for UTF-16 <-> UTF-8 conversion
 
@@ -256,7 +256,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
     combinedErrorMessage.append(u8" - ");
     combinedErrorMessage.append(WindowsApi::GetErrorMessage(errorCode));
 
-    throw Errors::FileAccessError(
+    throw Nuclex::Support::Errors::FileAccessError(
       std::error_code(errorCode, std::system_category()), combinedErrorMessage
     );
   }

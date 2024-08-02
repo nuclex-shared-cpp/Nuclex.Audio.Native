@@ -28,7 +28,7 @@ namespace Nuclex { namespace Audio {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(ChannelPlacementTest, PlacementCanBeConvrtedToString) {
+  TEST(ChannelPlacementTest, PlacementCanBeConvertedToString) {
     std::string frontLeft = StringFromChannelPlacement(ChannelPlacement::FrontLeft);
 
     EXPECT_TRUE(frontLeft.find(u8"front") != std::string::npos);
@@ -53,6 +53,34 @@ namespace Nuclex { namespace Audio {
     EXPECT_TRUE(fiveDotOne.find(u8"low frequency") != std::string::npos);
     EXPECT_TRUE(fiveDotOne.find(u8"back left") != std::string::npos);
     EXPECT_TRUE(fiveDotOne.find(u8"back right") != std::string::npos);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(ChannelPlacementTest, PlacementCanBeParsedFromString) {
+    std::string frontLeft(u8"front left", 10);
+
+    ChannelPlacement placement = ChannelPlacementFromString(frontLeft);
+
+    EXPECT_EQ(placement, ChannelPlacement::FrontLeft);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(ChannelPlacementTest, CombinedPlacementFlagsCanBeParsedFromString) {
+    std::string frontLeft(
+      u8"front left, front center right, back center, low frequency effects", 66
+    );
+
+    ChannelPlacement placement = ChannelPlacementFromString(frontLeft);
+
+    ChannelPlacement expected = (
+      ChannelPlacement::FrontLeft |
+      ChannelPlacement::FrontCenterRight |
+      ChannelPlacement::BackCenter |
+      ChannelPlacement::LowFrequencyEffects
+    );
+    EXPECT_EQ(placement, expected);
   }
 
   // ------------------------------------------------------------------------------------------- //
