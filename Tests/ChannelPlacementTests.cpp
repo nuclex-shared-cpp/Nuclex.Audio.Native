@@ -85,4 +85,29 @@ namespace Nuclex { namespace Audio {
 
   // ------------------------------------------------------------------------------------------- //
 
+  TEST(ChannelPlacementTest, InvalidPlacementFlagCombinationsAreDetected) {
+    EXPECT_THROW(
+      ChannelPlacementFromString("top left right"),
+      std::invalid_argument
+    );
+    EXPECT_THROW(
+      ChannelPlacementFromString("top front bottom"),
+      std::invalid_argument
+    );
+    EXPECT_THROW(
+      ChannelPlacementFromString("front back center"),
+      std::invalid_argument
+    );
+    EXPECT_THROW(
+      ChannelPlacementFromString("low frequency right"),
+      std::invalid_argument
+    );
+    EXPECT_THROW(
+      ChannelPlacementFromString("in another dimension"),
+      std::invalid_argument
+    );
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
 }} // namespace Nuclex::Audio

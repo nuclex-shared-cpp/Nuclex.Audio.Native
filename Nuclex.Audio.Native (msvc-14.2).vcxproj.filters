@@ -23,11 +23,14 @@
     <Filter Include="Include\Storage">
       <UniqueIdentifier>{51be23ae-c9dc-4ecc-9de5-735aeca4a5c4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Include\Errors">
+      <UniqueIdentifier>{c939ca57-f878-4cab-8dc8-580c8f185a26}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Errors">
+      <UniqueIdentifier>{09d7dad3-b2d9-42e1-b24f-f58c7e5acc9f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Config.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Platform\LinuxFileApi.cpp">
       <Filter>Source\Platform</Filter>
     </ClCompile>
@@ -49,6 +52,12 @@
     <ClCompile Include="Source\Storage\VirtualFile.cpp">
       <Filter>Source\Storage</Filter>
     </ClCompile>
+    <ClCompile Include="Source\ChannelPlacement.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Config.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Track.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -61,9 +70,6 @@
     <Text Include="Dependencies.md" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Include\Nuclex\Audio\Config.h">
-      <Filter>Include</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Platform\LinuxFileApi.h">
       <Filter>Source\Platform</Filter>
     </ClInclude>
@@ -92,6 +98,12 @@
       <Filter>Include\Storage</Filter>
     </ClInclude>
     <ClInclude Include="Include\Nuclex\Audio\Channel.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\ChannelPlacement.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\Config.h">
       <Filter>Include</Filter>
     </ClInclude>
     <ClInclude Include="Include\Nuclex\Audio\Track.h">
