@@ -92,7 +92,9 @@ namespace Nuclex { namespace Audio {
 
   /// <summary>Where audio channels should be played back relative to the viewer<?summary>
   /// <remarks>
-  ///   The first 
+  ///   These placement flags are guaranteed to be a superset of the channel mask flags
+  ///   Microsoft uses for .wav files, using the same bit masks for all placements shared
+  ///   with the .wav format.
   /// </remarks>
   enum class ChannelPlacement : std::size_t {
 
@@ -302,4 +304,4 @@ namespace Nuclex { namespace Audio {
 
 }} // namespace Nuclex::Audio
 
-#endif // NUCLEX_OPUSTRANSCODER_AUDIO_CHANNELPLACEMENT_H
+#endif // NUCLEX_AUDIO_CHANNELPLACEMENT_H

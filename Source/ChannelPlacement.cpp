@@ -313,7 +313,7 @@ namespace Nuclex { namespace Audio {
     }
 
     for(std::size_t bitIndex = 0; bitIndex < 17; ++bitIndex) {
-      if((static_cast<std::size_t>(placement) & (1 << bitIndex)) != 0) {
+      if((static_cast<std::size_t>(placement) & (1ULL << bitIndex)) != 0) {
         if(result.empty()) {
           result.append(channelNames[bitIndex]);
         } else {

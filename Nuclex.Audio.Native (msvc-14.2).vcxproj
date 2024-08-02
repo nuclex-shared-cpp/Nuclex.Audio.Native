@@ -206,6 +206,7 @@
     <ClInclude Include="Include\Nuclex\Audio\Storage\AudioReader.h" />
     <ClInclude Include="Include\Nuclex\Audio\Storage\VirtualFile.h" />
     <ClInclude Include="Include\Nuclex\Audio\Channel.h" />
+    <ClInclude Include="Include\Nuclex\Audio\ChannelPlacement.h" />
     <ClInclude Include="Include\Nuclex\Audio\Config.h" />
     <ClInclude Include="Include\Nuclex\Audio\Track.h" />
     <ClInclude Include="Include\Nuclex\Audio\TrackInfo.h" />
@@ -224,6 +225,7 @@
     <ClCompile Include="Source\Storage\RealFile.cpp" />
     <ClInclude Include="Source\Storage\RealFile.h" />
     <ClCompile Include="Source\Storage\VirtualFile.cpp" />
+    <ClCompile Include="Source\ChannelPlacement.cpp" />
     <ClCompile Include="Source\Track.cpp" />
     <ClCompile Include="Source\Config.cpp" />
   </ItemGroup>
