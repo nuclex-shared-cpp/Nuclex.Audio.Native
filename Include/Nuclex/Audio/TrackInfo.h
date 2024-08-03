@@ -21,10 +21,13 @@ limitations under the License.
 #define NUCLEX_AUDIO_TRACKINFO_H
 
 #include "Nuclex/Audio/Config.h"
+#include "Nuclex/Audio/AudioSampleFormat.h"
+#include "Nuclex/Audio/ChannelPlacement.h"
 
 #include <cstddef> // for std::size_t
 #include <optional> // for std::optional
 #include <string> // for std::string
+#include <chrono> // for std::chrono::microseconds
 
 namespace Nuclex { namespace Audio {
 
@@ -55,13 +58,136 @@ namespace Nuclex { namespace Audio {
     /// </remarks>
     public: std::optional<std::string> LanguageCode;
 
-    // Expose channel count or channel infos?
-    // Put sample rate in channel or here (forcing all to have the same)?
-    // Put length in channel or here (same issue)?
-    //   -> Audio editors like Audacity allow different lengths per channel
-    //   -> Audio formats usually don't
+    /// <summary>Name of the codec used to compress / store the audio samples</summary>
+    public: std::string CodecName;
+
+    /// <summary>Placements for which this track provides audio channels</summary>
+    public: ChannelPlacement ChannelPlacements;
+
+    /// <summary>Number of audio channels in the track</summary>
+    public: std::size_t ChannelCount;
+
+    /// <summary>Duration of the audio track</summary>
+    public: std::chrono::microseconds Duration;
+
+    // CHECK: Is IsMono() confusing? If one splits 5.1 audio into 6 channels they would
+    //        be mono, but this method would return false because they're not
+    //        placed in the front center position.
+    // -> IsClassicMono() ?
+    // -> IsSimpleMono() ?
+
+    /// <summary>Whether the audio track is a normal mono track</summary>
+    /// <remarks>
+    ///   This is a simple conveniency method. It will check if there is exactly one
+    ///   audio channel and that channel is intended for the front center speaker.
+    /// </remarks>
+    public: NUCLEX_AUDIO_API bool IsMono() const;
+
+    /// <summary>Whether the audio track is a normal stereo track</summary>
+    /// <remarks>
+    ///   This is a simple conveniency method. It will check if there are exactly two
+    ///   audio channels and those channel are intended for the front left and right
+    ///   speakers.
+    /// </remarks>
+    public: NUCLEX_AUDIO_API bool IsStereo() const;
+
+    /// <summary>Whether the audio track is a typical 5.1 surround track</summary>
+    /// <remarks>
+    ///   This is a simple conveniency method. It will check if there are exactly six
+    ///   audio channels consisting of 5 surround channels and one low frequency effect
+    ///   channel. There are two 5.1 surround formats, one with the rearmore channels
+    ///   being back left/right and one with them being side left/right. This checks
+    ///   for the former only!
+    /// </remarks>
+    public: NUCLEX_AUDIO_API bool IsFiveDotOne() const;
+
+    /// <summary>Whether the audio track is a 5.1 surround (side) track</summary>
+    /// <remarks>
+    ///   This is a simple conveniency method. It will check if there are exactly six
+    ///   audio channels consisting of 5 surround channels and one low frequency effect
+    ///   channel. There are two 5.1 surround formats, one with the rearmore channels
+    ///   being back left/right and one with them being side left/right. This checks
+    ///   for the latter only!
+    /// </remarks>
+    public: NUCLEX_AUDIO_API bool IsFiveDotOneSide() const;
+
+    /// <summary>Whether the audio track is a 7.1 surround track</summary>
+    /// <remarks>
+    ///   This is a simple conveniency method. It will check if there are exactly eight
+    ///   audio channels consisting of 7 surround channels and one low frequency effect
+    ///   channel. This format is often used on UHD Blu-Rays and can easily be downmixed
+    ///   to 5.1 by merging the side left/right and back left/right channels.
+    /// </remarks>
+    public: NUCLEX_AUDIO_API bool IsSevenDotOne() const;
 
   };
+
+  // ------------------------------------------------------------------------------------------- //
+
+  inline bool TrackInfo::IsMono() const {
+    const ChannelPlacement monoPlacement = (
+      ChannelPlacement::FrontCenter
+    );
+
+    return (this->ChannelCount == 1) && (this->ChannelPlacements == monoPlacement);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  inline bool TrackInfo::IsStereo() const {
+    const ChannelPlacement stereoPlacement = (
+      ChannelPlacement::FrontLeft | ChannelPlacement::FrontRight
+    );
+
+    return (this->ChannelCount == 2) && (this->ChannelPlacements == stereoPlacement);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  inline bool TrackInfo::IsFiveDotOne() const {
+    const ChannelPlacement fiveDotOnePlacement = (
+      ChannelPlacement::FrontLeft |
+      ChannelPlacement::FrontCenter |
+      ChannelPlacement::FrontRight |
+      ChannelPlacement::BackLeft |
+      ChannelPlacement::BackRight |
+      ChannelPlacement::LowFrequencyEffects
+    );
+
+    return (this->ChannelCount == 6) && (this->ChannelPlacements == fiveDotOnePlacement);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  inline bool TrackInfo::IsFiveDotOneSide() const {
+    const ChannelPlacement fiveDotOneSidePlacement = (
+      ChannelPlacement::FrontLeft |
+      ChannelPlacement::FrontCenter |
+      ChannelPlacement::FrontRight |
+      ChannelPlacement::SideLeft |
+      ChannelPlacement::SideRight |
+      ChannelPlacement::LowFrequencyEffects
+    );
+
+    return (this->ChannelCount == 6) && (this->ChannelPlacements == fiveDotOneSidePlacement);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  inline bool TrackInfo::IsSevenDotOne() const {
+    const ChannelPlacement sevenDotOnePlacement = (
+      ChannelPlacement::FrontLeft |
+      ChannelPlacement::FrontCenter |
+      ChannelPlacement::FrontRight |
+      ChannelPlacement::SideLeft |
+      ChannelPlacement::SideRight |
+      ChannelPlacement::BackLeft |
+      ChannelPlacement::BackRight |
+      ChannelPlacement::LowFrequencyEffects
+    );
+
+    return (this->ChannelCount == 8) && (this->ChannelPlacements == sevenDotOnePlacement);
+  }
 
   // ------------------------------------------------------------------------------------------- //
 
