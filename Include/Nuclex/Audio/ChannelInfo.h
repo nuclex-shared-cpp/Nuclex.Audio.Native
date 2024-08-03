@@ -21,6 +21,7 @@ limitations under the License.
 #define NUCLEX_AUDIO_CHANNELINFO_H
 
 #include "Nuclex/Audio/Config.h"
+#include "Nuclex/Audio/ChannelPlacement.h"
 
 #include <cstddef> // for std::size_t
 #include <optional> // for std::optional
@@ -33,29 +34,16 @@ namespace Nuclex { namespace Audio {
   /// <summary>Informations about an audio channel</summary>
   struct NUCLEX_AUDIO_TYPE ChannelInfo {
 
-    /// <summary>The name of the audio track, if provided by the container</summary>
-    /// <remarks>
-    ///   For single track containers such as .wav, .flac or .opus, there will only be
-    ///   a track name if the file uses music tagging. For multi-track containers such
-    ///   as .mka, there is a wealth of information about each audio track, usually
-    ///   also including a human-readable name. Use to aid in selection by the user,
-    ///   but anticipate that this string may be missing.
-    /// </remarks>
-    public: std::optional<std::string> Name;
+    // Is there anything important here?
+    // Does this class even have a justification to exist?
+    //
+    // -> If an audio container has multiple channels with the same placement (WTF?) or
+    // channels with placements that our enum can't represent, would there be anything
+    // worthwhile we could say about those? Otherwise, a ChannelCount would suffice...
 
-    /// <summary>The language of the audio track in rfc-5646 format</summary>
-    /// <remarks>
-    ///   The rfc-5646 format defines language tags as you may have seen in mkv
-    ///   files and other uses on the internet. They look like this: en-us,
-    ///   en-uk or de-de (or just de).
-    /// </remarks>
-    public: std::optional<std::string> LanguageCode;
+    /// <summary>From where the channel will be played back</summary>
+    public: ChannelPlacement Placement;
 
-    // Expose channel count or channel infos?
-    // Put sample rate in channel or here (forcing all to have the same)?
-    // Put length in channel or here (same issue)?
-    //   -> Audio editors like Audacity allow different lengths per channel
-    //   -> Audio formats usually don't
 
   };
 
