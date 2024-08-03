@@ -87,7 +87,7 @@ namespace Nuclex { namespace Audio {
     Float_16 = 48,
 #endif
 
-    /// <summary>Sample use normalized 32-bit floating point values</summary>
+    /// <summary>Samples stored as normalized 32-bit floating point values</summary>
     /// <remarks>
     ///   Floating point audio samples are used during audio production due to their
     ///   higher accuracy, which is (due to the more dense distribution of floatiing point
@@ -99,7 +99,7 @@ namespace Nuclex { namespace Audio {
     /// </remarks>
     Float32 = 64,
 
-    /// <summary>Sample use normalized 64-bit floating point values</summary>
+    /// <summary>Samples stored as normalized 64-bit floating point values</summary>
     /// <remarks>
     ///   See the description for 32-bit floating point audio (<see cref="Float32" />).
     ///   Mainly used during audio production, using 64-bit floating point increases

@@ -21,6 +21,7 @@ limitations under the License.
 #define NUCLEX_AUDIO_STORAGE_AUDIOCODEC_H
 
 #include "Nuclex/Audio/Config.h"
+#include "Nuclex/Audio/TrackInfo.h"
 
 #include <string> // for std::string
 #include <vector> // for std::vector
@@ -47,6 +48,18 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// <summary>Provides commonly used file extensions for this codec</summary>
     /// <returns>The commonly used file extensions in order of preference</returns>
     public: virtual const std::vector<std::string> &GetFileExtensions() const = 0;
+
+    // TryReadInfo                 -> Returns info for default track
+    // TryReadContainerInfo?       -> Returns info for all tracks
+    #if 0
+    /// <summary>Tries to read informations for an audio track</summary>
+    /// <param name="source">Source data from which the informations should be extracted</param>
+    /// <param name="extensionHint">Optional file extension the loaded data had</param>
+    /// <returns>Informations about the bitmap, if the codec is able to load it</returns>
+    public: virtual std::optional<TrackInfo> TryReadInfo(
+      const VirtualFile &source, const std::string &extensionHint = std::string()
+    ) const = 0;
+    #endif
 
     // CreateDecoder
     // CreateDecodingContext
