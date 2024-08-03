@@ -77,9 +77,9 @@ namespace Nuclex { namespace Audio {
     // Codecs should be registerable (like in Nuclex.Pixels) so support for
     // invividual codecs can be toggled on and off.
     //
-    // Tracks should either be autonomous (meaning they hold all of the audio
+    // (Tracks should either be autonomous (meaning they hold all of the audio
     // data in their own buffer) or remain connected to a decoder that allows
-    // them to stream additional audio as needed.
+    // them to stream additional audio as needed)?
     //
     // Encoding should happen through a separate encoder (so unlike BitmapSerializer,
     // the two sides will be split here). The encoder should have a progress
@@ -104,8 +104,8 @@ namespace Nuclex { namespace Audio {
     // - But applied to such a basic level of the library, complicates things
     //
     // - Just Channel<T> inheriting Channel?
-    //   * Via method Channel<T> Channel::Aa<T>?
-    //   * Could multiple typed wrappers exist for the same channel?
+    //   * Via method Channel<T> Channel::As<T>?
+    //   * Oops - could multiple typed wrappers exist for the same channel?
     // - Channel has inherent type, either defined at load time or changeable?
     //   * No extra bookkeeping and conversion for Channel<T>
     //   * But if changeable, might invalidate existing Channel<T>

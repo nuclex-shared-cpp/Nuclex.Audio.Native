@@ -110,4 +110,15 @@ namespace Nuclex { namespace Audio {
 
   // ------------------------------------------------------------------------------------------- //
 
+  TEST(ChannelPlacementTest, UnknownPlacementCanBeConvertedToStringAndBack) {
+    std::string returnedPlacement = StringFromChannelPlacement(ChannelPlacement::Unknown);
+    EXPECT_TRUE(returnedPlacement.find(u8"none") != std::string::npos);
+
+    std::string noPlacement(u8"none", 4);
+    ChannelPlacement placement = ChannelPlacementFromString(noPlacement);
+    EXPECT_EQ(placement, ChannelPlacement::Unknown);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
 }} // namespace Nuclex::Audio

@@ -35,6 +35,8 @@ namespace {
 
   // ------------------------------------------------------------------------------------------- //
 
+  /// <summary>Tag that indicates a channel has no known placement</summary>
+  const std::string_view NoneTag(u8"none", 4);
   /// <summary>Tag that indicates a channel is on the left side</summary>
   const std::string_view LeftTag(u8"left", 4);
   /// <summary>Tag that indicates a channel is on the right side</summary>
@@ -157,6 +159,7 @@ namespace {
     using Nuclex::Support::Text::ParserHelper;
 
     // Will be set when a word is encountered that matches any of the channel tags
+    bool isNone = false;
     bool isLeft = false, isRight = false, isCenter = false;
     bool isFront = false, isBack = false;
     bool isTop = false, isBottom = false;
@@ -179,6 +182,7 @@ namespace {
       // Check the word against each of the channel tags. We current don't check
       // if the word is a complete mismatch, so channel names containing words we
       // don't understand are parsed by ignoring those words.
+      isNone |= areStringViewsEqual(word, NoneTag);
       isLeft |= areStringViewsEqual(word, LeftTag);
       isRight |= areStringViewsEqual(word, RightTag);
       isCenter |= areStringViewsEqual(word, CenterTag);
@@ -208,13 +212,23 @@ namespace {
       (isLeft || isCenter || isRight || isFront || isBack || isBottom || isTop) &&
       (isBass || isLfe || isLow || isFrequency || isEffects)
     );
+    isInvalid |= (
+      isNone &&
+      (
+        isLeft || isCenter || isRight || isFront || isBack || isBottom || isTop ||
+        isBass || isLfe || isLow || isFrequency || isEffects
+      )
+    );
 
     // This could be a really easy task if each direction tag had its own bit
     // in the channel placement mask, but there is prior art: Microsoft's wave files
-    // have a channel mask field and it has become the de-facto standard. The funky
-    // tree of ifs below is how we conclude the channel placement from the tags used.
+    // have a channel mask field and those have become the de-facto standard for channel
+    // ordering. The funky tree of ifs below is how we conclude the channel placement
+    // from the tags used to describe it in text.
     if(!isInvalid) {
-      if(isTop) {
+      if(isNone) {
+        return Nuclex::Audio::ChannelPlacement::Unknown;
+      } else if(isTop) {
         if(isFront) {
           if(isLeft) {
             return Nuclex::Audio::ChannelPlacement::TopFrontLeft;
@@ -237,7 +251,8 @@ namespace {
           }
         }
       } else if(isBottom) {
-        // We have no bottom placements but the word is reserved
+        // We have no bottom placements but the word is reserved,
+        // so using it in any context triggers the invalid tag combination error below
       } else if(!isBass && !isLfe && !isLow && !isFrequency && !isEffects) {
         if(isFront) {
           if(isLeft) {
