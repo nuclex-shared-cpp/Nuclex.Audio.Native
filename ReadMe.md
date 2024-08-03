@@ -11,13 +11,14 @@ My current concerns are
 
 * querying an audio file for basic information, such as tracks, languages,
   number of channels, sample rate, bit depth and channel placements / layout
-  without decoding the whole thing
+  (!) but without decoding the whole audio file
 
 * finding a good solution to expose both the audio data
-  streaming should be possible, conceivable through a separate interface
+
+  streaming should be possible, conceivably through a separate interface
   easy data access to possibly deinterleaved channel data would be nice
 
-* once the codec design takes shape, supporting at least the formats
+* once the `AudioCodec` class takes shape, support at least the formats
   I need for my applications: .wav, .flac, .wv (WavPack) and OPUS.
 
 * possibly encoding support, too, using progress notification callbacks
