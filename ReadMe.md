@@ -1,4 +1,4 @@
-Nuclex.Audio.Native ![Developed on Linux, should work on Windows](https://img.shields.io/badge/platforms-linux_windows-green) ![Brainstorming, studying the problem space, API slowly taking shape](https://img.shields.io/badge/status-early_planning_phase-pink)
+Nuclex.Audio.Native ![Developed on Linux, should work on Windows](https://img.shields.io/badge/platforms-linux_windows-darkgreen) ![Brainstorming, studying the problem space, API slowly taking shape](https://img.shields.io/badge/status-early_planning_phase-darkmagenta)
 ===================
 
 This is a library in its early stages. I'm exploring possible designs and
@@ -22,4 +22,3 @@ My current concerns are
 
 * possibly encoding support, too, using progress notification callbacks
   and the new C++ stop_token to allow for cancelation
-  
