@@ -21,6 +21,7 @@ limitations under the License.
 #define NUCLEX_AUDIO_STORAGE_AUDIOCODEC_H
 
 #include "Nuclex/Audio/Config.h"
+#include "Nuclex/Audio/ContainerInfo.h"
 #include "Nuclex/Audio/TrackInfo.h"
 
 #include <string> // for std::string
@@ -49,22 +50,23 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// <returns>The commonly used file extensions in order of preference</returns>
     public: virtual const std::vector<std::string> &GetFileExtensions() const = 0;
 
-    // TryReadInfo                 -> Returns info for default track
-    // TryReadContainerInfo?       -> Returns info for all tracks
-    #if 0
-    /// <summary>Tries to read informations for an audio track</summary>
+    /// <summary>Tries to read informations for an audio container</summary>
     /// <param name="source">Source data from which the informations should be extracted</param>
     /// <param name="extensionHint">Optional file extension the loaded data had</param>
-    /// <returns>Informations about the bitmap, if the codec is able to load it</returns>
-    public: virtual std::optional<TrackInfo> TryReadInfo(
+    /// <returns>Informations about the audio container, if the codec can load it</returns>
+    public: virtual std::optional<ContainerInfo> TryReadInfo(
       const VirtualFile &source, const std::string &extensionHint = std::string()
     ) const = 0;
-    #endif
+
+    // Probably sensible to use std::shared_ptr<VirtualFile> for these,
+    // so the decoder/streamer/encoder/whatever can hold onto the virtual file.
 
     // CreateDecoder
     // CreateDecodingContext
     // CreateStreamer
     // CreateStreamDecoder
+    // CreateEncoder
+    // CreateEncodingContext
 
   };
 
