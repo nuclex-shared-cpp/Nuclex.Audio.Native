@@ -60,7 +60,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Wave {
           ((extension[2] == 'v') || (extension[2] == 'V')) &&
           ((extension[3] == 'e') || (extension[3] == 'E'))
         );
-      } else if(extensionLength == 3) { // extension with dot and long name possible
+      } else if(extensionLength == 5) { // extension with dot and long name possible
         extensionSaysWav = (
           (extension[0] == '.') &&
           ((extension[1] == 'w') || (extension[1] == 'W')) &&
@@ -106,11 +106,11 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Wave {
 
   bool Helpers::CheckIfWaveHeaderPresent(const VirtualFile &source) {
     if(source.GetSize() < SmallestPossibleWaveSize) {
-      return false; // File is too small to be a .png file
+      return false; // File is too small to be a .wav file
     }
 
-    std::uint8_t fileHeader[20];
-    source.ReadAt(0, 20, fileHeader);
+    std::uint8_t fileHeader[24];
+    source.ReadAt(0, 24, fileHeader);
 
     // This checks all headers and magic numbers that are mandatory and makes sure
     // that there is at least one sub-chunk with a valid length - it will probably

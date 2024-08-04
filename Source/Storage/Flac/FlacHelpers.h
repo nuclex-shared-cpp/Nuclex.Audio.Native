@@ -17,8 +17,8 @@ limitations under the License.
 */
 #pragma endregion // Apache License 2.0
 
-#ifndef NUCLEX_AUDIO_STORAGE_WAVE_WAVEHELPERS_H
-#define NUCLEX_AUDIO_STORAGE_WAVE_WAVEHELPERS_H
+#ifndef NUCLEX_AUDIO_STORAGE_FLAC_FLACHELPERS_H
+#define NUCLEX_AUDIO_STORAGE_FLAC_FLACHELPERS_H
 
 #include "Nuclex/Audio/Config.h"
 
@@ -36,35 +36,36 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
 }}} // namespace Nuclex::Audio::Storage
 
-namespace Nuclex { namespace Audio { namespace Storage { namespace Wave {
+namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Size of the smallest valid Waveform file possible</summary>
+  /// <summary>Size of the smallest valid FLAC file possible</summary>
   /// <remarks>
-  ///   From https://github.com/mathiasbynens/small/blob/master/wav.wav
+  ///   Determined by generating a mono file with 1 audio sample in Audacity, then
+  ///   trimming the encoder version string.
   /// </remarks>
-  constexpr const std::size_t SmallestPossibleWaveSize = 44; // bytes
+  constexpr const std::size_t SmallestPossibleFlacSize = 50; // bytes
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Helper class for reading Waveform files</summary>
+  /// <summary>Helper class for reading FLAC files using libFLAC</summary>
   class Helpers {
 
-    /// <summary>Checks if the specified file extension indicates a .wav file</summary>
+    /// <summary>Checks if the specified file extension indicates a .flac file</summary>
     /// <param name="extension">File extension (can be with or without leading dot)</param>
-    /// <returns>True if the file extension indicates a .wav file</returns>
-    public: static bool DoesFileExtensionSayWav(const std::string &extension);
+    /// <returns>True if the file extension indicates a .flac file</returns>
+    public: static bool DoesFileExtensionSayFlac(const std::string &extension);
 
-    /// <summary>Checks if the specified file starts with a valid Waveform header</summary>
-    /// <param name="source">File that will be checked for a valid Waveform header</param>
-    /// <returns>True if a valid Waveform header was found, false otherwise</returns>
-    public: static bool CheckIfWaveHeaderPresent(const VirtualFile &source);
+    /// <summary>Checks if the specified file starts with a valid FLAC header</summary>
+    /// <param name="source">File that will be checked for a valid FLAC header</param>
+    /// <returns>True if a valid FLAC header was found, false otherwise</returns>
+    public: static bool CheckIfFlacHeaderPresent(const VirtualFile &source);
 
   };
 
   // ------------------------------------------------------------------------------------------- //
 
-}}}} // namespace Nuclex::Audio::Storage::Wave
+}}}} // namespace Nuclex::Audio::Storage::Flac
 
-#endif // NUCLEX_AUDIO_STORAGE_WAVE_WAVEHELPERS_H
+#endif // NUCLEX_AUDIO_STORAGE_FLAC_FLACHELPERS_H
