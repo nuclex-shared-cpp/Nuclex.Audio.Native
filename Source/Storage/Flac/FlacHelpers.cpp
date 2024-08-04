@@ -35,21 +35,21 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
   // ------------------------------------------------------------------------------------------- //
 
   bool Helpers::DoesFileExtensionSayFlac(const std::string &extension) {
-    bool extensionSaysWav;
+    bool extensionSaysFlac;
 
-    // Microsoft Waveform audio files can have the extension .wav or (rarely) .wave.
-    // We'll consider both here.
+    // FLAC audio generally only uses one file extension, .flac
+    // Unless it's wrapped in an OGG container, but that's not the business of this codec
     {
       std::size_t extensionLength = extension.length();
       if(extensionLength == 4) { // extension with dot or long name possible
-        extensionSaysWav = (
+        extensionSaysFlac = (
           ((extension[0] == 'f') || (extension[0] == 'F')) &&
           ((extension[1] == 'l') || (extension[1] == 'L')) &&
           ((extension[2] == 'a') || (extension[2] == 'A')) &&
           ((extension[3] == 'c') || (extension[3] == 'C'))
         );
       } else if(extensionLength == 5) { // extension with dot and long name possible
-        extensionSaysWav = (
+        extensionSaysFlac = (
           (extension[0] == '.') &&
           ((extension[1] == 'f') || (extension[1] == 'F')) &&
           ((extension[2] == 'l') || (extension[2] == 'L')) &&
@@ -57,11 +57,11 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
           ((extension[4] == 'c') || (extension[4] == 'C'))
         );
       } else {
-        extensionSaysWav = false;
+        extensionSaysFlac = false;
       }
     }
 
-    return extensionSaysWav;
+    return extensionSaysFlac;
   }
 
   // ------------------------------------------------------------------------------------------- //
