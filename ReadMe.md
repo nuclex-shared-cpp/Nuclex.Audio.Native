@@ -1,4 +1,4 @@
-Nuclex.Audio.Native ![Developed on Linux, should work on Windows](https://img.shields.io/badge/platforms-linux_windows-darkgreen) ![Brainstorming, studying the problem space, API slowly taking shape](https://img.shields.io/badge/status-early_planning_phase-darkmagenta)
+Nuclex.Audio.Native ![Developed on Linux, should work on Windows](./Documents/images/platforms-linux-windows-badge.svg) ![Brainstorming, studying the problem space, API slowly taking shape](./Documents/images/status-early-planning-badge.svg)
 ===================
 
 This is a library in its early stages. I'm exploring possible designs and
