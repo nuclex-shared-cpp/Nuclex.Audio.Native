@@ -19,7 +19,7 @@ My current concerns are
   easy data access to possibly deinterleaved channel data would be nice
 
 * once the `AudioCodec` class takes shape, support at least the formats
-  I need for my applications: .wav, .flac, .wv (WavPack) and OPUS.
+  I need for my applications: `.wav`, `.flac`, `.wv` (WavPack) and OPUS.
 
 * possibly encoding support, too, using progress notification callbacks
   and the new C++ stop_token to allow for cancelation
