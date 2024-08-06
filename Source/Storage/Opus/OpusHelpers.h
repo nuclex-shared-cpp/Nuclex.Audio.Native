@@ -42,10 +42,12 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
   /// <summary>Size of the smallest valid OPUS file possible</summary>
   /// <remarks>
-  ///   Determined by generating a mono file with 1 audio sample in Audacity, then
-  ///   trimming the encoder version string.
+  ///   Unknown. The smallest file I can produce with opusenc is 470 bytes, but I suspect
+  ///   that, armed with a hex editor and a deep understanding of OGG+OPUS, one could
+  ///   create a much smaller example. The documentation says 57 bytes are needed for
+  ///   a good chance at detecting OPUS, better yet 512 bytes.
   /// </remarks>
-  constexpr const std::size_t SmallestPossibleOpusSize = 931824792349850; // bytes
+  constexpr const std::size_t SmallestPossibleOpusSize = 57; // bytes
 
   // ------------------------------------------------------------------------------------------- //
 
