@@ -88,6 +88,26 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     //   "The minimum block size and the maximum block size MUST be in the 16-65535 range.
     //   The minimum block size MUST be equal to or less than the maximum block size"
     //
+    // https://xiph.org/flac/format.html#def_STREAMINFO
+    //
+
+    // These values are big endian, so we reconstitute them from their 3 bytes manually.
+    // While the following should be correct on both little and big endian, I do
+    // not have access to a big endian system for testing (time for a RISC-V VM?)
+    std::uint32_t metaDataBlockLength = (
+      (static_cast<std::uint32_t>(fileHeader[5]) << 16) |
+      (static_cast<std::uint32_t>(fileHeader[6]) << 8) |
+      (static_cast<std::uint32_t>(fileHeader[7]))
+    );
+    std::uint16_t minimumBlockSize = (
+      (static_cast<std::uint16_t>(fileHeader[8]) << 8) |
+      (static_cast<std::uint16_t>(fileHeader[9]))
+    );
+    std::uint16_t maximumBlockSize = (
+      (static_cast<std::uint16_t>(fileHeader[10]) << 8) |
+      (static_cast<std::uint16_t>(fileHeader[11]))
+    );
+
     return (
       (fileHeader[0] == 0x66) && //  1 fLaC (magic header)
       (fileHeader[1] == 0x4c) && //  2
@@ -95,18 +115,16 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
       (fileHeader[3] == 0x43) && //  4
       (fileHeader[4] == 0x0) &&  //  1 metadata header (0 = streaminfo block + more follow)
       (                          //  - uint32, contains 24-bit metadata block length
-        ((*reinterpret_cast<const std::uint32_t *>(fileHeader + 4) & 0x00FFFFFF) >= 34)
+        (metaDataBlockLength >= 34) // metadata block is at least 34 bytes long
       ) &&
       (                          //  - uint16, minimum block size in streaminfo block
-        (*reinterpret_cast<const std::uint16_t *>(fileHeader + 8) >= 16)
+        (minimumBlockSize >= 16)
       ) &&
       (                          //  - uint16, maximum block size in streaminfo block
-        (*reinterpret_cast<const std::uint16_t *>(fileHeader + 10) >= 16)
+        (maximumBlockSize >= 16)
       ) &&
-      (                          //  - minimum block size must be smaller than maximum
-        (*reinterpret_cast<const std::uint16_t *>(fileHeader + 8))
-        <
-        (*reinterpret_cast<const std::uint16_t *>(fileHeader + 10))
+      (                          //  - maximum block size must at least be minimum bloc ksize
+        (maximumBlockSize >= minimumBlockSize)
       )
     );
   }
