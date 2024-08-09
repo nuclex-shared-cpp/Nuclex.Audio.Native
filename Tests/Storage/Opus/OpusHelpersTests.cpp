@@ -165,6 +165,24 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
   // ------------------------------------------------------------------------------------------- //
 
+  TEST(OpusHelpersTest, DetectsOpusFilesWithoutLibOpusFile) {
+    {
+      std::uint8_t dummyData[32] = {
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5,
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5
+      };
+      const InMemoryFile dummyFile(dummyData, sizeof(dummyData));
+      EXPECT_FALSE(Helpers::CheckIfOpusHeaderPresentLite(dummyFile));
+    }
+
+    {
+      const InMemoryFile opusFile(prettySmallOpusFile, sizeof(prettySmallOpusFile));
+      EXPECT_TRUE(Helpers::CheckIfOpusHeaderPresentLite(opusFile));
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   TEST(OpusHelpersTest, DetectsOpusFiles) {
     {
       std::uint8_t dummyData[32] = {

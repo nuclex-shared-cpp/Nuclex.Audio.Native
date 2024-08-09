@@ -20,9 +20,19 @@ the following directory layout:
                 cplusplus.cmake
 
         third-party/
+            nuclex-flac/            <-- Git: nuclex-builds/nuclex-flac
+                CMakeLists.txt
+            nuclex-ogg/             <-- Git: nuclex-builds/nuclex-ogg
+                CMakeLists.txt
+            nuclex-opus/            <-- Git: nuclex-builds/nuclex-opus
+                CMakeLists.txt
+            nuclex-opusfile/        <-- Git: nuclex-builds/nuclex-opusfile
+                CMakeLists.txt
+            nuclex-wavpack/         <-- Git: nuclex-builds/nuclex-wavpack
+                CMakeLists.txt
             nuclex-googletest/      <-- Git: nuclex-builds/nuclex-googletest
                 CMakeLists.txt
-            nuclex-celero/          <-- Git: nuclex-builds/nuclex-ceelero
+            nuclex-celero/          <-- Git: nuclex-builds/nuclex-celero
                 CMakeLists.txt
 
 If that's a bit overwhelming, try cloning (with `--recurse-submodules`) my "opus-transcoder"

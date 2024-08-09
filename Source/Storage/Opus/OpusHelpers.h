@@ -69,6 +69,11 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     /// <returns>True if a valid OPUS header was found, false otherwise</returns>
     public: static bool CheckIfOpusHeaderPresent(const VirtualFile &source);
 
+    /// <summary>Checks if the specified file starts with a valid OPUS header</summary>
+    /// <param name="source">File that will be checked for a valid OPUS header</param>
+    /// <returns>True if a valid OPUS header was found, false otherwise</returns>
+    public: static bool CheckIfOpusHeaderPresentLite(const VirtualFile &source);
+
   };
 
   // ------------------------------------------------------------------------------------------- //

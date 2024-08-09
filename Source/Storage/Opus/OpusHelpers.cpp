@@ -21,7 +21,10 @@ limitations under the License.
 #define NUCLEX_AUDIO_SOURCE 1
 
 #include "./OpusHelpers.h"
+
 #include "Nuclex/Audio/Storage/VirtualFile.h"
+
+#include <opus/opusfile.h>
 
 namespace {
 
@@ -37,8 +40,9 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   bool Helpers::DoesFileExtensionSayOpus(const std::string &extension) {
     bool extensionSaysOpus;
 
-    // FLAC audio generally only uses one file extension, .flac
-    // Unless it's wrapped in an OGG container, but that's not the business of this codec
+    // OPUS audio generally only uses one file extension, .opus.
+    // All standlone OPUS files are wrapped in an OGG container, but the file extension
+    // nevertheless should be .opus for single opus streams.
     {
       std::size_t extensionLength = extension.length();
       if(extensionLength == 4) { // extension with dot or long name possible
@@ -67,6 +71,35 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   // ------------------------------------------------------------------------------------------- //
 
   bool Helpers::CheckIfOpusHeaderPresent(const VirtualFile &source) {
+    std::uint64_t size = source.GetSize();
+    if(size < SmallestPossibleOpusSize) {
+      return false; // File is too small to be an .opus file
+    }
+
+    // The docs state a pure Opus stream (standlone .opus file) canb detected with 57 bytes.
+    // Standlone OPUS files are always wrapped in OGG, which allows other emebedded streams.
+    //
+    // According for the docs:
+    //
+    //   "Something like 512 bytes will give more reliable results for multiplexed streams."
+    //
+    std::uint8_t fileHeader[512];
+    std::size_t checkLength = static_cast<std::size_t>(std::min<std::uint64_t>(size, 512));
+
+    source.ReadAt(0, checkLength, fileHeader);
+
+    // This can return OP_FALSE (too little data), OP_EFAULT (out of memory),
+    // OP_EIMPL (format uses unsupported features), OP_ENOTFORMAT (wrong file format),
+    // OP_EVERSION (file format version not supported) and OP_EBADHEADER (damaged header).
+    //
+    // We're only interest in figuring out whether the file can be loaded:
+    int result = ::op_test(nullptr, fileHeader, checkLength);
+    return (result == 0);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  bool Helpers::CheckIfOpusHeaderPresentLite(const VirtualFile &source) {
     if(source.GetSize() < SmallestPossibleOpusSize) {
       return false; // File is too small to be a .opus file
     }
@@ -91,16 +124,16 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     // OPUS packet: https://wiki.xiph.org/OggOpus#Packet_Organization
     //
     return (
-      (fileHeader[0] == 0x4f) && //  1 Oggs (magic header)
-      (fileHeader[1] == 0x67) && //  2
-      (fileHeader[2] == 0x67) && //  3
-      (fileHeader[3] == 0x53) && //  4
-      (fileHeader[4] == 0x0) &&  //  - stream_structure version (currently 0 - use range?)
-      (fileHeader[5] == 0x2) &&  //  - 2 = first page of logical bitstream (= untruncated)
-      (                          //  - uint64, total samples encoded at this point, should be 0
+      (fileHeader[0] == 0x4f) &&  //  1 Oggs (magic header)
+      (fileHeader[1] == 0x67) &&  //  2
+      (fileHeader[2] == 0x67) &&  //  3
+      (fileHeader[3] == 0x53) &&  //  4
+      (fileHeader[4] == 0x0) &&   //  - stream_structure version (currently 0 - use range?)
+      (fileHeader[5] == 0x2) &&   //  - 2 = first page of logical bitstream (= file start intact)
+      (                           //  - uint64, total samples encoded at this point, should be 0
         (*reinterpret_cast<const std::uint64_t *>(fileHeader + 6) < 0x100000000ULL)
       ) &&
-      (                          //  - uint32, page sequence number (0 if untruncated file)
+      (                           //  - uint32, page sequence number (0 if complete file)
         (*reinterpret_cast<const std::uint32_t *>(fileHeader + 18) == 0)
       ) &&
       (fileHeader[28] == 0x4f) && //  1 OpusHead (magic header)
