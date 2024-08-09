@@ -28,6 +28,16 @@ option(
   OFF
 )
 
+
+set(WANT_OPUS ON CACHE BOOL "Whether to integrate Opus audio decoding and encoding")
+set(WANT_FLAC OFF CACHE BOOL "Whether to integrate FLAC audio decoding and encoding")
+set(WANT_WAVPACK ON CACHE BOOL "Whether to integrate WAVPACK audio decoding and encoding")
+set(WANT_VORBIS OFF CACHE BOOL "Whether to integrate Vorbis audio decoding and encoding")
+
+set(WANT_OGG OFF CACHE BOOL "Whether to support the OGG container format")
+set(WANT_M4A OFF CACHE BOOL "Whether to support the M4A (MP4) container format")
+set(WANT_MATROSKA OFF CACHE BOOL "Whether to support the Matroska container format")
+
 # -------------------------------------------------------------------------------------------------
 
 # This sets a bunch of compile flags and defined ${NUCLEX_COMPILER_TAG} to
@@ -71,6 +81,47 @@ if(BUILD_BENCHMARK)
     add_subdirectory(
       ${PROJECT_SOURCE_DIR}/../third-party/nuclex-celero
       ${CMAKE_BINARY_DIR}/nuclex-celero
+    )
+  endif()
+endif()
+
+# Libraries to load and save different audio formats
+if(WANT_OPUS)
+	message(STATUS "  ⚫ Support Opus")
+  if(NOT (TARGET Ogg))
+    add_subdirectory(
+      ${PROJECT_SOURCE_DIR}/../third-party/nuclex-ogg
+      ${CMAKE_BINARY_DIR}/nuclex-ogg
+    )
+  endif()
+  if(NOT (TARGET Opus))
+    add_subdirectory(
+      ${PROJECT_SOURCE_DIR}/../third-party/nuclex-opus
+      ${CMAKE_BINARY_DIR}/nuclex-opus
+    )
+  endif()
+  if(NOT (TARGET OpusFile))
+    add_subdirectory(
+      ${PROJECT_SOURCE_DIR}/../third-party/nuclex-opusfile
+      ${CMAKE_BINARY_DIR}/nuclex-opusfile
+    )
+  endif()
+endif()
+if(WANT_FLAC)
+	message(STATUS "  ⚫ Support FLAC")
+  if(NOT (TARGET Flac))
+    add_subdirectory(
+      ${PROJECT_SOURCE_DIR}/../third-party/nuclex-flac
+      ${CMAKE_BINARY_DIR}/nuclex-flac
+    )
+  endif()
+endif()
+if(WANT_WAVPACK)
+	message(STATUS "  ⚫ Support WavPack")
+  if(NOT (TARGET WavPack))
+    add_subdirectory(
+      ${PROJECT_SOURCE_DIR}/../third-party/nuclex-wavpack
+      ${CMAKE_BINARY_DIR}/nuclex-wavpack
     )
   endif()
 endif()
@@ -125,6 +176,31 @@ file(
 # -------------------------------------------------------------------------------------------------
 
 function(add_third_party_libraries target_name)
+
+  # Files need to be linked in reverse order of dependency.
+  #
+  # Example: LibOpusFile depends on LibOgg.
+  #
+  # If you link LibOgg first, the linker will remove most of LibOgg as unused symbols,
+  # even those sybmols that will thereafter be missing when LibOpusFile gets linked.
+  #
+  # Thus, first link LibOpusFile, letting the linker take note of the dangling references
+  # to various LibOgg symbols, then link LibOgg, letting it connect those references.
+  #
+  if(WANT_OPUS)
+    target_compile_definitions(${target_name} PRIVATE NUCLEX_AUDIO_HAVE_OPUS)
+    target_link_libraries(${target_name} PRIVATE OpusFile::Static)
+    target_link_libraries(${target_name} PRIVATE Opus::Static)
+    target_link_libraries(${target_name} PRIVATE Ogg::Static)
+  endif()
+  if(WANT_FLAC)
+    target_compile_definitions(${target_name} PRIVATE NUCLEX_AUDIO_HAVE_FLAC)
+    target_link_libraries(${target_name} PRIVATE Flac::Static)
+  endif()
+  if(WANT_WAVPACK)
+    target_compile_definitions(${target_name} PRIVATE NUCLEX_AUDIO_HAVE_WAVPACK)
+    target_link_libraries(${target_name} PRIVATE WavPack::Static)
+  endif()
 
   # On Unix systems, the library and unit test executable should look for
   # dependencies in its own directory first.
