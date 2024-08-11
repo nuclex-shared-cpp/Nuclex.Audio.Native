@@ -23,7 +23,8 @@ Random Access Interface
 
 Similar to `VirtualFile` - you just say which samples you want and get them.
 If you do it sequentially, performance is great. If you go backwards,
-performance becomes abysmal, but it still works.
+performance becomes abysmal (or not? audio formats work in blocks),
+but it still works.
 
 ```cpp
 class Channel {
@@ -103,3 +104,38 @@ Thoughts:
   - Is this perhaps what a user of the library would expect (principle of
     least surprise on the design level)? Random access to audio samples may
     not be a common request at all but streamed decoding might be expected.
+
+
+Page In / Page Out
+------------------
+
+This is a variation of the "stateful track and channels" idea. Rather than
+just have a window that slides forward, segments of the file can be decoded
+and become available.
+
+Thoughts:
+
+  - Nope. If the format can be decoded in chunks, the random access design
+    completely covers this without forcing the user to manage paging.
+
+
+Concern: Recompose Channels
+---------------------------
+
+Would it be nice if this library would let users just recompose channels,
+i.e. add and remove channels from a track in any way the mood strikes them,
+then have the library handle the accesses to possibly many input files and
+reading them in an efficient way?
+
+Thoughts:
+
+  - This could be pretty nice and lay the groundwork for basic audio
+    processing, i.e. a `CompositeChannel` that merged multiple channels with
+    adjustable weights, allowing easy stereo downmix etc. with this library.
+
+  - This would mix well with the random access design, which itself would
+    work nicely if blocks / chunks make random access feasible and efficient.
+
+  - The biggest difficulty may be to have channels (which can now be
+    independent) which share the same source file decode their chunks only
+    once. This might have to be carried down all the way into the public API.
