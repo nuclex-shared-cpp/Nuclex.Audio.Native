@@ -25,7 +25,9 @@ for buildMode in Debug Release; do
 			-D CMAKE_BUILD_TYPE=$buildMode \
 			-D BUILD_UNIT_TESTS=ON \
 			-D BUILD_BENCHMARK=ON \
-			-D BENCHMARK_THIRD_PARTY_LIBRARIES=OFF \
+			-D WANT_OPUS=ON \
+			-D WANT_WAVPACK=ON \
+			-D WANT_FLAC=ON \
 			-GNinja
 	else
 		cmake \
@@ -33,7 +35,9 @@ for buildMode in Debug Release; do
 			-D CMAKE_BUILD_TYPE=$buildMode \
 			-D BUILD_UNIT_TESTS=ON \
 			-D BUILD_BENCHMARK=ON \
-			-D BENCHMARK_THIRD_PARTY_LIBRARIES=OFF
+			-D WANT_OPUS=ON \
+			-D WANT_WAVPACK=ON \
+			-D WANT_FLAC=ON
 	fi
 
 	# Compile the binary

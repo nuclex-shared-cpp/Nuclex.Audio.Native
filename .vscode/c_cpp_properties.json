@@ -10,7 +10,11 @@
             ],
             "defines": [
                 "NUCLEX_AUDIO_EXECUTABLE",
-                "NUCLEX_AUDIO_SOURCE"
+                "NUCLEX_AUDIO_SOURCE",
+                "NUCLEX_AUDIO_HAVE_OPUS",
+                "NUCLEX_AUDIO_HAVE_VORBIS",
+                "NUCLEX_AUDIO_HAVE_WAVPACK",
+                "NUCLEX_AUDIO_HAVE_FLAC"
             ],
             "compilerPath": "/usr/bin/g++",
             "cStandard": "c11",

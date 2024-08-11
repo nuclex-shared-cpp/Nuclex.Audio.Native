@@ -29,7 +29,9 @@ FOR %%m IN (Debug Release) DO (
 			-D CMAKE_BUILD_TYPE=%%m ^
 			-D BUILD_UNIT_TESTS=ON ^
 			-D BUILD_BENCHMARK=ON ^
-			-D BENCHMARK_THIRD_PARTY_LIBRARIES=OFF ^
+			-D WANT_OPUS=ON ^
+			-D WANT_WAVPACK=ON ^
+			-D WANT_FLAC=ON ^
 			-GNinja
 	) ELSE (
 		cmake ^
@@ -38,7 +40,9 @@ FOR %%m IN (Debug Release) DO (
 			-D CMAKE_GENERATOR_AUDIO=x64 ^
 			-D BUILD_UNIT_TESTS=ON ^
 			-D BUILD_BENCHMARK=ON ^
-			-D BENCHMARK_THIRD_PARTY_LIBRARIES=OFF
+			-D WANT_OPUS=ON ^
+			-D WANT_WAVPACK=ON ^
+			-D WANT_FLAC=ON
 	)
 
 	REM Compile the binary

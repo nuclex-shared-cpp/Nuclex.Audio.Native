@@ -30,7 +30,7 @@ option(
 
 
 set(WANT_OPUS ON CACHE BOOL "Whether to integrate Opus audio decoding and encoding")
-set(WANT_FLAC OFF CACHE BOOL "Whether to integrate FLAC audio decoding and encoding")
+set(WANT_FLAC ON CACHE BOOL "Whether to integrate FLAC audio decoding and encoding")
 set(WANT_WAVPACK ON CACHE BOOL "Whether to integrate WAVPACK audio decoding and encoding")
 set(WANT_VORBIS OFF CACHE BOOL "Whether to integrate Vorbis audio decoding and encoding")
 
