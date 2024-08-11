@@ -22,6 +22,8 @@ limitations under the License.
 
 #include "Nuclex/Audio/Config.h"
 
+#if defined(NUCLEX_AUDIO_HAVE_OPUS)
+
 #include <string> // for std::string
 #include <memory> // for std::unique_ptr
 #include <cstdint> // for std::uint64_t
@@ -79,5 +81,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   // ------------------------------------------------------------------------------------------- //
 
 }}}} // namespace Nuclex::Audio::Storage::Opus
+
+#endif // defined(NUCLEX_AUDIO_HAVE_OPUS)
 
 #endif // NUCLEX_AUDIO_STORAGE_OPUS_OPUSHELPERS_H

@@ -20,7 +20,7 @@ limitations under the License.
 // If the library is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_AUDIO_SOURCE 1
 
-#include "./WaveHelpers.h"
+#include "./WaveformHelpers.h"
 #include "Nuclex/Audio/Storage/VirtualFile.h"
 
 namespace {
@@ -30,7 +30,7 @@ namespace {
 
 } // anonymous namespace
 
-namespace Nuclex { namespace Audio { namespace Storage { namespace Wave {
+namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -104,8 +104,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Wave {
   //   * mackron/miniaudio -> skips chunks until "fmt" chunk is found
   //   * wcaleniekubaa/wave -> only handles RIFF(?), fmt, data, skips until "fmt" chunk found
 
-  bool Helpers::CheckIfWaveHeaderPresent(const VirtualFile &source) {
-    if(source.GetSize() < SmallestPossibleWaveSize) {
+  bool Helpers::CheckIfWaveformHeaderPresent(const VirtualFile &source) {
+    if(source.GetSize() < SmallestPossibleWaveformSize) {
       return false; // File is too small to be a .wav file
     }
 
@@ -137,4 +137,4 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Wave {
 
   // ------------------------------------------------------------------------------------------- //
 
-}}}} // namespace Nuclex::Audio::Storage::Wave
+}}}} // namespace Nuclex::Audio::Storage::Waveform

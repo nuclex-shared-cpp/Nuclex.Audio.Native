@@ -21,6 +21,9 @@ limitations under the License.
 #define NUCLEX_AUDIO_SOURCE 1
 
 #include "../../../Source/Storage/WavPack/WavPackHelpers.h"
+
+#if defined(NUCLEX_AUDIO_HAVE_WAVPACK)
+
 #include "Nuclex/Audio/Storage/VirtualFile.h"
 
 #include <gtest/gtest.h>
@@ -123,3 +126,5 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   // ------------------------------------------------------------------------------------------- //
 
 }}}} // namespace Nuclex::Audio::Storage::WavPack
+
+#endif // defined(NUCLEX_AUDIO_HAVE_WAVPACK)

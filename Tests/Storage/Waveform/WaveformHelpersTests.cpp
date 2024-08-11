@@ -20,7 +20,8 @@ limitations under the License.
 // If the library is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_AUDIO_SOURCE 1
 
-#include "../../../Source/Storage/Wave/WaveHelpers.h"
+#include "../../../Source/Storage/Waveform/WaveformHelpers.h"
+
 #include "Nuclex/Audio/Storage/VirtualFile.h"
 
 #include <gtest/gtest.h>
@@ -92,7 +93,7 @@ namespace {
 
 } // anonymous namespace
 
-namespace Nuclex { namespace Audio { namespace Storage { namespace Wave {
+namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -103,17 +104,17 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Wave {
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5
       };
       const InMemoryFile dummyFile(dummyData, sizeof(dummyData));
-      EXPECT_FALSE(Helpers::CheckIfWaveHeaderPresent(dummyFile));
+      EXPECT_FALSE(Helpers::CheckIfWaveformHeaderPresent(dummyFile));
     }
 
     {
       const InMemoryFile flacFile(
         smallestPossibleWaveFile, sizeof(smallestPossibleWaveFile)
       );
-      EXPECT_TRUE(Helpers::CheckIfWaveHeaderPresent(flacFile));
+      EXPECT_TRUE(Helpers::CheckIfWaveformHeaderPresent(flacFile));
     }
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-}}}} // namespace Nuclex::Audio::Storage::Wave
+}}}} // namespace Nuclex::Audio::Storage::Waveform

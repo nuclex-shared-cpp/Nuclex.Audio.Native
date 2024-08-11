@@ -21,6 +21,7 @@ limitations under the License.
 #define NUCLEX_AUDIO_SOURCE 1
 
 #include "./FlacHelpers.h"
+
 #include "Nuclex/Audio/Storage/VirtualFile.h"
 
 namespace {
@@ -91,10 +92,23 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     // https://xiph.org/flac/format.html#def_STREAMINFO
     //
 
+    // Addendum: ID3 tags in FLAC files
+    //
+    // FLAC provides its own tagging in the form of OGG comment blocks. Some older tools can
+    // instead put ID3v2 headers in FLAC files (which are stored in front of the actual file).
+    //
+    // This is strongly discouraged by the flac developers and would also make file format
+    // detection very tricky (ID3v2 is variably-sized and can theoretically store tens of
+    // megabytes of data, so we'd have to either unterstand the ID3v2 format to skip over it
+    // or scan through the first 100+ megabytes of a file, which is absurd).
+    //
+    // Thus, .flac files with id3v2 tags are not detected by this code and will never be.
+    //
+
     // These values are big endian, so we reconstitute them from their 3 bytes manually.
     // While the following should be correct on both little and big endian, I do
     // not have access to a big endian system for testing (time for a RISC-V VM?)
-    std::uint32_t metaDataBlockLength = (
+    std::uint32_t metaDataBlockLength =  (
       (static_cast<std::uint32_t>(fileHeader[5]) << 16) |
       (static_cast<std::uint32_t>(fileHeader[6]) << 8) |
       (static_cast<std::uint32_t>(fileHeader[7]))

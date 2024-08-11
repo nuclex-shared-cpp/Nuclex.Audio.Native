@@ -17,8 +17,8 @@ limitations under the License.
 */
 #pragma endregion // Apache License 2.0
 
-#ifndef NUCLEX_AUDIO_STORAGE_WAVE_WAVEHELPERS_H
-#define NUCLEX_AUDIO_STORAGE_WAVE_WAVEHELPERS_H
+#ifndef NUCLEX_AUDIO_STORAGE_WAVEFORM_WAVEFORMHELPERS_H
+#define NUCLEX_AUDIO_STORAGE_WAVEFORM_WAVEFORMHELPERS_H
 
 #include "Nuclex/Audio/Config.h"
 
@@ -36,7 +36,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
 }}} // namespace Nuclex::Audio::Storage
 
-namespace Nuclex { namespace Audio { namespace Storage { namespace Wave {
+namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -44,7 +44,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Wave {
   /// <remarks>
   ///   From https://github.com/mathiasbynens/small/blob/master/wav.wav
   /// </remarks>
-  constexpr const std::size_t SmallestPossibleWaveSize = 44; // bytes
+  constexpr const std::size_t SmallestPossibleWaveformSize = 44; // bytes
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -59,12 +59,12 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Wave {
     /// <summary>Checks if the specified file starts with a valid Waveform header</summary>
     /// <param name="source">File that will be checked for a valid Waveform header</param>
     /// <returns>True if a valid Waveform header was found, false otherwise</returns>
-    public: static bool CheckIfWaveHeaderPresent(const VirtualFile &source);
+    public: static bool CheckIfWaveformHeaderPresent(const VirtualFile &source);
 
   };
 
   // ------------------------------------------------------------------------------------------- //
 
-}}}} // namespace Nuclex::Audio::Storage::Wave
+}}}} // namespace Nuclex::Audio::Storage::Waveform
 
-#endif // NUCLEX_AUDIO_STORAGE_WAVE_WAVEHELPERS_H
+#endif // NUCLEX_AUDIO_STORAGE_WAVEFORM_WAVEFORMHELPERS_H

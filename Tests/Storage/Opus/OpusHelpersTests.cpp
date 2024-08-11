@@ -21,6 +21,9 @@ limitations under the License.
 #define NUCLEX_AUDIO_SOURCE 1
 
 #include "../../../Source/Storage/Opus/OpusHelpers.h"
+
+#if defined(NUCLEX_AUDIO_HAVE_OPUS)
+
 #include "Nuclex/Audio/Storage/VirtualFile.h"
 
 #include <gtest/gtest.h>
@@ -202,3 +205,5 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   // ------------------------------------------------------------------------------------------- //
 
 }}}} // namespace Nuclex::Audio::Storage::Opus
+
+#endif // defined(NUCLEX_AUDIO_HAVE_OPUS)

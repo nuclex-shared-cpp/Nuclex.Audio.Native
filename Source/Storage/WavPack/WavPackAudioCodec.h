@@ -17,12 +17,14 @@ limitations under the License.
 */
 #pragma endregion // Apache License 2.0
 
-#ifndef NUCLEX_AUDIO_STORAGE_WAVPACK_WAVPACKHELPERS_H
-#define NUCLEX_AUDIO_STORAGE_WAVPACK_WAVPACKHELPERS_H
+#ifndef NUCLEX_AUDIO_STORAGE_WAVPACK_WAVPACKAUDIOCODEC_H
+#define NUCLEX_AUDIO_STORAGE_WAVPACK_WAVPACKAUDIOCODEC_H
 
 #include "Nuclex/Audio/Config.h"
 
 #if defined(NUCLEX_AUDIO_HAVE_WAVPACK)
+
+#include "Nuclex/Audio/Storage/AudioCodec.h"
 
 #include <string> // for std::string
 #include <memory> // for std::unique_ptr
@@ -42,26 +44,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Size of the smallest valid WavPack file possible</summary>
-  /// <remarks>
-  ///   Created a 2-sample .wav in Audacity, compressed with -h -x via WavPack 5.7
-  /// </remarks>
-  constexpr const std::size_t SmallestPossibleWavPackSize = 118; // bytes
-
-  // ------------------------------------------------------------------------------------------- //
-
-  /// <summary>Helper class for reading WavPack files</summary>
-  class Helpers {
-
-    /// <summary>Checks if the specified file extension indicates a .wv file</summary>
-    /// <param name="extension">File extension (can be with or without leading dot)</param>
-    /// <returns>True if the file extension indicates a .wv file</returns>
-    public: static bool DoesFileExtensionSayWv(const std::string &extension);
-
-    /// <summary>Checks if the specified file starts with a valid WavPack header</summary>
-    /// <param name="source">File that will be checked for a valid WavPack header</param>
-    /// <returns>True if a valid WavPack header was found, false otherwise</returns>
-    public: static bool CheckIfWavPackHeaderPresent(const VirtualFile &source);
+  /// <summary>Encodes and decodes WavPack audio files using libwavpack</summary>
+  class WavPackAudioCodec : public AudioCodec {
 
   };
 
@@ -71,4 +55,4 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
 #endif // defined(NUCLEX_AUDIO_HAVE_WAVPACK)
 
-#endif // NUCLEX_AUDIO_STORAGE_WAVPACK_WAVPACKHELPERS_H
+#endif // NUCLEX_AUDIO_STORAGE_WAVPACK_WAVPACKAUDIOCODEC_H
