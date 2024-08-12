@@ -5,6 +5,11 @@
             "includePath": [
                 "${workspaceFolder}/Include/**",
                 "${workspaceFolder}/../Nuclex.Support.Native/Include/**",
+                "${workspaceFolder}/../third-party/nuclex-flac/build/include/**",
+                "${workspaceFolder}/../third-party/nuclex-wavpack/build/include/**",
+                "${workspaceFolder}/../third-party/nuclex-opusfile/build/include/**",
+                "${workspaceFolder}/../third-party/nuclex-opus/build/include/**",
+                "${workspaceFolder}/../third-party/nuclex-ogg/build/include/**",
                 "${workspaceFolder}/../third-party/nuclex-googletest/build/googletest/include/**",
                 "${workspaceFolder}/../third-party/nuclex-celero/build/include/**"
             ],
