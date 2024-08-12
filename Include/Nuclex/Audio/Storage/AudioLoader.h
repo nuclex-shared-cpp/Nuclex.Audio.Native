@@ -98,69 +98,91 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
   // ------------------------------------------------------------------------------------------- //
 
+  /// <summary>Manages a dynamic list of audio codecs and uses them to stream audio</summary>
+  /// <remarks>
+  ///   <para>
+  ///     The actual workings of this class are rather simple. It allows you to register
+  ///     some codecs to it and when you try to read an audio file, they will be queried in
+  ///     the classic chain-of-responsibility design pttern.
+  ///   </para>
+  ///   <para>
+  ///     Except that there's a bit of optimization going on. If you provide a file extension
+  ///     hint, that will be used to try certain codecs first. It also anticipates that your
+  ///     application or user has likely settled on one or two audio formats, so the two most
+  ///     recently used codecs will be tried first, too.
+  ///   </para>
+  ///   <para>
+  ///     The audio loader starts out with all codecs that had been enabled for the library
+  ///     build already registered. You can register additional codecs at any time and you
+  ///     are free to register your own implementations of existing codecs over the built-in
+  ///     ones, replacing them as defaults for the respective file extensions.
+  ///   </para>
+  /// </remarks>
   class NUCLEX_AUDIO_TYPE AudioLoader {
 
     /// <summary>Initializes a new audio loader</summary>
     public: NUCLEX_AUDIO_API AudioLoader();
 
-    /// <summary>Frees all resources owned by a bitmap serializer</summary>
+    /// <summary>Frees all resources owned by an audio loader</summary>
     public: NUCLEX_AUDIO_API ~AudioLoader();
 
-    /// <summary>Registers a bitmap codec to load and/or save a file format</summary>
-    /// <param name="codec">Bitmap codec that will be registered</param>
+    /// <summary>Registers an audio codec to load and/or save a file format</summary>
+    /// <param name="codec">Audio codec that will be registered</param>
     public: NUCLEX_AUDIO_API void RegisterCodec(std::unique_ptr<AudioCodec> &&codec);
 
-    /// <summary>Registers a bitmap codec to load and/or save a file format</summary>
-    /// <param name="TCodec">Type of bitmap codec that will be registered</param>
+    /// <summary>Registers an audio codec to load and/or save a file format</summary>
+    /// <param name="TCodec">Type of audio codec that will be registered</param>
     public: template<typename TCodec>
     void RegisterCodec() {
       std::unique_ptr<AudioCodec> codec = std::make_unique<TCodec>();
       RegisterCodec(std::move(codec));
     }
 
-    /// <summary>Tries to read informations about a bitmap</summary>
+    /// <summary>Tries to read informations about an audio file</summary>
     /// <param name="file">File from which informations will be read</param>
     /// <param name="extensionHint">Optional file extension the loaded data had</param>
-    /// <returns>Informations about the bitmap, if it is a supported format</returns>
+    /// <returns>Informations about the audio file, if it is a supported format</returns>
     public: NUCLEX_AUDIO_API std::optional<TrackInfo> TryReadInfo(
       const VirtualFile &file, const std::string &extensionHint = std::string()
     ) const;
 
-    /// <summary>Tries to read informations about a bitmap</summary>
+    /// <summary>Tries to read informations about a audio file</summary>
     /// <param name="path">Path of the file informations will be read from</param>
-    /// <returns>Informations about the bitmap, if it is a supported format</returns>
+    /// <returns>Informations about the audio file, if it is a supported format</returns>
     public: NUCLEX_AUDIO_API std::optional<TrackInfo> TryReadInfo(const std::string &path) const;
+
 #if 0
-    /// <summary>Checks whether the bitmap store can load the specified file</summary>
-    /// <param name="file">File the bitmap store will check</param>
+    /// <summary>Checks whether the audio loader can load the specified file</summary>
+    /// <param name="file">File the audio loader will check</param>
     /// <param name="extensionHint">
     ///   Optional file extension to help detection (may speed things up)
     /// </param>
-    /// <returns>True if the bitmap store thinks it can load the file</returns>
+    /// <returns>True if the audio loader thinks it can load the file</returns>
     public: NUCLEX_AUDIO_API bool CanLoad(
       const VirtualFile &file, const std::string &extensionHint = std::string()
     ) const;
 
-    /// <summary>Checks whether the bitmap store can load the specified file</summary>
-    /// <param name="path">Path of the file the bitmap store will check</param>
-    /// <returns>True if the bitmap store thinks it can load the file</returns>
+    /// <summary>Checks whether the adio loader can load the specified file</summary>
+    /// <param name="path">Path of the file the audio loader will check</param>
+    /// <returns>True if the audio loader thinks it can load the file</returns>
     public: NUCLEX_AUDIO_API bool CanLoad(const std::string &path) const;
 
-    /// <summary>Loads the specified file into a new Bitmap</summary>
-    /// <param name="file">File the bitmap store will load</param>
+    /// <summary>Loads the specified file into a new audio track</summary>
+    /// <param name="file">File the audio loader will load</param>
     /// <param name="extensionHint">
     ///   Optional file extension to help detection (may speed things up)
     /// </param>
-    /// <returns>The bitmap loaded from the specified file</returns>
+    /// <returns>The audio track loaded from the specified file</returns>
     public: NUCLEX_AUDIO_API Track Load(
       const VirtualFile &file, const std::string &extensionHint = std::string()
     ) const;
 
-    /// <summary>Loads the specified file into a new Bitmap</summary>
-    /// <param name="path">Path of the file the bitmap store will load</param>
-    /// <returns>The bitmap loaded from the specified file</returns>
+    /// <summary>Loads the specified file into a new audio track</summary>
+    /// <param name="path">Path of the file the audio loader  will load</param>
+    /// <returns>The audio track loaded from the specified file</returns>
     public: NUCLEX_AUDIO_API Track Load(const std::string &path) const;
 #endif
+
     /// <summary>Builds a new iterator that checks codecs in the most likely order</summary>
     /// <param name="extension">File extension, if known</param>
     /// <param name="tryCodecCallback">
@@ -189,12 +211,12 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// <summary>Stores a sequential list of codecs</summary>
     private: typedef std::vector<std::unique_ptr<AudioCodec>> CodecVector;
 
-    /// <summary>Allows the bitmap store to look up a codec by its file extension</summary>
+    /// <summary>Allows the audio loader to look up a codec by its file extension</summary>
     /// <remarks>
     ///   Extensions are stored in UTF-8 folded lowercase for case insensitivity.
     /// </remarks>
     private: ExtensionCodecIndexMap codecsByExtension;
-    /// <summary>Codecs that have been registered with the bitmap store</summary>
+    /// <summary>Codecs that have been registered with the audio loader</summary>
     private: CodecVector codecs;
     /// <summary>Codec that was most recently accessed, -1 if none</summary>
     private: mutable std::atomic<std::size_t> mostRecentCodecIndex;
