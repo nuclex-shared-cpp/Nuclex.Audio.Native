@@ -70,39 +70,39 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Stores informations processed by the WavPack stream reader adapter</summary>
-  struct WavpackVirtualFileReader {
-  
-    /// <summary>Whether this environment supports writing to the virtual file</summary>
-    public: bool IsWritable;
-    /// <summary>Current position of the emulated file cursor</summary>
-    private: std::uint64_t fileCursor;
-    /// <summary>Total size of the file in bytes or -1 if not yet determined</summary>
-    private: std::uint64_t fileSize;
-    /// <summary>Bytes that have been buffered for read operations</summary>
-    private: std::vector<std::uint8_t> bufferedBytes;
+  /// <summary>Stores informations processed by the WavPack stream adapters</summary>
+  struct SharedEnvironment {
 
+    /// <summary>Whether this environment supports writing to the virtual file</summary>
+    public: bool IsReadOnly;
+    /// <summary>Current position of the emulated file cursor</summary>
+    public: std::uint64_t FileCursor;
+    /// <summary>Total size of the file in bytes or -1 if not yet determined</summary>
+    public: std::uint64_t FileSize;
+    /// <summary>Bytes that have been buffered for read operations</summary>
+    public: std::vector<std::uint8_t> BufferedBytes;
+    /// <summary>Stores any exception thrown by the virtual file interface</summary>
+    public: std::exception_ptr Error;
+
+  };
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Stores informations processed by the WavPack stream reader adapter</summary>
+  struct ReadEnvironment : public SharedEnvironment {
+  
     /// <summary>Virtual file this adapter is forwarding calls to</summary>
-    private: std::shared_ptr<const VirtualFile> virtualFile;
+    public: std::shared_ptr<const VirtualFile> File;
 
   };
 
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Stores informations processed by the WavPack stream writer adapter</summary>
-  struct WavpackWriteEnvironment {
-
-    /// <summary>Whether this environment supports writing to the virtual file</summary>
-    public: bool IsWritable;
-    /// <summary>Current position of the emulated file cursor</summary>
-    private: std::uint64_t fileCursor;
-    /// <summary>Total size of the file in bytes or -1 if not yet determined</summary>
-    private: std::uint64_t fileSize;
-    /// <summary>Bytes that have been buffered for read operations</summary>
-    private: std::vector<std::uint8_t> bufferedBytes;
+  struct WriteEnvironment : public SharedEnvironment {
 
     /// <summary>Virtual file this adapter is forwarding calls to</summary>
-    private: std::shared_ptr<VirtualFile> virtualFile;
+    public: std::shared_ptr<VirtualFile> File;
 
   };
 
