@@ -28,18 +28,18 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
   // ------------------------------------------------------------------------------------------- //
 
-  std::unique_ptr<const VirtualFile> VirtualFile::OpenRealFileForReading(
+  std::shared_ptr<const VirtualFile> VirtualFile::OpenRealFileForReading(
     const std::string &path, bool promiseSequentialAccess /* = false */
   ) {
-    return std::make_unique<const RealFile>(path, promiseSequentialAccess, true);
+    return std::make_shared<const RealFile>(path, promiseSequentialAccess, true);
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-  std::unique_ptr<VirtualFile> VirtualFile::OpenRealFileForWriting(
+  std::shared_ptr<VirtualFile> VirtualFile::OpenRealFileForWriting(
     const std::string &path, bool promiseSequentialAccess /* = false */
   ) {
-    return std::make_unique<RealFile>(path, promiseSequentialAccess, false);
+    return std::make_shared<RealFile>(path, promiseSequentialAccess, false);
   }
 
   // ------------------------------------------------------------------------------------------- //

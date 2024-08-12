@@ -37,6 +37,27 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
+  const std::string &WavPackAudioCodec::GetName() const {
+    const static std::string codecName(u8"WavPack", 7);
+    return codecName;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  const std::vector<std::string> &WavPackAudioCodec::GetFileExtensions() const {
+    const std::vector<std::string> extensions { std::string(u8"wv", 2) };
+    return extensions;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::optional<ContainerInfo> WavPackAudioCodec::TryReadInfo(
+    const VirtualFile &source, const std::string &extensionHint /* = std::string() */
+  ) const {
+    
+    return std::optional<ContainerInfo>();
+  }
+
   // ------------------------------------------------------------------------------------------- //
 
 }}}} // namespace Nuclex::Audio::Storage::Wave

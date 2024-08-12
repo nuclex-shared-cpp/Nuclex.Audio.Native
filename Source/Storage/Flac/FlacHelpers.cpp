@@ -108,7 +108,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     // These values are big endian, so we reconstitute them from their 3 bytes manually.
     // While the following should be correct on both little and big endian, I do
     // not have access to a big endian system for testing (time for a RISC-V VM?)
-    std::uint32_t metaDataBlockLength =  (
+    std::uint32_t metaDataBlockLength = (
       (static_cast<std::uint32_t>(fileHeader[5]) << 16) |
       (static_cast<std::uint32_t>(fileHeader[6]) << 8) |
       (static_cast<std::uint32_t>(fileHeader[7]))

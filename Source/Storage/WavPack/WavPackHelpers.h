@@ -27,6 +27,9 @@ limitations under the License.
 #include <string> // for std::string
 #include <memory> // for std::unique_ptr
 #include <cstdint> // for std::uint64_t
+#include <vector> // for std::vector
+
+#include <wavpack.h> // for all wavpack functions
 
 namespace Nuclex { namespace Audio { namespace Storage {
 
@@ -62,6 +65,44 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     /// <param name="source">File that will be checked for a valid WavPack header</param>
     /// <returns>True if a valid WavPack header was found, false otherwise</returns>
     public: static bool CheckIfWavPackHeaderPresent(const VirtualFile &source);
+
+  };
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Stores informations processed by the WavPack stream reader adapter</summary>
+  struct WavpackVirtualFileReader {
+  
+    /// <summary>Whether this environment supports writing to the virtual file</summary>
+    public: bool IsWritable;
+    /// <summary>Current position of the emulated file cursor</summary>
+    private: std::uint64_t fileCursor;
+    /// <summary>Total size of the file in bytes or -1 if not yet determined</summary>
+    private: std::uint64_t fileSize;
+    /// <summary>Bytes that have been buffered for read operations</summary>
+    private: std::vector<std::uint8_t> bufferedBytes;
+
+    /// <summary>Virtual file this adapter is forwarding calls to</summary>
+    private: std::shared_ptr<const VirtualFile> virtualFile;
+
+  };
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Stores informations processed by the WavPack stream writer adapter</summary>
+  struct WavpackWriteEnvironment {
+
+    /// <summary>Whether this environment supports writing to the virtual file</summary>
+    public: bool IsWritable;
+    /// <summary>Current position of the emulated file cursor</summary>
+    private: std::uint64_t fileCursor;
+    /// <summary>Total size of the file in bytes or -1 if not yet determined</summary>
+    private: std::uint64_t fileSize;
+    /// <summary>Bytes that have been buffered for read operations</summary>
+    private: std::vector<std::uint8_t> bufferedBytes;
+
+    /// <summary>Virtual file this adapter is forwarding calls to</summary>
+    private: std::shared_ptr<VirtualFile> virtualFile;
 
   };
 

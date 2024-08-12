@@ -24,11 +24,116 @@ limitations under the License.
 
 #if defined(NUCLEX_AUDIO_HAVE_WAVPACK)
 
+#include <stdexcept> // for std::runtime_error
+
 #include "Nuclex/Audio/Storage/VirtualFile.h"
 
 namespace {
 
   // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Reads up to specified number of bytes from the file</summary>
+  /// <param name="id">User-defined pointer that holds the stream reader adapter</param>
+  /// <param name="data">Pointer to a buffer that will receive the data read</param>
+  /// <param name="byteCount">Number of bytes that should be read at most</param>
+  /// <returns>The number of bytes actually read</returns>
+  std::int32_t wavPackReadBytes(void *id, void *data, std::int32_t byteCount) {
+    throw std::runtime_error(u8"Not implemented yet");
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Writes the specified number of bytes into the file</summary>
+  /// <param name="id">User-defined pointer that holds the stream reader adapter</param>
+  /// <param name="data">Pointer to a buffer containing the data to be written</param>
+  /// <param name="byteCount">Number of bytes that should be written</param>
+  /// <returns>The number of bytes actually written</returns>
+  std::int32_t WriteBytes(void *id, void *data, std::int32_t byteCount) {
+    throw std::runtime_error(u8"Not implemented yet");
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Retrieves the current absolute position of the file cursor</summary>
+  /// <param name="id">User-defined pointer that holds the stream reader adapter</param>
+  /// <returns>The current absolute position of the file cursor in the file</returns>
+  std::int64_t GetCurrentPosition(void *id) {
+    throw std::runtime_error(u8"Not implemented yet");
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Moves the file cursor to the specified absolute position</summary>
+  /// <param name="id">User-defined pointer that holds the stream reader adapter</param>
+  /// <param name="position">Absolute position the file cursor should be placed at</param>
+  /// <returns>The new absolute position of the file cursor in the file</returns>
+  int SeekAbsolute(void *id, std::int64_t position) {
+    throw std::runtime_error(u8"Not implemented yet");
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Moves the file cursor by specified offset</summary>
+  /// <param name="id">User-defined pointer that holds the stream reader adapter</param>
+  /// <param name="delta">Offset by which the file cursor should be placed at</param>
+  /// <param name="anchor">Anchor relative to which the file cursor will be placed</param>
+  /// <returns>The new absolute position of the file cursor in the file</returns>
+  int SeekRelative(void *id, std::int64_t delta, int anchor) {
+    throw std::runtime_error(u8"Not implemented yet");
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Buffers a single byte so it can be read as if it was in the stream</summary>
+  /// <param name="id">User-defined pointer that holds the stream reader adapter</param>
+  /// <param name="c">Byte that will be appended to the stream</param>
+  /// <returns>The buffered byte</returns>
+  /// <remarks>
+  ///   This method is incredibly awkward. We have to buffer this (and possibly multiple)
+  ///   bytes to be delivered as if they were read from the input stream, but the method
+  ///   this is based on (<code>ungetc()</code>) is also documented to indicate that
+  ///   seeking will discard any artificially buffered bytes.
+  /// </remarks>
+  int BufferByte(void *id, int c) {
+    throw std::runtime_error(u8"Not implemented yet");
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Simulates a single byte as if it was in the input stream</summary>
+  /// <param name="id">User-defined pointer that holds the stream reader adapter</param>
+  /// <returns>The length of the input stream in bytes</returns>
+  std::int64_t GetLength(void *id) {
+    throw std::runtime_error(u8"Not implemented yet");
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Checks whether the input stream supports seeking</summary>
+  /// <param name="id">User-defined pointer that holds the stream reader adapter</param>
+  /// <returns>Zero is the file is not seekable, any other value if it is</returns>
+  int IsSeekable(void *id) {
+    throw std::runtime_error(u8"Not implemented yet");
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Truncates the length fo the input file to the current file cursor</summary>
+  /// <param name="id">User-defined pointer that holds the stream reader adapter</param>
+  /// <returns>Zero on success, -1 in case of an error</returns>
+  int TruncateToFileCursor(void *id) {
+    throw std::runtime_error(u8"Not implemented yet");
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Flushes any unwritten data in internal buffers and closes the file</summary>
+  /// <param name="id">User-defined pointer that holds the stream reader adapter</param>
+  /// <returns>Zero on success, EOF in case of an error</returns>
+  int Close(void *id) {
+    throw std::runtime_error(u8"Not implemented yet");
+  }
+
   // ------------------------------------------------------------------------------------------- //
 
 } // anonymous namespace

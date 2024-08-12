@@ -69,7 +69,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     ///     from multiple threads, each should call this method to get its own instance.
     ///   </para>
     /// </remarks>
-    public: NUCLEX_AUDIO_API static std::unique_ptr<const VirtualFile> OpenRealFileForReading(
+    public: NUCLEX_AUDIO_API static std::shared_ptr<const VirtualFile> OpenRealFileForReading(
       const std::string &path, bool promiseSequentialAccess = false
     );
 
@@ -95,7 +95,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     ///     from multiple threads, each should call this method to get its own instance.
     ///   </para>
     /// </remarks>
-    public: NUCLEX_AUDIO_API static std::unique_ptr<VirtualFile> OpenRealFileForWriting(
+    public: NUCLEX_AUDIO_API static std::shared_ptr<VirtualFile> OpenRealFileForWriting(
       const std::string &path, bool promiseSequentialAccess = false
     );
 

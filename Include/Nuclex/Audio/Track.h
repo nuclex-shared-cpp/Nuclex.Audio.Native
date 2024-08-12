@@ -96,6 +96,9 @@ namespace Nuclex { namespace Audio {
     //     * Could even hand-off to user: EnsureDecodedRangeAvailable(begin, end)
     //   * But would be spooky if channels had their state change through track?
     //     * Maybe a complete non-issue with proper design?
+    // - Audio formats are usually packed in chunks -> "page in" / "page out"
+    //   * One of the Xiph libraries uses this design
+    //   * It might take a much deeper understanding 
 
     // Type safety
     //

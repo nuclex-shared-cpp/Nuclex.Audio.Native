@@ -94,7 +94,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     // OP_EIMPL (format uses unsupported features), OP_ENOTFORMAT (wrong file format),
     // OP_EVERSION (file format version not supported) and OP_EBADHEADER (damaged header).
     //
-    // We're only interest in figuring out whether the file can be loaded:
+    // We're only interested in figuring out whether the file can be loaded:
     int result = ::op_test(nullptr, fileHeader, checkLength);
     return (result == 0);
   }
@@ -122,8 +122,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     //   the 8 bytes "OpusHead". It MUST be placed alone in the first page of the logical
     //   Ogg stream. This page MUST have the ’beginning of stream’ flag set.""
     //
-    // Ogg fame: https://www.xiph.org/ogg/doc/framing.html
-    // OPUS packet: https://wiki.xiph.org/OggOpus#Packet_Organization
+    // Ogg frame: https://www.xiph.org/ogg/doc/framing.html
+    // Opus packet: https://wiki.xiph.org/OggOpus#Packet_Organization
     //
     return (
       (fileHeader[0] == 0x4f) &&  //  1 Oggs (magic header)
