@@ -97,7 +97,7 @@ namespace Nuclex { namespace Audio {
     ///   16-bit or 24-bit integer samples. Most lossy compression formats, especially OPUS
     ///   and AAC, can decompress directly to floating point audio.
     /// </remarks>
-    Float32 = 64,
+    Float_32 = 1032,
 
     /// <summary>Samples stored as normalized 64-bit floating point values</summary>
     /// <remarks>
@@ -106,7 +106,7 @@ namespace Nuclex { namespace Audio {
     ///   the precision greatly, which is useful when audio tracks get filtered and adjusted
     ///   many times during the production cycle, to minimize generation loss.
     /// </remarks>
-    Float64 = 128
+    Float_64 = 1064
 
   };
 
