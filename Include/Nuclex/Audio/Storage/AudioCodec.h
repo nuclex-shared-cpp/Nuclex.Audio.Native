@@ -27,6 +27,7 @@ limitations under the License.
 #include <string> // for std::string
 #include <vector> // for std::vector
 #include <optional> // for std::optional
+#include <memory> // for std::shared_ptr
 
 namespace Nuclex { namespace Audio { namespace Storage {
 
@@ -55,7 +56,8 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// <param name="extensionHint">Optional file extension the loaded data had</param>
     /// <returns>Informations about the audio container, if the codec can load it</returns>
     public: virtual std::optional<ContainerInfo> TryReadInfo(
-      const VirtualFile &source, const std::string &extensionHint = std::string()
+      const std::shared_ptr<const VirtualFile> &source,
+      const std::string &extensionHint = std::string()
     ) const = 0;
 
     // Probably sensible to use std::shared_ptr<VirtualFile> for these,

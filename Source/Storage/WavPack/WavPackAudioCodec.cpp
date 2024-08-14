@@ -25,6 +25,8 @@ limitations under the License.
 #if defined(NUCLEX_AUDIO_HAVE_WAVPACK)
 
 #include "Nuclex/Audio/Storage/VirtualFile.h"
+#include "./WavPackVirtualFileAdapter.h"
+#include "../../Platform/WavPackApi.h" // for WavPackApi
 
 namespace {
 
@@ -52,8 +54,20 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   // ------------------------------------------------------------------------------------------- //
 
   std::optional<ContainerInfo> WavPackAudioCodec::TryReadInfo(
-    const VirtualFile &source, const std::string &extensionHint /* = std::string() */
+    const std::shared_ptr<const VirtualFile> &source,
+    const std::string &extensionHint /* = std::string() */
   ) const {
+    ::WavpackStreamReader64 streamReader;
+
+    std::unique_ptr<ReadOnlyStreamAdapterState> state = (
+      StreamAdapterFactory::CreateAdapterForReading(source, streamReader)
+    );
+
+    using Nuclex::Audio::Platform::WavPackApi;
+
+    //WavPackApi::OpenInputFile
+
+    
     
     return std::optional<ContainerInfo>();
   }

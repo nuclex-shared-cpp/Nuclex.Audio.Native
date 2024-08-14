@@ -342,8 +342,10 @@ namespace {
   /// <returns>Zero on success, EOF in case of an error</returns>
   template<typename TAdapterState>
   int wavPackClose(void *id) {
+    #if 0 // Perhaps it's better to handle this ourselves.
     TAdapterState *state = reinterpret_cast<TAdapterState *>(id);
     delete state; // This is under the derived type and will release the shared_ptr
+    #endif
   }
 
   // ------------------------------------------------------------------------------------------- //

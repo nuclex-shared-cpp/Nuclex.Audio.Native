@@ -81,17 +81,40 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
+  /// <summary>Constructs WavPack StreamReader adapters and hooks up stream readers</summary>
   class StreamAdapterFactory {
 
+    /// <summayr>Constructs a StreamReader adapter for a read-only stream</summary>
+    /// <param name="readOnlyFile">Virtual file the adapter will read from</param>
+    /// <param name="streamReader">
+    ///   WavPack StreamReader that will be set up to use the adapter
+    /// </param>
+    /// <returns>
+    ///   A state that needs to be passed as the 'id' parameter though WavPack
+    /// </returns>
     public: static std::unique_ptr<ReadOnlyStreamAdapterState> CreateAdapterForReading(
       const std::shared_ptr<const VirtualFile> &readOnlyFile,
       WavpackStreamReader64 &streamReader
     );
 
+    /// <summayr>Constructs a StreamReader adapter for a writable stream</summary>
+    /// <param name="writableFile">Virtual file the adapter will written to</param>
+    /// <param name="streamReader">
+    ///   WavPack StreamReader that will be set up to use the adapter
+    /// </param>
+    /// <returns>
+    ///   A state that needs to be passed as the 'id' parameter though WavPack
+    /// </returns>
     public: static std::unique_ptr<WritableStreamAdapterState> CreateAdapterForWriting(
       const std::shared_ptr<VirtualFile> &writableFile,
       WavpackStreamReader64 &streamReader
     );
+
+    /*
+    public: static void ReraiseExceptions(
+      const std::unique_ptr<StreamAdapterState> &streamAdapterState
+    );
+    */
 
   };
 

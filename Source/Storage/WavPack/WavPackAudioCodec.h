@@ -66,7 +66,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     /// <param name="extensionHint">Optional file extension the loaded data had</param>
     /// <returns>Informations about the audio container, if the codec can load it</returns>
     public: std::optional<ContainerInfo> TryReadInfo(
-      const VirtualFile &source, const std::string &extensionHint = std::string()
+      const std::shared_ptr<const VirtualFile> &source,
+      const std::string &extensionHint = std::string()
     ) const override;
 
   };
