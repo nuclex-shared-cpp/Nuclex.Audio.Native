@@ -30,6 +30,28 @@ limitations under the License.
 
 #include "Nuclex/Audio/Storage/VirtualFile.h"
 
+// Design notes:
+//
+// I'm not entirely happy with the length to which I have to go to adapt my VirtualFile
+// interface for WavPack. Its use of ungetc() (push a character back into the read buffer
+// so it is seen on the next read as if it was in the file) really complicates things.
+//
+// - It might suffice to allow for a single ungetc() character,
+// - It might even suffice to just rewind the file cursor because libwavpack only ever
+//   unreads bytes it has read immediately before (a comment in cli/utils.c says as much)
+// - The fuzzer in fuzzing/fuzzer.cc also uses an ungetc buffer of exactly 1 byte.
+//
+// So we might get away with either a single byte buffer or just rewinding.
+//
+// But -- optimizing this adapter using special internal knowledge and building
+// an implementation that only handles the usage patterns present in libwavpack would be
+// rather dirty, and could theoretically set us up for failure with future libwavpack versions.
+//
+// And the impact is small, too. After scanning the file type and its header, libwavpack
+// reads in decently-sized blocks. So that's why there's a complicated wavPackReadBytes()
+// implementation that covers all potential usages, even those libwavpack doesn't need.
+//
+
 namespace {
 
   // ------------------------------------------------------------------------------------------- //
