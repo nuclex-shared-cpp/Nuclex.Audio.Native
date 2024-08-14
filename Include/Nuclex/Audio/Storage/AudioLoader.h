@@ -51,7 +51,7 @@ limitations under the License.
 // AudioLoader
 //   - Maybe.
 //   - Perhaps this is the best choice? The term "loader" says to me that it will
-//     load whole audio file, neutral about whether it's streamed or loaded whole.
+//     load whole audio files, neutral about whether streamed or not.
 //
 // AudioReader
 //   - Maybe.

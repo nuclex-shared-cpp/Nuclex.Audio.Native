@@ -17,8 +17,8 @@ limitations under the License.
 */
 #pragma endregion // Apache License 2.0
 
-#ifndef NUCLEX_AUDIO_STORAGE_WAVPACK_WAVPACKHELPERS_H
-#define NUCLEX_AUDIO_STORAGE_WAVPACK_WAVPACKHELPERS_H
+#ifndef NUCLEX_AUDIO_STORAGE_WAVPACK_WAVPACKVIRTUALFILEADAPTER_H
+#define NUCLEX_AUDIO_STORAGE_WAVPACK_WAVPACKVIRTUALFILEADAPTER_H
 
 #include "Nuclex/Audio/Config.h"
 
@@ -45,33 +45,17 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Size of the smallest valid WavPack file possible</summary>
-  /// <remarks>
-  ///   Created a 2-sample .wav in Audacity, compressed with -h -x via WavPack 5.7
-  /// </remarks>
-  constexpr const std::size_t SmallestPossibleWavPackSize = 118; // bytes
-
-  // ------------------------------------------------------------------------------------------- //
-
-  /// <summary>Helper class for reading WavPack files</summary>
-  class Helpers {
-
-    /// <summary>Checks if the specified file extension indicates a .wv file</summary>
-    /// <param name="extension">File extension (can be with or without leading dot)</param>
-    /// <returns>True if the file extension indicates a .wv file</returns>
-    public: static bool DoesFileExtensionSayWv(const std::string &extension);
-
-    /// <summary>Checks if the specified file starts with a valid WavPack header</summary>
-    /// <param name="source">File that will be checked for a valid WavPack header</param>
-    /// <returns>True if a valid WavPack header was found, false otherwise</returns>
-    public: static bool CheckIfWavPackHeaderPresent(const VirtualFile &source);
-
-  };
-
-  // ------------------------------------------------------------------------------------------- //
-
   /// <summary>Stores informations processed by the WavPack stream adapters</summary>
   struct SharedEnvironment {
+
+    /// <summary>Initializes the properties of the shared environment base class</summary>
+    /// <param name="readOnly">True if the environment is a pure read environment</param>
+    public: SharedEnvironment(bool readOnly = true) :
+      IsReadOnly(readOnly),
+      FileCursor(0),
+      FileSize(std::uint64_t(-1)),
+      BufferedBytes(),
+      Error() {}
 
     /// <summary>Whether this environment supports writing to the virtual file</summary>
     public: bool IsReadOnly;
@@ -90,7 +74,28 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   /// <summary>Stores informations processed by the WavPack stream reader adapter</summary>
   struct ReadEnvironment : public SharedEnvironment {
-  
+
+    /// <summary>Initializes a new WavPack read environment</summary>
+    /// <param name="streamReader">WavPack stream reader initialized for writing</param>
+    /// <param name="file">File from which libwavpack should be reading</param>
+    public: ReadEnvironment(
+      ::WavpackStreamReader64 &streamReader,
+      const std::shared_ptr<VirtualFile> &file
+    ) :
+      SharedEnvironment(true),
+      File(file) {
+      SetupFunctionPointers(*this, streamReader);
+    }
+
+    /// <summary>Sets up the function pointers used by libwavpack</summary>
+    /// <param name="readEnvironment">
+    ///   Environment on which the function pointers will be set up
+    /// </param>
+    /// <param name="streamReader">Main PNG structure initialized for reading</param>
+    protected: static void SetupFunctionPointers(
+      ReadEnvironment &readEnvironment, ::WavpackStreamReader64 &streamReader
+    );
+
     /// <summary>Virtual file this adapter is forwarding calls to</summary>
     public: std::shared_ptr<const VirtualFile> File;
 
@@ -100,6 +105,18 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   /// <summary>Stores informations processed by the WavPack stream writer adapter</summary>
   struct WriteEnvironment : public SharedEnvironment {
+
+    /// <summary>Initializes a new WavPack write environment</summary>
+    /// <param name="streamReader">WavPack stream reader initialized for writing</param>
+    /// <param name="file">File from which libwavpack should be reading</param>
+    public: WriteEnvironment(
+      ::WavpackStreamReader64 &streamReader,
+      const std::shared_ptr<VirtualFile> &file
+    ) :
+      SharedEnvironment(false),
+      File(file) {
+      //SetupFunctionPointers(*this, pngRead);
+    }
 
     /// <summary>Virtual file this adapter is forwarding calls to</summary>
     public: std::shared_ptr<VirtualFile> File;
@@ -112,4 +129,4 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
 #endif // defined(NUCLEX_AUDIO_HAVE_WAVPACK)
 
-#endif // NUCLEX_AUDIO_STORAGE_WAVPACK_WAVPACKHELPERS_H
+#endif // NUCLEX_AUDIO_STORAGE_WAVPACK_WAVPACKVIRTUALFILEADAPTER_H

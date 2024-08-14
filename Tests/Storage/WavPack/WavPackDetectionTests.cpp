@@ -20,7 +20,7 @@ limitations under the License.
 // If the library is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_AUDIO_SOURCE 1
 
-#include "../../../Source/Storage/WavPack/WavPackHelpers.h"
+#include "../../../Source/Storage/WavPack/WavPackDetection.h"
 
 #if defined(NUCLEX_AUDIO_HAVE_WAVPACK)
 
@@ -105,21 +105,21 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(WavPackHelpersTest, DetectsWavPackFiles) {
+  TEST(WavPackDetectionTest, DetectsWavPackFiles) {
     {
       std::uint8_t dummyData[32] = {
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5,
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5
       };
       const InMemoryFile dummyFile(dummyData, sizeof(dummyData));
-      EXPECT_FALSE(Helpers::CheckIfWavPackHeaderPresent(dummyFile));
+      EXPECT_FALSE(Detection::CheckIfWavPackHeaderPresent(dummyFile));
     }
 
     {
       const InMemoryFile flacFile(
         smallestPossibleWavPackFile, sizeof(smallestPossibleWavPackFile)
       );
-      EXPECT_TRUE(Helpers::CheckIfWavPackHeaderPresent(flacFile));
+      EXPECT_TRUE(Detection::CheckIfWavPackHeaderPresent(flacFile));
     }
   }
 
