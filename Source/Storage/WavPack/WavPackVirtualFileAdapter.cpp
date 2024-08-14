@@ -36,7 +36,7 @@ namespace {
 
   /// <summary>Reads up to specified number of bytes from the file</summary>
   /// <typeparam name="TAdapterState">
-  ///   Type of environment the read is done on (because we don't want to const_cast here)
+  ///   Type of state the read is done on (because we don't want to const_cast here)
   /// </typeparam>
   /// <param name="id">User-defined pointer that holds the stream reader adapter</param>
   /// <param name="data">Pointer to a buffer that will receive the data read</param>
@@ -44,10 +44,8 @@ namespace {
   /// <returns>The number of bytes actually read</returns>
   template<typename TAdapterState>
   std::int32_t wavPackReadBytes(void *id, void *data, std::int32_t byteCount) {
-    TAdapterState &environment = *reinterpret_cast<
-      TAdapterState *
-    >(id);
-    assert(environment.IsReadOnly && u8"File read is performed on read environment");
+    TAdapterState &state = *reinterpret_cast<TAdapterState *>(id);
+    assert(state.IsReadOnly && u8"File read is performed on read state");
 
     std::uint8_t *dataAsBytes = reinterpret_cast<std::uint8_t *>(data);
 
@@ -56,7 +54,7 @@ namespace {
     // to implement this to fully honor defined stream interface)
     std::size_t bytesFromBuffer;
     {
-      std::size_t bufferedByteCount = environment.BufferedBytes.size();
+      std::size_t bufferedByteCount = state.BufferedBytes.size();
       bytesFromBuffer = std::min<std::size_t>(byteCount, bufferedByteCount);
     }
 
@@ -64,49 +62,56 @@ namespace {
     // yet, if the VirtualFile read fails, we'll act as if the read never happened).
     if(bytesFromBuffer >= 1) {
       std::copy_n(
-        environment.BufferedBytes.data(),
+        state.BufferedBytes.data(),
         byteCount,
         dataAsBytes
       );
-      if(bytesFromBuffer >= byteCount) {
-        environment.BufferedBytes.erase(
-          environment.BufferedBytes.begin(),
-          environment.BufferedBytes.begin() + byteCount
+      if(bytesFromBuffer >= static_cast<std::size_t>(byteCount)) {
+        state.BufferedBytes.erase(
+          state.BufferedBytes.begin(),
+          state.BufferedBytes.begin() + bytesFromBuffer
         );
         return byteCount;
       } else {
         dataAsBytes += bytesFromBuffer;
-        byteCount -= byteCount;
+        byteCount -= bytesFromBuffer;
       }
     }
 
     // Attempt to read up to the requested number of bytes from the virtual file
     std::size_t bytesFromFile;
     {
-      std::uint64_t fileLength = environment.File->GetSize();
-      bytesFromFile = static_cast<std::size_t>(std::min<std::uint64_t>(byteCount, fileLength));
+      std::uint64_t fileLength = state.File->GetSize();
+      if(state.FileCursor >= fileLength) {
+        bytesFromFile = 0;
+      } else {
+        fileLength -= state.FileCursor;
+        bytesFromFile = static_cast<std::size_t>(
+          std::min<std::uint64_t>(byteCount, fileLength)
+        );
+      }
     }
     if(bytesFromFile >= 1) {
       try {
-        environment.File->ReadAt(
-          environment.FileCursor,
+        state.File->ReadAt(
+          state.FileCursor,
           bytesFromFile,
           dataAsBytes
         );
       }
       catch(const std::exception &) {
-        environment.Error = std::current_exception();
+        state.Error = std::current_exception();
         return 0; // error state, don't even try for a partial success
       }
     }
 
     // The virtual file read succeeded. Now we can update our state and shift
     // buffered bytes if we did take any.
-    environment.FileCursor += bytesFromFile;
+    state.FileCursor += bytesFromFile;
     if(bytesFromBuffer >= 1) {
-      environment.BufferedBytes.erase(
-        environment.BufferedBytes.begin(),
-        environment.BufferedBytes.begin() + byteCount
+      state.BufferedBytes.erase(
+        state.BufferedBytes.begin(),
+        state.BufferedBytes.begin() + bytesFromBuffer
       );
       return bytesFromBuffer + bytesFromFile;
     } else {
@@ -125,7 +130,7 @@ namespace {
     Nuclex::Audio::Storage::WavPack::WritableStreamAdapterState &state = *reinterpret_cast<
       Nuclex::Audio::Storage::WavPack::WritableStreamAdapterState *
     >(id);
-    assert(!state.IsReadOnly && u8"File write is performed on write environment");
+    assert(!state.IsReadOnly && u8"File write is performed on write state");
 
     try {
       state.File->WriteAt(
@@ -162,16 +167,14 @@ namespace {
 
   /// <summary>Moves the file cursor to the specified absolute position</summary>
   /// <typeparam name="TAdapterState">
-  ///   Type of environment the read is done on (because we don't want to const_cast here)
+  ///   Type of state the read is done on (because we don't want to const_cast here)
   /// </typeparam>
   /// <param name="id">User-defined pointer that holds the stream reader adapter</param>
   /// <param name="position">Absolute position the file cursor should be placed at</param>
   /// <returns>The new absolute position of the file cursor in the file</returns>
   template<typename TAdapterState>
   int wavPackSeekAbsolute(void *id, std::int64_t position) {
-    TAdapterState &state = *reinterpret_cast<
-      TAdapterState *
-    >(id);
+    TAdapterState &state = *reinterpret_cast<TAdapterState *>(id);
 
     // fseek() on POSIX does in fact allow the file cursor to be placed beyond the end of
     // a file. We could emulate this behavior (by simply inserting zero bytes here or doing
@@ -185,7 +188,7 @@ namespace {
 
     // As documented in the ungetc() function from libc, seeking should discard
     // the effects of ungetc()
-    state.Buffer.clear();
+    state.BufferedBytes.clear();
 
     state.FileCursor = static_cast<std::uint64_t>(position);
     return 0;
@@ -195,7 +198,7 @@ namespace {
 
   /// <summary>Moves the file cursor by specified offset</summary>
   /// <typeparam name="TAdapterState">
-  ///   Type of environment the read is done on (because we don't want to const_cast here)
+  ///   Type of state the read is done on (because we don't want to const_cast here)
   /// </typeparam>
   /// <param name="id">User-defined pointer that holds the stream reader adapter</param>
   /// <param name="delta">Offset by which the file cursor should be placed at</param>
@@ -203,9 +206,7 @@ namespace {
   /// <returns>The new absolute position of the file cursor in the file</returns>
   template<typename TAdapterState>
   int wavPackSeekRelative(void *id, std::int64_t delta, int anchor) {
-    TAdapterState &state = *reinterpret_cast<
-      TAdapterState *
-    >(id);
+    TAdapterState &state = *reinterpret_cast<TAdapterState *>(id);
 
     // Should invalid seeks become exceptions to the outside caller?
     //state.Error = std::make_exception_ptr(
@@ -262,7 +263,7 @@ namespace {
 
     // As documented in the ungetc() function from libc, seeking should discard
     // the effects of ungetc()
-    state.Buffer.clear();
+    state.BufferedBytes.clear();
 
     state.FileCursor = newPosition;
     return 0;
@@ -291,21 +292,21 @@ namespace {
     }
 
     state.BufferedBytes.push_back(static_cast<std::uint8_t>(c));
+
+    return c;
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Simulates a single byte as if it was in the input stream</summary>
   /// <typeparam name="TAdapterState">
-  ///   Type of environment the read is done on (because we don't want to const_cast here)
+  ///   Type of state the read is done on (because we don't want to const_cast here)
   /// </typeparam>
   /// <param name="id">User-defined pointer that holds the stream reader adapter</param>
   /// <returns>The length of the input stream in bytes</returns>
   template<typename TAdapterState>
   std::int64_t wavPackGetLength(void *id) {
-    TAdapterState &state = *reinterpret_cast<
-      TAdapterState *
-    >(id);
+    TAdapterState &state = *reinterpret_cast<TAdapterState *>(id);
 
     return static_cast<std::int64_t>(state.File->GetSize());
   }
@@ -316,6 +317,8 @@ namespace {
   /// <param name="id">User-defined pointer that holds the stream reader adapter</param>
   /// <returns>Zero is the file is not seekable, any other value if it is</returns>
   int wavPackIsSeekable(void *id) {
+    (void)id;
+
     // While the VirtualFile interface can be used for sequential data (by enforcing
     // usage from a single thread and monotonic ReadAt() positions), that is a usage
     // pattern or us, not a queryable property of the VirtualFile interface...
@@ -328,6 +331,8 @@ namespace {
   /// <param name="id">User-defined pointer that holds the stream reader adapter</param>
   /// <returns>Zero on success, -1 in case of an error</returns>
   int wavPackTruncateToFileCursor(void *id) {
+    (void)id;
+
     assert(u8"TruncateToFileCursor() is never called");
     return -1;
   }
@@ -336,16 +341,20 @@ namespace {
 
   /// <summary>Flushes any unwritten data in internal buffers and closes the file</summary>
   /// <typeparam name="TAdapterState">
-  ///   Type of environment the read is done on (because we don't want to const_cast here)
+  ///   Type of state the read is done on (because we don't want to const_cast here)
   /// </typeparam>
   /// <param name="id">User-defined pointer that holds the stream reader adapter</param>
   /// <returns>Zero on success, EOF in case of an error</returns>
   template<typename TAdapterState>
   int wavPackClose(void *id) {
+    (void)id;
+
     #if 0 // Perhaps it's better to handle this ourselves.
     TAdapterState *state = reinterpret_cast<TAdapterState *>(id);
     delete state; // This is under the derived type and will release the shared_ptr
     #endif
+
+    return 0;
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -370,6 +379,17 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     adapter->Error = std::exception_ptr();
     adapter->File = readOnlyFile;
 
+    streamReader.read_bytes = &wavPackReadBytes<ReadOnlyStreamAdapterState>;
+    streamReader.write_bytes = &wavPackWriteBytes;
+    streamReader.get_pos = &wavPackGetCurrentPosition;
+    streamReader.set_pos_abs = &wavPackSeekAbsolute<ReadOnlyStreamAdapterState>;
+    streamReader.set_pos_rel = &wavPackSeekRelative<ReadOnlyStreamAdapterState>;
+    streamReader.push_back_byte = &wavPackBufferByte;
+    streamReader.get_length = &wavPackGetLength<ReadOnlyStreamAdapterState>;
+    streamReader.can_seek = &wavPackIsSeekable;
+    streamReader.truncate_here = &wavPackTruncateToFileCursor;
+    streamReader.close = &wavPackClose<ReadOnlyStreamAdapterState>;
+
     return adapter;
   }
 
@@ -388,6 +408,17 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     //adapter->BufferedBytes.clear();
     adapter->Error = std::exception_ptr();
     adapter->File = writableFile;
+
+    streamReader.read_bytes = &wavPackReadBytes<WritableStreamAdapterState>;
+    streamReader.write_bytes = &wavPackWriteBytes;
+    streamReader.get_pos = &wavPackGetCurrentPosition;
+    streamReader.set_pos_abs = &wavPackSeekAbsolute<WritableStreamAdapterState>;
+    streamReader.set_pos_rel = &wavPackSeekRelative<WritableStreamAdapterState>;
+    streamReader.push_back_byte = &wavPackBufferByte;
+    streamReader.get_length = &wavPackGetLength<WritableStreamAdapterState>;
+    streamReader.can_seek = &wavPackIsSeekable;
+    streamReader.truncate_here = &wavPackTruncateToFileCursor;
+    streamReader.close = &wavPackClose<WritableStreamAdapterState>;
 
     return adapter;
   }

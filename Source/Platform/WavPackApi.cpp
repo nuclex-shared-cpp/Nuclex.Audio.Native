@@ -61,6 +61,31 @@ namespace Nuclex { namespace Audio { namespace Platform {
 
   // ------------------------------------------------------------------------------------------- //
 
+  std::shared_ptr<::WavpackContext> WavPackApi::OpenStreamReaderInput(
+    WavpackStreamReader64 &streamReader,
+    void *mainFileContext,
+    void *correctionFileContext /* = nullptr */,
+    int flags /* = OPEN_FILE_UTF8 */,
+    int normOffset /* = 0 */
+  ) {
+    std::string errorMessage;
+    errorMessage.resize(81);
+
+    WavpackContext *context = ::WavpackOpenFileInputEx64(
+      &streamReader, mainFileContext, correctionFileContext,
+      errorMessage.data(), flags, normOffset
+    );
+    if(context == nullptr) {
+      std::string message(u8"Error opening virtuai file via libwavpack: ", 43);
+      message.append(errorMessage.c_str()); // because it's only part filled and zero t'ed.
+      throw std::runtime_error(message);
+    }
+
+    return std::shared_ptr<WavpackContext>(context, &::WavpackCloseFile);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   int WavPackApi::GetMode(const std::shared_ptr<::WavpackContext> &context) {
     // No error return (confirmed via common_utils.c in 2024)
     return ::WavpackGetMode(context.get());

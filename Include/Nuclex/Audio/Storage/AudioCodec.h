@@ -24,9 +24,7 @@ limitations under the License.
 #include "Nuclex/Audio/ContainerInfo.h"
 #include "Nuclex/Audio/TrackInfo.h"
 
-#include <string> // for std::string
 #include <vector> // for std::vector
-#include <optional> // for std::optional
 #include <memory> // for std::shared_ptr
 
 namespace Nuclex { namespace Audio { namespace Storage {
@@ -34,6 +32,12 @@ namespace Nuclex { namespace Audio { namespace Storage {
   // ------------------------------------------------------------------------------------------- //
 
   class VirtualFile;
+
+  // ------------------------------------------------------------------------------------------- //
+
+}}} // namespace Nuclex::Audio::Storage
+
+namespace Nuclex { namespace Audio { namespace Storage {
 
   // ------------------------------------------------------------------------------------------- //
 

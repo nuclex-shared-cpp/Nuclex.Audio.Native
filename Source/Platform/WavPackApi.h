@@ -60,6 +60,43 @@ namespace Nuclex { namespace Audio { namespace Platform {
       const std::string &path, int flags = OPEN_FILE_UTF8 | OPEN_WVC | OPEN_TAGS, int normOffset = 0
     );
 
+    /// <summary>
+    ///   Opens a WavPack audio file for reading accessing the file's contents via
+    ///   WavPack's stream reader interface
+    /// </summary>
+    /// <param name="streamReader">Stream reader through which the file will be accessed</param>
+    /// <param name="mainFileContext">
+    ///   User-provided pointer that will be passed to all stream reader callbacks when
+    ///   data from the main WavPack file is being accessed
+    /// </param>
+    /// <param name="correctionFileContext">
+    ///   User-provided pointer that will be passed to all stream reader callbacks when
+    ///   data from the optional correction file is being accessed. Can be null.
+    /// </param>
+    /// <param name="flags">
+    ///   Options that control several aspects of how the file is opened (see docs)
+    /// </param>
+    /// <param name="normOffset">
+    ///   Normalization exponent, if enabled. For floating point audio, each step doubles
+    //    the maximum amplitude to which audio samples will be normalized.
+    /// </param>
+    /// <returns>
+    ///   A shared pointer to a WavPack context that can be used with other functions
+    ///   in the WavPack API
+    /// </returns>
+    /// <remarks>
+    ///   The returned shared pointer has a custom deleter set up, so this is fully RAII
+    ///   compatible and once the pointer goes out of scope, the WavPack context is
+    ///   closed again.
+    /// </remarks>
+    public: static std::shared_ptr<::WavpackContext> OpenStreamReaderInput(
+      WavpackStreamReader64 &streamReader,
+      void *mainFileContext,
+      void *correctionFileContext = nullptr,
+      int flags = OPEN_FILE_UTF8,
+      int normOffset = 0
+    );
+
     /// <summary>Retrieves some flags describing the data and compression method</summary>
     /// <param name="context">Context of the opened WavPack file</param>
     /// <returns>The mode flags of the WavPack file</returns>

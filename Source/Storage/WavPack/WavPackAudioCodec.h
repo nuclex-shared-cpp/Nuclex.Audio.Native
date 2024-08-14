@@ -26,10 +26,6 @@ limitations under the License.
 
 #include "Nuclex/Audio/Storage/AudioCodec.h"
 
-#include <string> // for std::string
-#include <memory> // for std::unique_ptr
-#include <cstdint> // for std::uint64_t
-
 namespace Nuclex { namespace Audio { namespace Storage {
 
   // ------------------------------------------------------------------------------------------- //

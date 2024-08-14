@@ -20,13 +20,16 @@ limitations under the License.
 // If the library is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_AUDIO_SOURCE 1
 
-#include "./WavPackAudioCodec.h"
+#include "../../../Source/Storage/WavPack/WavPackDetection.h"
 
 #if defined(NUCLEX_AUDIO_HAVE_WAVPACK)
 
 #include "Nuclex/Audio/Storage/VirtualFile.h"
-#include "./WavPackVirtualFileAdapter.h"
-#include "../../Platform/WavPackApi.h" // for WavPackApi
+#include "../../../Source/Storage/WavPack/WavPackAudioCodec.h"
+
+#include <gtest/gtest.h>
+
+#include <cstdint> // for std::uint8_t
 
 namespace {
 
@@ -39,48 +42,25 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
-  const std::string &WavPackAudioCodec::GetName() const {
-    const static std::string codecName(u8"WavPack", 7);
-    return codecName;
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  const std::vector<std::string> &WavPackAudioCodec::GetFileExtensions() const {
-    const std::vector<std::string> extensions { std::string(u8"wv", 2) };
-    return extensions;
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  std::optional<ContainerInfo> WavPackAudioCodec::TryReadInfo(
-    const std::shared_ptr<const VirtualFile> &source,
-    const std::string &extensionHint /* = std::string() */
-  ) const {
-    (void)extensionHint;
-
-    ::WavpackStreamReader64 streamReader;
-
-    std::unique_ptr<ReadOnlyStreamAdapterState> state = (
-      StreamAdapterFactory::CreateAdapterForReading(source, streamReader)
-    );
-
-    {
-      using Nuclex::Audio::Platform::WavPackApi;
-
-      std::shared_ptr<::WavpackContext> context = (
-        WavPackApi::OpenStreamReaderInput(streamReader, state.get())
-      );
-      
-      // Just for testing:
-      std::size_t channelCount = WavPackApi::GetNumChannels(context);
-    }
+  TEST(WavPackAudioCodecTest, CanReadInfoFromWavPackFile) {
     
-    return std::optional<ContainerInfo>();
+    // TODO: Copy test files to output directory? Expect them in a specific relative path?
+
+    WavPackAudioCodec codec;
+
+    // Our path:   <ProjectDir>/bin/linux-gcc13.2-amd64-debug/NuclexAudioNativeTests
+    // Test files: <ProjectDir>/Resources/*.wv
+    //
+    // Working directory the unit tests are executed in by Visual Studio Codium: <ProjectDir>
+    std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
+      //u8"../../Resources/5s-silent-stereo-float.wv"
+      u8"Resources/5s-silent-stereo-float.wv"
+    );
+    codec.TryReadInfo(file);
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-}}}} // namespace Nuclex::Audio::Storage::Wave
+}}}} // namespace Nuclex::Audio::Storage::WavPack
 
 #endif // defined(NUCLEX_AUDIO_HAVE_WAVPACK)
