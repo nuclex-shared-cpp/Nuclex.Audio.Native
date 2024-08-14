@@ -42,29 +42,26 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   // ------------------------------------------------------------------------------------------- //
 
   bool Detection::DoesFileExtensionSayWv(const std::string &extension) {
-    bool extensionSaysWv;
 
-    // Microsoft Waveform audio files can have the extension .wav or (rarely) .wave.
-    // We'll consider both here.
+    // According to its documentation, WavPack only has one appropriate extension, .wv
     {
       std::size_t extensionLength = extension.length();
       if(extensionLength == 2) { // extension without dot possible
-        extensionSaysWv = (
+        return (
           ((extension[0] == 'w') || (extension[0] == 'W')) &&
           ((extension[1] == 'v') || (extension[1] == 'V'))
         );
       } else if(extensionLength == 3) { // extension with dot or long name possible
-        extensionSaysWv = (
+        return (
           (extension[0] == '.') &&
           ((extension[1] == 'w') || (extension[1] == 'W')) &&
           ((extension[2] == 'v') || (extension[2] == 'V'))
         );
       } else {
-        extensionSaysWv = false;
+        return false;
       }
     }
 
-    return extensionSaysWv;
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -90,8 +87,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
         (*reinterpret_cast<const std::uint32_t *>(fileHeader + 4) < 0x01000000) // 16 MiB
       ) &&
       (                          //  - uint32 for version needed to decode
-        (*reinterpret_cast<const std::uint16_t *>(fileHeader + 8) >= 0x400) &&
-        (*reinterpret_cast<const std::uint16_t *>(fileHeader + 8) < 0x999)
+        (*reinterpret_cast<const std::uint16_t *>(fileHeader + 8) >= 0x400) && // minimum v4.00
+        (*reinterpret_cast<const std::uint16_t *>(fileHeader + 8) < 0x999) // up to v9.99
       )
     );
   }

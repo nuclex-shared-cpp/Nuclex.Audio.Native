@@ -46,23 +46,12 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Stores informations processed by the WavPack stream adapters</summary>
-  struct SharedEnvironment {
-
-    /// <summary>Initializes the properties of the shared environment base class</summary>
-    /// <param name="readOnly">True if the environment is a pure read environment</param>
-    public: SharedEnvironment(bool readOnly = true) :
-      IsReadOnly(readOnly),
-      FileCursor(0),
-      FileSize(std::uint64_t(-1)),
-      BufferedBytes(),
-      Error() {}
+  struct StreamAdapterState {
 
     /// <summary>Whether this environment supports writing to the virtual file</summary>
     public: bool IsReadOnly;
     /// <summary>Current position of the emulated file cursor</summary>
     public: std::uint64_t FileCursor;
-    /// <summary>Total size of the file in bytes or -1 if not yet determined</summary>
-    public: std::uint64_t FileSize;
     /// <summary>Bytes that have been buffered for read operations</summary>
     public: std::vector<std::uint8_t> BufferedBytes;
     /// <summary>Stores any exception thrown by the virtual file interface</summary>
@@ -73,28 +62,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Stores informations processed by the WavPack stream reader adapter</summary>
-  struct ReadEnvironment : public SharedEnvironment {
-
-    /// <summary>Initializes a new WavPack read environment</summary>
-    /// <param name="streamReader">WavPack stream reader initialized for writing</param>
-    /// <param name="file">File from which libwavpack should be reading</param>
-    public: ReadEnvironment(
-      ::WavpackStreamReader64 &streamReader,
-      const std::shared_ptr<VirtualFile> &file
-    ) :
-      SharedEnvironment(true),
-      File(file) {
-      SetupFunctionPointers(*this, streamReader);
-    }
-
-    /// <summary>Sets up the function pointers used by libwavpack</summary>
-    /// <param name="readEnvironment">
-    ///   Environment on which the function pointers will be set up
-    /// </param>
-    /// <param name="streamReader">Main PNG structure initialized for reading</param>
-    protected: static void SetupFunctionPointers(
-      ReadEnvironment &readEnvironment, ::WavpackStreamReader64 &streamReader
-    );
+  struct ReadOnlyStreamAdapterState : public StreamAdapterState {
 
     /// <summary>Virtual file this adapter is forwarding calls to</summary>
     public: std::shared_ptr<const VirtualFile> File;
@@ -104,22 +72,26 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Stores informations processed by the WavPack stream writer adapter</summary>
-  struct WriteEnvironment : public SharedEnvironment {
-
-    /// <summary>Initializes a new WavPack write environment</summary>
-    /// <param name="streamReader">WavPack stream reader initialized for writing</param>
-    /// <param name="file">File from which libwavpack should be reading</param>
-    public: WriteEnvironment(
-      ::WavpackStreamReader64 &streamReader,
-      const std::shared_ptr<VirtualFile> &file
-    ) :
-      SharedEnvironment(false),
-      File(file) {
-      //SetupFunctionPointers(*this, pngRead);
-    }
+  struct WritableStreamAdapterState : public StreamAdapterState {
 
     /// <summary>Virtual file this adapter is forwarding calls to</summary>
     public: std::shared_ptr<VirtualFile> File;
+
+  };
+
+  // ------------------------------------------------------------------------------------------- //
+
+  class StreamAdapterFactory {
+
+    public: static std::unique_ptr<ReadOnlyStreamAdapterState> CreateAdapterForReading(
+      const std::shared_ptr<const VirtualFile> &readOnlyFile,
+      WavpackStreamReader64 &streamReader
+    );
+
+    public: static std::unique_ptr<WritableStreamAdapterState> CreateAdapterForWriting(
+      const std::shared_ptr<VirtualFile> &writableFile,
+      WavpackStreamReader64 &streamReader
+    );
 
   };
 
