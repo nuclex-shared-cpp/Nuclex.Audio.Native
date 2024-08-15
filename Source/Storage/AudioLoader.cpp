@@ -22,6 +22,7 @@ License along with this library
 #define NUCLEX_AUDIO_SOURCE 1
 
 #include "Nuclex/Audio/Storage/AudioLoader.h"
+#include "Nuclex/Audio/Storage/VirtualFile.h"
 
 #include <Nuclex/Support/Text/StringConverter.h> // for StringConverter
 #include <stdexcept> // for std::runtime_error
@@ -49,6 +50,19 @@ namespace {
 
   /// <summary>Invalid size marker for the most recent codec indices</summary>
   constexpr std::size_t InvalidIndex = std::size_t(-1);
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Helper used to pass information through lambda methods</summary>
+  struct FileAndContainerInfo {
+
+    /// <summary>File the audio loader has been tasked with reading</summary>
+    public: std::shared_ptr<const Nuclex::Audio::Storage::VirtualFile> File;
+
+    /// <summary>Information container that will be filled if successful</summary>
+    public: std::optional<Nuclex::Audio::ContainerInfo> ContainerInfo;
+
+  };
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -120,6 +134,67 @@ namespace Nuclex { namespace Audio { namespace Storage {
         }
       }
     }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::optional<ContainerInfo> AudioLoader::TryReadInfo(
+    const std::shared_ptr<const VirtualFile> &file,
+    const std::string &extensionHint /* = std::string() */
+  ) const {
+    FileAndContainerInfo fileProvider;
+    fileProvider.File = file;
+
+    bool wasLoaded = tryCodecsInOptimalOrder<FileAndContainerInfo>(
+      extensionHint,
+      [](
+        const AudioCodec &codec,
+        const std::string &extension,
+        FileAndContainerInfo &fileAndContainerInfo
+      ) {
+        fileAndContainerInfo.ContainerInfo = std::move(
+          codec.TryReadInfo(fileAndContainerInfo.File, extension)
+        );
+        return fileAndContainerInfo.ContainerInfo.has_value();
+      },
+      fileProvider
+    );
+    if(wasLoaded) {
+      return fileProvider.ContainerInfo;
+    } else {
+      return std::optional<ContainerInfo>();
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::optional<ContainerInfo> AudioLoader::TryReadInfo(
+    const std::string &path
+  ) const {
+    std::string::size_type extensionDotIndex = path.find_last_of('.');
+#if defined(NUCLEX_AUDIO_WINDOWS)
+    std::string::size_type lastPathSeparatorIndex = path.find_last_of('\\');
+#else
+    std::string::size_type lastPathSeparatorIndex = path.find_last_of('/');
+#endif
+
+    // Check if the provided path contains a file extension and if so, pass it along to
+    // the CanLoad() method as a hint (this speeds up codec search)
+    if(extensionDotIndex != std::string::npos) {
+      bool dotBelongsToFilename = (
+        (lastPathSeparatorIndex == std::string::npos) ||
+        (extensionDotIndex > lastPathSeparatorIndex)
+      );
+      if(dotBelongsToFilename) {
+        return TryReadInfo(
+          VirtualFile::OpenRealFileForReading(path, true),
+          path.substr(extensionDotIndex + 1)
+        );
+      }
+    }
+
+    // The specified file has no extension, so do not provide the extension hint
+    return TryReadInfo(VirtualFile::OpenRealFileForReading(path, true));
   }
 
   // ------------------------------------------------------------------------------------------- //

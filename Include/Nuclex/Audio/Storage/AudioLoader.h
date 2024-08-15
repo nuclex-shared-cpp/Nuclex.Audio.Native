@@ -22,12 +22,11 @@ limitations under the License.
 
 #include "Nuclex/Audio/Config.h"
 
+#include "Nuclex/Audio/ContainerInfo.h"
+
 #include <atomic> // for std::atomic
-#include <string> // for std::string
-#include <vector> // for std::vector
 #include <unordered_map> // for std::unordered_map
 #include <memory> // for std::unique_ptr
-#include <optional> // for std::optional
 
 // I want to go with a similar design as Nuclex.Pixels.Native, but split encoding and
 // decoding into different classes because the two features are so asymmetrical in
@@ -77,7 +76,6 @@ namespace Nuclex { namespace Audio {
   // ------------------------------------------------------------------------------------------- //
 
   class Track;
-  class TrackInfo;
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -142,14 +140,17 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// <param name="file">File from which informations will be read</param>
     /// <param name="extensionHint">Optional file extension the loaded data had</param>
     /// <returns>Informations about the audio file, if it is a supported format</returns>
-    public: NUCLEX_AUDIO_API std::optional<TrackInfo> TryReadInfo(
-      const VirtualFile &file, const std::string &extensionHint = std::string()
+    public: NUCLEX_AUDIO_API std::optional<ContainerInfo> TryReadInfo(
+      const std::shared_ptr<const VirtualFile> &file,
+      const std::string &extensionHint = std::string()
     ) const;
 
     /// <summary>Tries to read informations about a audio file</summary>
     /// <param name="path">Path of the file informations will be read from</param>
     /// <returns>Informations about the audio file, if it is a supported format</returns>
-    public: NUCLEX_AUDIO_API std::optional<TrackInfo> TryReadInfo(const std::string &path) const;
+    public: NUCLEX_AUDIO_API std::optional<ContainerInfo> TryReadInfo(
+      const std::string &path
+    ) const;
 
 #if 0
     /// <summary>Checks whether the audio loader can load the specified file</summary>

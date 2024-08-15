@@ -21,11 +21,9 @@ limitations under the License.
 #define NUCLEX_AUDIO_CONTAINERINFO_H
 
 #include "Nuclex/Audio/Config.h"
+#include "Nuclex/Audio/TrackInfo.h"
 
 #include <vector> // for std::vector
-#include <cstddef> // for std::size_t
-#include <optional> // for std::optional
-#include <string> // for std::string
 
 namespace Nuclex { namespace Audio {
 
