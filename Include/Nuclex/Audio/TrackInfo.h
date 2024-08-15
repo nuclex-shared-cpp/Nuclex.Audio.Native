@@ -38,7 +38,7 @@ namespace Nuclex { namespace Audio {
   ///   This structure is returned if you ask a codec to provide informations about
   ///   an audio file before actually loading it.
   /// </remarks>
-  struct NUCLEX_AUDIO_TYPE TrackInfo {
+  class NUCLEX_AUDIO_TYPE TrackInfo {
 
     /// <summary>The name of the audio track, if provided by the container</summary>
     /// <remarks>

@@ -23,6 +23,7 @@ License along with this library
 
 #include "Nuclex/Audio/Storage/AudioLoader.h"
 #include "Nuclex/Audio/Storage/VirtualFile.h"
+#include "Nuclex/Audio/Storage/AudioCodec.h"
 
 #include <Nuclex/Support/Text/StringConverter.h> // for StringConverter
 #include <stdexcept> // for std::runtime_error

@@ -98,7 +98,7 @@ namespace {
         return byteCount;
       } else {
         dataAsBytes += bytesFromBuffer;
-        byteCount -= bytesFromBuffer;
+        byteCount -= static_cast<std::int32_t>(bytesFromBuffer);
       }
     }
 
@@ -137,9 +137,9 @@ namespace {
         state.BufferedBytes.begin(),
         state.BufferedBytes.begin() + bytesFromBuffer
       );
-      return bytesFromBuffer + bytesFromFile;
+      return static_cast<std::int32_t>(bytesFromBuffer + bytesFromFile);
     } else {
-      return bytesFromFile;
+      return static_cast<std::int32_t>(bytesFromFile);
     }
   }
 
@@ -205,8 +205,11 @@ namespace {
     // some acrobatics for read-only streams), but let's, for now, go by the unproven
     // assumption that libwavpack will *not* place the file cursor beyond the end of the file.
     std::uint64_t fileLength = state.File->GetSize();
-    if(fileLength < position) {
-      assert((fileLength < position) && u8"Seek keeps file cursor within file boundaries");
+    if(fileLength < static_cast<std::uint64_t>(position)) {
+      assert(
+        (fileLength < static_cast<std::uint64_t>(position)) &&
+        u8"Seek keeps file cursor within file boundaries"
+      );
       return -1;
     }
 
@@ -253,9 +256,11 @@ namespace {
         }
         case SEEK_CUR: {
           if(delta < 0) {
-            if(state.FileCursor < -delta) {
-              std::int64_t fileCursor = state.FileCursor;
-              assert((fileCursor >= -delta) && u8"Seek from end stops at file start");
+            if(state.FileCursor < static_cast<std::uint64_t>(-delta)) {
+              assert(
+                (state.FileCursor >= static_cast<std::uint64_t>(-delta)) &&
+                u8"Seek from end stops at file start"
+              );
               return -1;
             }
           }
@@ -265,8 +270,11 @@ namespace {
         }
         case SEEK_END: {
           if(delta < 0) {
-            if(fileLength < -delta) {
-              assert((fileLength >= -delta) && u8"Seek from end stops at file start");
+            if(fileLength < static_cast<std::uint64_t>(-delta)) {
+              assert(
+                (fileLength >= static_cast<std::uint64_t>(-delta)) &&
+                u8"Seek from end stops at file start"
+              );
               return -1;
             }
           }
@@ -452,8 +460,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   void StreamAdapterState::RethrowPotentialException(StreamAdapterState &streamAdapterState) {
     if(static_cast<bool>(streamAdapterState.Error)) {
       ON_SCOPE_EXIT {
-        std::exception_ptr empty;
-        streamAdapterState.Error.swap(empty);
+        streamAdapterState.Error = nullptr;
       };
       std::rethrow_exception(streamAdapterState.Error);
     }

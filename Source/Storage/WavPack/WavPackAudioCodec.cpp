@@ -180,6 +180,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
       // Standalone .wv files only have a single track, always.
       TrackInfo &trackInfo = containerInfo.Tracks.emplace_back();
+      trackInfo.CodecName = GetName();
       extractTrackInfo(context, trackInfo);
 
       return containerInfo;

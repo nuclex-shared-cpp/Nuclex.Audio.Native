@@ -29,6 +29,9 @@
     <Filter Include="Source\Errors">
       <UniqueIdentifier>{09d7dad3-b2d9-42e1-b24f-f58c7e5acc9f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Storage\WavPack">
+      <UniqueIdentifier>{c5c45bef-0d66-4302-ac82-5aab77525aa2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Platform\LinuxFileApi.cpp">
@@ -61,6 +64,30 @@
     <ClCompile Include="Source\Track.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Storage\WavPack\WavPackAudioCodec.cpp">
+      <Filter>Source\Storage\WavPack</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\WavPack\WavPackDetection.cpp">
+      <Filter>Source\Storage\WavPack</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\WavPack\WavPackVirtualFileAdapter.cpp">
+      <Filter>Source\Storage\WavPack</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\AudioLoader.cpp">
+      <Filter>Source\Storage</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Platform\WavPackApi.cpp">
+      <Filter>Source\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\AudioSampleFormat.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ContainerInfo.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\TrackInfo.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Documents\EventBenchmark.md" />
@@ -91,9 +118,6 @@
     <ClInclude Include="Include\Nuclex\Audio\Storage\VirtualFile.h">
       <Filter>Include\Storage</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Nuclex\Audio\Storage\AudioReader.h">
-      <Filter>Include\Storage</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Nuclex\Audio\Storage\AudioCodec.h">
       <Filter>Include\Storage</Filter>
     </ClInclude>
@@ -110,6 +134,27 @@
       <Filter>Include</Filter>
     </ClInclude>
     <ClInclude Include="Include\Nuclex\Audio\TrackInfo.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Storage\WavPack\WavPackAudioCodec.h">
+      <Filter>Source\Storage\WavPack</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Storage\WavPack\WavPackDetection.h">
+      <Filter>Source\Storage\WavPack</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Storage\WavPack\WavPackVirtualFileAdapter.h">
+      <Filter>Source\Storage\WavPack</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Platform\WavPackApi.h">
+      <Filter>Source\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\Storage\AudioLoader.h">
+      <Filter>Include\Storage</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\AudioSampleFormat.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\ContainerInfo.h">
       <Filter>Include</Filter>
     </ClInclude>
   </ItemGroup>
