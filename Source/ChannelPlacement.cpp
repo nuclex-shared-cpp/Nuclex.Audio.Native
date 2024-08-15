@@ -291,11 +291,11 @@ namespace {
             return Nuclex::Audio::ChannelPlacement::LowFrequencyEffects;
           }
         } else if(isLfe) {
-          if(!isBass && !isLow && !isFrequency && !isEffects) {
+          if(!isLow && !isFrequency && !isEffects) {
             return Nuclex::Audio::ChannelPlacement::LowFrequencyEffects;
           }
         } else if(isLow) {
-          if(!isBass && !isLfe && isFrequency) {
+          if(isFrequency) {
             return Nuclex::Audio::ChannelPlacement::LowFrequencyEffects;
           }
         }

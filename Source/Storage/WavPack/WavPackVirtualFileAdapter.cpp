@@ -28,13 +28,15 @@ limitations under the License.
 #include <cassert> // for assert()
 #include <algorithm> // for std::copy_n()
 
-#include "Nuclex/Audio/Storage/VirtualFile.h"
+#include <Nuclex/Support/ScopeGuard.h> // for ScopeGuard
+
+#include "Nuclex/Audio/Storage/VirtualFile.h" // for VitualFile
 
 // Design notes:
 //
-// I'm not entirely happy with the length to which I have to go to adapt my VirtualFile
-// interface for WavPack. Its use of ungetc() (push a character back into the read buffer
-// so it is seen on the next read as if it was in the file) really complicates things.
+// I'm not entirely happy with the lengths I have to go to adapt my VirtualFile interface
+// for WavPack. Its use of ungetc() (push a character back into the read buffer so it is
+// seen on the next read as if it was in the file) really complicates things.
 //
 // - It might suffice to allow for a single ungetc() character,
 // - It might even suffice to just rewind the file cursor because libwavpack only ever
@@ -443,6 +445,18 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     streamReader.close = &wavPackClose<WritableStreamAdapterState>;
 
     return adapter;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void StreamAdapterState::RethrowPotentialException(StreamAdapterState &streamAdapterState) {
+    if(static_cast<bool>(streamAdapterState.Error)) {
+      ON_SCOPE_EXIT {
+        std::exception_ptr empty;
+        streamAdapterState.Error.swap(empty);
+      };
+      std::rethrow_exception(streamAdapterState.Error);
+    }
   }
 
   // ------------------------------------------------------------------------------------------- //

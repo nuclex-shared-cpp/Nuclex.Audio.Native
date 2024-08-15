@@ -24,6 +24,8 @@ limitations under the License.
 
 #if defined(NUCLEX_AUDIO_HAVE_WAVPACK)
 
+#include <Nuclex/Support/Events/Delegate.h> // for Delegate
+
 #include <string> // for std::string
 #include <memory> // for std::shared_ptr
 #include <vector> // for std::vector
@@ -90,6 +92,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
     ///   closed again.
     /// </remarks>
     public: static std::shared_ptr<::WavpackContext> OpenStreamReaderInput(
+      const Nuclex::Support::Events::Delegate<void()> &throwRootCauseException,
       WavpackStreamReader64 &streamReader,
       void *mainFileContext,
       void *correctionFileContext = nullptr,
@@ -146,9 +149,8 @@ namespace Nuclex { namespace Audio { namespace Platform {
     /// <returns>The total number of samples stored in the WavPack file</returns>
     /// <remarks>
     ///   This is the number of samples in each channel. Audio libraries often call this
-    ///   frames, such that (frame = sample times num_channels). WavPack uses samples to
-    ///   refer to both (), so if you unpack samples, you get them interleaved for all
-    ///   channels, but they're still called samples.
+    ///   frames, such that (frame = samples times num_channels). WavPack uses samples to
+    ///   refer to both (sometimes calling a slice of all channels complete samples).
     /// </remarks>
     public: static std::int64_t GetNumSamples64(
       const std::shared_ptr<::WavpackContext> &context

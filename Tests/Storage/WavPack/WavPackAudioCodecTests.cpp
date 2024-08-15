@@ -21,6 +21,7 @@ limitations under the License.
 #define NUCLEX_AUDIO_SOURCE 1
 
 #include "../../../Source/Storage/WavPack/WavPackDetection.h"
+#include "../FailingVirtualFile.h"
 
 #if defined(NUCLEX_AUDIO_HAVE_WAVPACK)
 
@@ -42,21 +43,70 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(WavPackAudioCodecTest, CanReadInfoFromWavPackFile) {
-    
-    // TODO: Copy test files to output directory? Expect them in a specific relative path?
-
-    WavPackAudioCodec codec;
-
-    // Our path:   <ProjectDir>/bin/linux-gcc13.2-amd64-debug/NuclexAudioNativeTests
-    // Test files: <ProjectDir>/Resources/*.wv
-    //
-    // Working directory the unit tests are executed in by Visual Studio Codium: <ProjectDir>
+  TEST(WavPackAudioCodecTest, ExceptionsFromVirtualFileResurface) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
-      //u8"../../Resources/5s-silent-stereo-float.wv"
       u8"Resources/5s-silent-stereo-float.wv"
     );
-    codec.TryReadInfo(file);
+    std::shared_ptr<const VirtualFile> failingFile = std::make_shared<FailingVirtualFile>(
+      file
+    );
+
+    // If the error is forwarded correctly, the domain_error will resurface from the call.
+    // Should a plain runtime_error surface here, tjhen error checking was happening but
+    // the libwavpack error return took precedence over the VirtualFile exception, which is
+    // not what we want because it obscures the root cause of the error.
+    WavPackAudioCodec codec;
+    EXPECT_THROW(
+      std::optional<ContainerInfo> info = codec.TryReadInfo(failingFile),
+      std::domain_error
+    );
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(WavPackAudioCodecTest, CanReadInfoFromFloatStereoFile) {
+    std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
+      u8"Resources/5s-silent-stereo-float.wv"
+    );
+
+    WavPackAudioCodec codec;
+    std::optional<ContainerInfo> info = codec.TryReadInfo(file);
+
+    ASSERT_TRUE(info.has_value());
+
+    EXPECT_EQ(info.value().Tracks.at(0).ChannelCount, 2U);
+    EXPECT_EQ(
+      info.value().Tracks.at(0).ChannelPlacements,
+      ChannelPlacement::FrontLeft | ChannelPlacement::FrontRight
+    );
+    EXPECT_TRUE(info.value().Tracks.at(0).Duration == std::chrono::seconds(5));
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(WavPackAudioCodecTest, CanReadInfoFromFloatSurroundFile) {
+    std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
+      u8"Resources/5s-silent-5dot1-float.wv"
+    );
+
+    WavPackAudioCodec codec;
+    std::optional<ContainerInfo> info = codec.TryReadInfo(file);
+
+    ASSERT_TRUE(info.has_value());
+
+    EXPECT_EQ(info.value().Tracks.at(0).ChannelCount, 6U);
+    EXPECT_EQ(
+      info.value().Tracks.at(0).ChannelPlacements,
+      (
+        ChannelPlacement::FrontCenter |
+        ChannelPlacement::FrontLeft |
+        ChannelPlacement::FrontRight |
+        ChannelPlacement::BackLeft |
+        ChannelPlacement::BackRight |
+        ChannelPlacement::LowFrequencyEffects
+      )
+    );
+    EXPECT_TRUE(info.value().Tracks.at(0).Duration == std::chrono::seconds(5));
   }
 
   // ------------------------------------------------------------------------------------------- //

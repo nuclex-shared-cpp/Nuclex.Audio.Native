@@ -48,6 +48,12 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   /// <summary>Stores informations processed by the WavPack stream adapters</summary>
   struct StreamAdapterState {
 
+    /// <summary>
+    ///   Re-throws any exceptions that happened while libwavpack accessed the adapter
+    /// </summary>
+    /// <param name="streamAdapterState">State that will be checked for an exception</param>
+    public: static void RethrowPotentialException(StreamAdapterState &state);
+
     /// <summary>Whether this environment supports writing to the virtual file</summary>
     public: bool IsReadOnly;
     /// <summary>Current position of the emulated file cursor</summary>
@@ -109,12 +115,6 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
       const std::shared_ptr<VirtualFile> &writableFile,
       WavpackStreamReader64 &streamReader
     );
-
-    /*
-    public: static void ReraiseExceptions(
-      const std::unique_ptr<StreamAdapterState> &streamAdapterState
-    );
-    */
 
   };
 

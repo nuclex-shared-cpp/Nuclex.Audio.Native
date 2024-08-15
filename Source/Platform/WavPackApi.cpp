@@ -62,6 +62,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
   // ------------------------------------------------------------------------------------------- //
 
   std::shared_ptr<::WavpackContext> WavPackApi::OpenStreamReaderInput(
+    const Nuclex::Support::Events::Delegate<void()> &throwRootCauseException,
     WavpackStreamReader64 &streamReader,
     void *mainFileContext,
     void *correctionFileContext /* = nullptr */,
@@ -71,17 +72,19 @@ namespace Nuclex { namespace Audio { namespace Platform {
     std::string errorMessage;
     errorMessage.resize(81);
 
-    WavpackContext *context = ::WavpackOpenFileInputEx64(
+    ::WavpackContext *context = ::WavpackOpenFileInputEx64(
       &streamReader, mainFileContext, correctionFileContext,
       errorMessage.data(), flags, normOffset
     );
     if(context == nullptr) {
+      throwRootCauseException();
+
       std::string message(u8"Error opening virtuai file via libwavpack: ", 43);
       message.append(errorMessage.c_str()); // because it's only part filled and zero t'ed.
       throw std::runtime_error(message);
     }
 
-    return std::shared_ptr<WavpackContext>(context, &::WavpackCloseFile);
+    return std::shared_ptr<::WavpackContext>(context, &::WavpackCloseFile);
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -131,7 +134,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
   std::int64_t WavPackApi::GetNumSamples64(
     const std::shared_ptr<::WavpackContext> &context
   ) {
-    std::int64_t sampleCount = ::WavpackGetNumSamples(context.get());
+    std::int64_t sampleCount = ::WavpackGetNumSamples64(context.get());
     if(sampleCount == -1) {
       throw std::runtime_error(u8"Unable to determine sample rate of WavPack audio file");
     }
