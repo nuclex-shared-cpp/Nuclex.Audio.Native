@@ -102,6 +102,29 @@ namespace {
     trackInfo.Duration = std::chrono::microseconds(
       frameCount * MicrosecondsPerSecond / WavPackApi::GetSampleRate(context)
     );
+
+    // Figure out the data format closest to the data stored by WavPack. Normally it
+    // should be an exact match, but WavPack leaves room to store fewer bits, not only
+    // for 24-bit formats. For the sake of robustness, we'll anticipate those, too.
+    int mode = WavPackApi::GetMode(context);
+    int bitsPerSample = WavPackApi::GetBitsPerSample(context);
+    if((mode & MODE_FLOAT) != 0) {
+      if(bitsPerSample >= 33) {
+        trackInfo.SampleFormat = Nuclex::Audio::AudioSampleFormat::Float_64;
+      } else {
+        trackInfo.SampleFormat = Nuclex::Audio::AudioSampleFormat::Float_32;
+      }
+    } else {
+      if(bitsPerSample >= 25) {
+        trackInfo.SampleFormat = Nuclex::Audio::AudioSampleFormat::SignedInteger_32;
+      } else if(bitsPerSample >= 17) {
+        trackInfo.SampleFormat = Nuclex::Audio::AudioSampleFormat::SignedInteger_24;
+      } else if(bitsPerSample >= 9) {
+        trackInfo.SampleFormat = Nuclex::Audio::AudioSampleFormat::SignedInteger_16;
+      } else {
+        trackInfo.SampleFormat = Nuclex::Audio::AudioSampleFormat::UnsignedInteger_8;
+      }
+    }
   }
 
   // ------------------------------------------------------------------------------------------- //

@@ -61,14 +61,27 @@ namespace Nuclex { namespace Audio {
     /// <summary>Name of the codec used to compress / store the audio samples</summary>
     public: std::string CodecName;
 
-    /// <summary>Placements for which this track provides audio channels</summary>
-    public: ChannelPlacement ChannelPlacements;
+    /// <summary>Duration of the audio track</summary>
+    public: std::chrono::microseconds Duration;
 
     /// <summary>Number of audio channels in the track</summary>
     public: std::size_t ChannelCount;
 
-    /// <summary>Duration of the audio track</summary>
-    public: std::chrono::microseconds Duration;
+    /// <summary>Placements for which this track provides audio channels</summary>
+    public: ChannelPlacement ChannelPlacements;
+
+    /// <summary>Format in which the audio samples are recorded</summary>
+    /// <remarks>
+    ///   <para>
+    ///     This can, but doesn't have to be the same format in which you read data.
+    ///     For offline audio processing, you could simply always request the data as
+    ///     fldeal with floats or
+    ///     doub
+    ///     For example, to read 24-bit audio you will have to use arrays of
+    ///     32-bit integers (which will be appropriately repeat-padded). You can use
+    ///   this to decide on a code path, i.e. hav
+    /// </remarks>
+    public: AudioSampleFormat SampleFormat;
 
     // CHECK: Is IsMono() confusing? If one splits 5.1 audio into 6 channels they would
     //        be mono, but this method would return false because they're not
