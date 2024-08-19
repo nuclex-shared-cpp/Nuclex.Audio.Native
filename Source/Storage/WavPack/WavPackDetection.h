@@ -53,7 +53,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Helper class for reading WavPack files</summary>
+  /// <summary>Helper class for detecting WavPack files</summary>
   class Detection {
 
     /// <summary>Checks if the specified file extension indicates a .wv file</summary>

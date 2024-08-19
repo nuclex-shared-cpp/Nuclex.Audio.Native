@@ -20,7 +20,10 @@ limitations under the License.
 // If the library is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_AUDIO_SOURCE 1
 
-#include "../../../Source/Storage/Flac/FlacHelpers.h"
+#include "../../../Source/Storage/Flac/FlacDetection.h"
+
+#if defined(NUCLEX_AUDIO_HAVE_FLAC)
+
 #include "Nuclex/Audio/Storage/VirtualFile.h"
 
 #include <gtest/gtest.h>
@@ -100,22 +103,24 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(FlacHelpersTest, DetectsFlacFiles) {
+  TEST(FlacDetectionTest, DetectsFlacFiles) {
     {
       std::uint8_t dummyData[32] = {
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5,
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5
       };
       const InMemoryFile dummyFile(dummyData, sizeof(dummyData));
-      EXPECT_FALSE(Helpers::CheckIfFlacHeaderPresent(dummyFile));
+      EXPECT_FALSE(Detection::CheckIfFlacHeaderPresent(dummyFile));
     }
 
     {
       const InMemoryFile flacFile(smallestPossibleFlacFile, sizeof(smallestPossibleFlacFile));
-      EXPECT_TRUE(Helpers::CheckIfFlacHeaderPresent(flacFile));
+      EXPECT_TRUE(Detection::CheckIfFlacHeaderPresent(flacFile));
     }
   }
 
   // ------------------------------------------------------------------------------------------- //
 
 }}}} // namespace Nuclex::Audio::Storage::Flac
+
+#endif defined(NUCLEX_AUDIO_HAVE_FLAC)

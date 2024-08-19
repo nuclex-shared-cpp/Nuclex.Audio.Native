@@ -17,10 +17,12 @@ limitations under the License.
 */
 #pragma endregion // Apache License 2.0
 
-#ifndef NUCLEX_AUDIO_STORAGE_FLAC_FLACHELPERS_H
-#define NUCLEX_AUDIO_STORAGE_FLAC_FLACHELPERS_H
+#ifndef NUCLEX_AUDIO_STORAGE_FLAC_FLACDETECTION_H
+#define NUCLEX_AUDIO_STORAGE_FLAC_FLACDETECTION_H
 
 #include "Nuclex/Audio/Config.h"
+
+#if defined(NUCLEX_AUDIO_HAVE_FLAC)
 
 #include <string> // for std::string
 #include <memory> // for std::unique_ptr
@@ -49,8 +51,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Helper class for reading FLAC files using libFLAC</summary>
-  class Helpers {
+  /// <summary>Helper class for detecting FLAC files using libFLAC</summary>
+  class Detection {
 
     /// <summary>Checks if the specified file extension indicates a .flac file</summary>
     /// <param name="extension">File extension (can be with or without leading dot)</param>
@@ -68,4 +70,6 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
 }}}} // namespace Nuclex::Audio::Storage::Flac
 
-#endif // NUCLEX_AUDIO_STORAGE_FLAC_FLACHELPERS_H
+#endif // defined(NUCLEX_AUDIO_HAVE_FLAC)
+
+#endif // NUCLEX_AUDIO_STORAGE_FLAC_FLACDETECTION_H

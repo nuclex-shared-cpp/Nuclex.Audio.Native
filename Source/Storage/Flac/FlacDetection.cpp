@@ -20,7 +20,9 @@ limitations under the License.
 // If the library is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_AUDIO_SOURCE 1
 
-#include "./FlacHelpers.h"
+#include "./FlacDetection.h"
+
+#if defined(NUCLEX_AUDIO_HAVE_FLAC)
 
 #include "Nuclex/Audio/Storage/VirtualFile.h"
 
@@ -35,7 +37,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
   // ------------------------------------------------------------------------------------------- //
 
-  bool Helpers::DoesFileExtensionSayFlac(const std::string &extension) {
+  bool Detection::DoesFileExtensionSayFlac(const std::string &extension) {
     bool extensionSaysFlac;
 
     // FLAC audio generally only uses one file extension, .flac
@@ -67,7 +69,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
   // ------------------------------------------------------------------------------------------- //
 
-  bool Helpers::CheckIfFlacHeaderPresent(const VirtualFile &source) {
+  bool Detection::CheckIfFlacHeaderPresent(const VirtualFile &source) {
     if(source.GetSize() < SmallestPossibleFlacSize) {
       return false; // File is too small to be a .flac file
     }
@@ -146,3 +148,5 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
   // ------------------------------------------------------------------------------------------- //
 
 }}}} // namespace Nuclex::Audio::Storage::Flac
+
+#endif // defined(NUCLEX_AUDIO_HAVE_FLAC)
