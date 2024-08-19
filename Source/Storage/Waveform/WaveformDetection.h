@@ -17,8 +17,8 @@ limitations under the License.
 */
 #pragma endregion // Apache License 2.0
 
-#ifndef NUCLEX_AUDIO_STORAGE_WAVEFORM_WAVEFORMHELPERS_H
-#define NUCLEX_AUDIO_STORAGE_WAVEFORM_WAVEFORMHELPERS_H
+#ifndef NUCLEX_AUDIO_STORAGE_WAVEFORM_WAVEFORMDETECTION_H
+#define NUCLEX_AUDIO_STORAGE_WAVEFORM_WAVEFORMDETECTION_H
 
 #include "Nuclex/Audio/Config.h"
 
@@ -49,7 +49,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Helper class for reading Waveform files</summary>
-  class Helpers {
+  class Detection {
 
     /// <summary>Checks if the specified file extension indicates a .wav file</summary>
     /// <param name="extension">File extension (can be with or without leading dot)</param>
@@ -67,4 +67,4 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
 }}}} // namespace Nuclex::Audio::Storage::Waveform
 
-#endif // NUCLEX_AUDIO_STORAGE_WAVEFORM_WAVEFORMHELPERS_H
+#endif // NUCLEX_AUDIO_STORAGE_WAVEFORM_WAVEFORMDETECTION_H

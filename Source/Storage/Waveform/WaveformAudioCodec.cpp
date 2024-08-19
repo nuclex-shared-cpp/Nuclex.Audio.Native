@@ -35,6 +35,31 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
   // ------------------------------------------------------------------------------------------- //
 
+  const std::string &WaveformAudioCodec::GetName() const {
+    const static std::string codecName(u8"Microsoft Waveform", 18);
+    return codecName;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  const std::vector<std::string> &WaveformAudioCodec::GetFileExtensions() const  {
+    const static std::vector<std::string> extensions {
+      std::string(u8"wav", 3),
+      std::string(u8"wave", 4)
+    };
+
+    return extensions;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::optional<ContainerInfo> WaveformAudioCodec::TryReadInfo(
+    const std::shared_ptr<const VirtualFile> &source,
+    const std::string &extensionHint /* = std::string() */
+  ) const {
+    return std::optional<ContainerInfo>();
+  }
+
   // ------------------------------------------------------------------------------------------- //
 
 }}}} // namespace Nuclex::Audio::Storage::Waveform

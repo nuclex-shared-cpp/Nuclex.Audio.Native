@@ -44,6 +44,7 @@ License along with this library
 #if defined(NUCLEX_AUDIO_HAVE_WAVPACK)
 #include "WavPack/WavPackAudioCodec.h"
 #endif
+#include "Waveform/WaveformAudioCodec.h"
 
 namespace {
 
@@ -79,6 +80,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
 #if defined(NUCLEX_AUDIO_HAVE_WAVPACK)
     RegisterCodec(std::make_unique<WavPack::WavPackAudioCodec>());
 #endif
+    RegisterCodec(std::make_unique<Waveform::WaveformAudioCodec>());
   }
 
   // ------------------------------------------------------------------------------------------- //

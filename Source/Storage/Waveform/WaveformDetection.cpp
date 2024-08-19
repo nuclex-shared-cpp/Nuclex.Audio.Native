@@ -20,7 +20,7 @@ limitations under the License.
 // If the library is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_AUDIO_SOURCE 1
 
-#include "./WaveformHelpers.h"
+#include "./WaveformDetection.h"
 #include "Nuclex/Audio/Storage/VirtualFile.h"
 
 namespace {
@@ -34,7 +34,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
   // ------------------------------------------------------------------------------------------- //
 
-  bool Helpers::DoesFileExtensionSayWav(const std::string &extension) {
+  bool Detection::DoesFileExtensionSayWav(const std::string &extension) {
     bool extensionSaysWav;
 
     // Microsoft Waveform audio files can have the extension .wav or (rarely) .wave.
@@ -103,8 +103,13 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
   //                        then skips over chunks until the "fmt" chunk is found
   //   * mackron/miniaudio -> skips chunks until "fmt" chunk is found
   //   * wcaleniekubaa/wave -> only handles RIFF(?), fmt, data, skips until "fmt" chunk found
+  //
+  // We don't want to scan through the whole file to detect its type,
+  // so instead we check for everything else (RIFF file, WAVE data and that *some* chunk,
+  // not necessarily the "fmt" chunk, begins after the header).
+  // 
 
-  bool Helpers::CheckIfWaveformHeaderPresent(const VirtualFile &source) {
+  bool Detection::CheckIfWaveformHeaderPresent(const VirtualFile &source) {
     if(source.GetSize() < SmallestPossibleWaveformSize) {
       return false; // File is too small to be a .wav file
     }

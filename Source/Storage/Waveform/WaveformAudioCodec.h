@@ -43,7 +43,30 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Encodes and decodes uncompressed Waveform audio files (*.wav)</summary>
-  class WavformAudioCodec : public AudioCodec {
+  class WaveformAudioCodec : public AudioCodec {
+
+    /// <summary>Initializes a new audio codec</summary>
+    public: WaveformAudioCodec() = default;
+
+    /// <summary>Frees all resources held by the audio codec</summary>
+    public: ~WaveformAudioCodec() override = default;
+
+    /// <summary>Gives the name of the file format implemented by this codec</summary>
+    /// <returns>The name of the file format this codec implements</returns>
+    public: const std::string &GetName() const override;
+
+    /// <summary>Provides commonly used file extensions for this codec</summary>
+    /// <returns>The commonly used file extensions in order of preference</returns>
+    public: const std::vector<std::string> &GetFileExtensions() const override;
+
+    /// <summary>Tries to read informations for an audio container</summary>
+    /// <param name="source">Source data from which the informations should be extracted</param>
+    /// <param name="extensionHint">Optional file extension the loaded data had</param>
+    /// <returns>Informations about the audio container, if the codec can load it</returns>
+    public: std::optional<ContainerInfo> TryReadInfo(
+      const std::shared_ptr<const VirtualFile> &source,
+      const std::string &extensionHint = std::string()
+    ) const override;
 
   };
 

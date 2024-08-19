@@ -20,7 +20,7 @@ limitations under the License.
 // If the library is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_AUDIO_SOURCE 1
 
-#include "../../../Source/Storage/Waveform/WaveformHelpers.h"
+#include "../../../Source/Storage/Waveform/WaveformDetection.h"
 
 #include "Nuclex/Audio/Storage/VirtualFile.h"
 
@@ -97,21 +97,21 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(WaveHelpersTest, DetectsWavPackFiles) {
+  TEST(WaveformDetectionTest, DetectsWaveformFiles) {
     {
       std::uint8_t dummyData[32] = {
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5,
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5
       };
       const InMemoryFile dummyFile(dummyData, sizeof(dummyData));
-      EXPECT_FALSE(Helpers::CheckIfWaveformHeaderPresent(dummyFile));
+      EXPECT_FALSE(Detection::CheckIfWaveformHeaderPresent(dummyFile));
     }
 
     {
-      const InMemoryFile flacFile(
+      const InMemoryFile waveFile(
         smallestPossibleWaveFile, sizeof(smallestPossibleWaveFile)
       );
-      EXPECT_TRUE(Helpers::CheckIfWaveformHeaderPresent(flacFile));
+      EXPECT_TRUE(Detection::CheckIfWaveformHeaderPresent(waveFile));
     }
   }
 
