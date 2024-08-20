@@ -74,22 +74,36 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     std::uint8_t fileHeader[16];
     source.ReadAt(0, 16, fileHeader);
 
+    // The WavPack block headers are entirely in little endian (see WavPack 4 and 5
+    // file format specification, chapter "2.0 Block Header"), so put these integers
+    // together by hand to aovid any endian mix-ups
+
+    // Size of the entire block minus 8 bytes (the block's fourcc + this size field)
+    std::uint32_t blockSize = (
+      (static_cast<std::uint32_t>(fileHeader[4])) |
+      (static_cast<std::uint32_t>(fileHeader[5]) << 8) |
+      (static_cast<std::uint32_t>(fileHeader[6]) << 16) |
+      (static_cast<std::uint32_t>(fileHeader[7]) << 24)
+    );
+
+    // Version needed to decode the file
+    std::uint32_t version = (
+      (static_cast<std::uint16_t>(fileHeader[8])) |
+      (static_cast<std::uint16_t>(fileHeader[9]) << 8)
+    );
+
     // This checks all headers and magic numbers that are mandatory and makes sure
     // that there is at least one sub-chunk with a valid length - it will probably
     // always be the "fmt" chunk, but we don't want to be the only library that
     // has trouble with a non-standard Waveformat audio file everyone else can load.
     return (
-      (fileHeader[0] == 0x77) && //  1 wvpk (file type id)
-      (fileHeader[1] == 0x76) && //  2
-      (fileHeader[2] == 0x70) && //  3
-      (fileHeader[3] == 0x6b) && //  4
-      (                          //  - uint32 with block size. *Should* be below 1 MiB.
-        (*reinterpret_cast<const std::uint32_t *>(fileHeader + 4) < 0x01000000) // 16 MiB
-      ) &&
-      (                          //  - uint32 for version needed to decode
-        (*reinterpret_cast<const std::uint16_t *>(fileHeader + 8) >= 0x400) && // minimum v4.00
-        (*reinterpret_cast<const std::uint16_t *>(fileHeader + 8) < 0x999) // up to v9.99
-      )
+      (fileHeader[0] == 0x77) &&  //  1 w | ckID (fourcc; file type id)
+      (fileHeader[1] == 0x76) &&  //  2 v |
+      (fileHeader[2] == 0x70) &&  //  3 p |
+      (fileHeader[3] == 0x6b) &&  //  4 k |
+      (blockSize < 0x01000000) && // Block size: *should* be below 1 MiB, we check for 16 MiB
+      (version >= 0x400) &&       // Version: expect at least version 4 for this format
+      (version < 0x999)           // Version: allow up to 9.99 before assuming bad file
     );
   }
 
