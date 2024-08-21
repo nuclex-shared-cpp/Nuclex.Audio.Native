@@ -42,7 +42,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     // This should not lead to an exception because it is an unrecognized file type,
     // rather than a damaged but identifiable file.
     std::optional<ContainerInfo> info = (
-      loader.TryReadInfo(u8"Resources/one-megabyte-of-random-bytes.bin")
+      loader.TryReadInfo(u8"Resources/one-hundred-kilobytes-of-random-bytes.bin")
     );
     EXPECT_FALSE(info.has_value());
   }
@@ -53,7 +53,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     AudioLoader loader;
 
     std::optional<ContainerInfo> info = (
-      loader.TryReadInfo(u8"Resources/5s-silent-5dot1-float.wv")
+      loader.TryReadInfo(u8"Resources/wavpack-stereo-int16-v416.wv")
     );
     EXPECT_TRUE(info.has_value());
   }

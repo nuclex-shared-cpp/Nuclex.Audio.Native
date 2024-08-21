@@ -45,7 +45,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   TEST(WavPackAudioCodecTest, ExceptionsFromVirtualFileResurface) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
-      u8"Resources/5s-silent-stereo-float.wv"
+      u8"Resources/wavpack-stereo-float32-v416.wv"
     );
     std::shared_ptr<const VirtualFile> failingFile = std::make_shared<FailingVirtualFile>(
       file
@@ -66,7 +66,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   TEST(WavPackAudioCodecTest, CanReadInfoFromFloatStereoFile) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
-      u8"Resources/5s-silent-stereo-float.wv"
+      u8"Resources/wavpack-stereo-float32-v416.wv"
     );
 
     WavPackAudioCodec codec;
@@ -79,14 +79,14 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
       info.value().Tracks.at(0).ChannelPlacements,
       ChannelPlacement::FrontLeft | ChannelPlacement::FrontRight
     );
-    EXPECT_TRUE(info.value().Tracks.at(0).Duration == std::chrono::seconds(5));
+    EXPECT_TRUE(info.value().Tracks.at(0).Duration == std::chrono::seconds(1));
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   TEST(WavPackAudioCodecTest, CanReadInfoFromFloatSurroundFile) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
-      u8"Resources/5s-silent-5dot1-float.wv"
+      u8"Resources/wavpack-5dot1-int16-v416.wv"
     );
 
     WavPackAudioCodec codec;
@@ -106,7 +106,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
         ChannelPlacement::LowFrequencyEffects
       )
     );
-    EXPECT_TRUE(info.value().Tracks.at(0).Duration == std::chrono::seconds(5));
+    EXPECT_TRUE(info.value().Tracks.at(0).Duration == std::chrono::seconds(1));
   }
 
   // ------------------------------------------------------------------------------------------- //
