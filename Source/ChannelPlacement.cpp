@@ -339,7 +339,7 @@ namespace Nuclex { namespace Audio {
     }
 
     if(result.empty()) {
-      result.append(u8"none", 4);
+      result.assign(u8"none", 4);
     }
 
     return result;

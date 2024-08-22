@@ -48,7 +48,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Helper class for reading Waveform files</summary>
+  /// <summary>Helper class for detecting Waveform files</summary>
   class Detection {
 
     /// <summary>Checks if the specified file extension indicates a .wav file</summary>

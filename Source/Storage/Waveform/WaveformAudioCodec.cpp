@@ -22,6 +22,7 @@ limitations under the License.
 
 #include "./WaveformAudioCodec.h"
 #include "./WaveformDetection.h"
+#include "./WaveformHelpers.h"
 #include "../EndianReader.h"
 
 #include "Nuclex/Audio/Storage/VirtualFile.h"
@@ -147,6 +148,7 @@ namespace {
     const std::uint8_t *chunk, std::size_t chunkLength
   ) {
     using Nuclex::Audio::ChannelPlacement;
+    using Nuclex::Audio::Storage::Waveform::Helpers;
 
     // These fields are safe to read without checking the length since this method is only
     // ever invoked if there are at least enough bytes for one full WAVEFORMAT header.
@@ -165,6 +167,7 @@ namespace {
     // was set to 'WAVE_FORMAT_PCM', but this was later retconned to be 'WAVEFORMATEX'
     // and made mandatory for all present and future format tags.
     if((formatTag == WaveFormatPcm) || (formatTag == WaveFormatFloatPcm)) {
+
       if(chunkLength < 22 - 8) {
         throw Nuclex::Audio::Errors::CorruptedFileError(
           u8"Waveform audio file claims PCMWAVEFORMAT or WAVEFORMATEX header, "
@@ -195,44 +198,7 @@ namespace {
       // were mentioned (without explicitly stating that more would be in violation).
       // Either way, nobody cares, our only problem with more channels is that their
       // placements are unknown. We do some guesswork here.
-      if(trackInfo.ChannelCount == 8) {
-        trackInfo.ChannelPlacements = (
-          ChannelPlacement::FrontLeft | ChannelPlacement::FrontRight |
-          ChannelPlacement::FrontCenter | ChannelPlacement::LowFrequencyEffects |
-          ChannelPlacement::SideLeft | ChannelPlacement::SideRight |
-          ChannelPlacement::BackLeft | ChannelPlacement::BackRight
-        );
-      } else if(trackInfo.ChannelCount == 6) {
-        trackInfo.ChannelPlacements = (
-          ChannelPlacement::FrontLeft | ChannelPlacement::FrontRight |
-          ChannelPlacement::FrontCenter | ChannelPlacement::LowFrequencyEffects |
-          ChannelPlacement::BackLeft | ChannelPlacement::BackRight
-        );
-      } else if(trackInfo.ChannelCount == 5) {
-        trackInfo.ChannelPlacements = (
-          ChannelPlacement::FrontLeft | ChannelPlacement::FrontRight |
-          ChannelPlacement::BackLeft | ChannelPlacement::BackRight |
-          ChannelPlacement::LowFrequencyEffects
-        );
-      } else if(trackInfo.ChannelCount == 4) {
-        trackInfo.ChannelPlacements = (
-          ChannelPlacement::FrontLeft | ChannelPlacement::FrontRight |
-          ChannelPlacement::BackLeft | ChannelPlacement::BackRight
-        );
-      } else if(trackInfo.ChannelCount == 3) {
-        trackInfo.ChannelPlacements = (
-          ChannelPlacement::FrontLeft | ChannelPlacement::FrontRight |
-          ChannelPlacement::LowFrequencyEffects
-        );
-      } else if(trackInfo.ChannelCount == 2) {
-        trackInfo.ChannelPlacements = (
-          ChannelPlacement::FrontLeft | ChannelPlacement::FrontRight
-        );
-      } else if(trackInfo.ChannelCount == 1) {
-        trackInfo.ChannelPlacements = ChannelPlacement::FrontCenter;
-      } else {
-        trackInfo.ChannelPlacements = ChannelPlacement::Unknown;
-      }
+      trackInfo.ChannelPlacements = Helpers::GuessChannelPlacement(trackInfo.ChannelCount);
 
     } else if(formatTag == WaveFormatExtensible) {
       if(chunkLength != 40) {
@@ -381,7 +347,7 @@ namespace {
       }
 
       // Chunks are 16-bit aligned, but this alignment does not influence the chunk length
-      // field inside the chunk itself. This, if the chunk length is an even number of bytes,
+      // field inside the chunk itself. Thus, if the chunk length is an even number of bytes,
       // it will be padded with a zero byte. We need to account for this here.
       if((chunkLength & 1) != 0) {
         ++chunkLength;
