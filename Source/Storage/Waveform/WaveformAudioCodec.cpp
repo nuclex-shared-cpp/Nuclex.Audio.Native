@@ -72,13 +72,13 @@ namespace {
   /// <summary>GUID for the integer PCM audio subformat in WAVEFORMATEXTENSIBLE</summary>
   const Guid WaveFormatSubTypePcm = {
     0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00,
-    0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x98, 0x71
+    0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71
   };
 
   /// <summary>GUID for the float PCM audio subformat in WAVEFORMATEXTENSIBLE</summary>
   const Guid WaveFormatSubTypeIeeeFloat = {
     0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00,
-    0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x98, 0x71
+    0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71
   };
 
   // ------------------------------------------------------------------------------------------- //
@@ -146,6 +146,7 @@ namespace {
     Nuclex::Audio::TrackInfo &trackInfo,
     const std::uint8_t *chunk, std::size_t chunkLength
   ) {
+    using Nuclex::Audio::ChannelPlacement;
 
     // These are safe to read without checking the length since this method is only ever
     // invoked with if there are at least enough bytes for one WAVEFORMAT header present.
@@ -174,6 +175,58 @@ namespace {
       trackInfo.BitsPerSample = static_cast<std::size_t>(
         TReader::ReadUInt16(chunk + 22)
       );
+      if(trackInfo.BitsPerSample >= 33) {
+        trackInfo.SampleFormat = Nuclex::Audio::AudioSampleFormat::Float_64;
+      } else if(formatTag == WaveFormatFloatPcm) {
+        trackInfo.SampleFormat = Nuclex::Audio::AudioSampleFormat::Float_32;
+      } else if(trackInfo.BitsPerSample >= 25) {
+        trackInfo.SampleFormat = Nuclex::Audio::AudioSampleFormat::SignedInteger_32;
+      } else if(trackInfo.BitsPerSample >= 17) {
+        trackInfo.SampleFormat = Nuclex::Audio::AudioSampleFormat::SignedInteger_24;
+      } else if(trackInfo.BitsPerSample >= 9) {
+        trackInfo.SampleFormat = Nuclex::Audio::AudioSampleFormat::SignedInteger_16;
+      } else {
+        trackInfo.SampleFormat = Nuclex::Audio::AudioSampleFormat::UnsignedInteger_8;
+      }
+
+      if(trackInfo.ChannelCount == 8) {
+        trackInfo.ChannelPlacements = (
+          ChannelPlacement::FrontLeft | ChannelPlacement::FrontRight |
+          ChannelPlacement::FrontCenter | ChannelPlacement::LowFrequencyEffects |
+          ChannelPlacement::SideLeft | ChannelPlacement::SideRight |
+          ChannelPlacement::BackLeft | ChannelPlacement::BackRight
+        );
+      } else if(trackInfo.ChannelCount == 6) {
+        trackInfo.ChannelPlacements = (
+          ChannelPlacement::FrontLeft | ChannelPlacement::FrontRight |
+          ChannelPlacement::FrontCenter | ChannelPlacement::LowFrequencyEffects |
+          ChannelPlacement::BackLeft | ChannelPlacement::BackRight
+        );
+      } else if(trackInfo.ChannelCount == 5) {
+        trackInfo.ChannelPlacements = (
+          ChannelPlacement::FrontLeft | ChannelPlacement::FrontRight |
+          ChannelPlacement::BackLeft | ChannelPlacement::BackRight |
+          ChannelPlacement::LowFrequencyEffects
+        );
+      } else if(trackInfo.ChannelCount == 4) {
+        trackInfo.ChannelPlacements = (
+          ChannelPlacement::FrontLeft | ChannelPlacement::FrontRight |
+          ChannelPlacement::BackLeft | ChannelPlacement::BackRight
+        );
+      } else if(trackInfo.ChannelCount == 3) {
+        trackInfo.ChannelPlacements = (
+          ChannelPlacement::FrontLeft | ChannelPlacement::FrontRight |
+          ChannelPlacement::LowFrequencyEffects
+        );
+      } else if(trackInfo.ChannelCount == 2) {
+        trackInfo.ChannelPlacements = (
+          ChannelPlacement::FrontLeft | ChannelPlacement::FrontRight
+        );
+      } else if(trackInfo.ChannelCount == 1) {
+        trackInfo.ChannelPlacements = ChannelPlacement::FrontCenter;
+      } else {
+        trackInfo.ChannelPlacements = ChannelPlacement::Unknown;
+      }
 
     } else if(formatTag == WaveFormatExtensible) {
       if(chunkLength != 40) {
@@ -183,9 +236,7 @@ namespace {
         );
       }
 
-      trackInfo.BitsPerSample = static_cast<std::size_t>(
-        TReader::ReadUInt16(chunk + 22)
-      );
+      std::uint16_t bitsPerSample = TReader::ReadUInt16(chunk + 22);
 
       // According to Microsoft:
       //
@@ -200,17 +251,32 @@ namespace {
         );
       }
 
-      std::uint16_t validBitsPerSample = static_cast<std::size_t>(
+      trackInfo.BitsPerSample = static_cast<std::size_t>(
         TReader::ReadUInt16(chunk + 26)
       );
-
-      std::uint32_t channelMask = TReader::ReadUInt32(chunk + 28);
+      trackInfo.ChannelPlacements = static_cast<Nuclex::Audio::ChannelPlacement>(
+        TReader::ReadUInt32(chunk + 28)
+      );
 
       Guid audioFormatSubType;
       std::copy_n(chunk + 32, 16, audioFormatSubType.data());
 
       if(audioFormatSubType == WaveFormatSubTypePcm) {
-      } else if(audioFormatSubType == WaveFormatSubTypePcm) {
+        if(trackInfo.BitsPerSample >= 25) {
+          trackInfo.SampleFormat = Nuclex::Audio::AudioSampleFormat::SignedInteger_32;
+        } else if(trackInfo.BitsPerSample >= 17) {
+          trackInfo.SampleFormat = Nuclex::Audio::AudioSampleFormat::SignedInteger_24;
+        } else if(trackInfo.BitsPerSample >= 9) {
+          trackInfo.SampleFormat = Nuclex::Audio::AudioSampleFormat::SignedInteger_16;
+        } else {
+          trackInfo.SampleFormat = Nuclex::Audio::AudioSampleFormat::UnsignedInteger_8;
+        }
+      } else if(audioFormatSubType == WaveFormatSubTypeIeeeFloat) {
+        if(trackInfo.BitsPerSample >= 33) {
+          trackInfo.SampleFormat = Nuclex::Audio::AudioSampleFormat::Float_64;
+        } else {
+          trackInfo.SampleFormat = Nuclex::Audio::AudioSampleFormat::Float_32;
+        }
       } else {
         throw Nuclex::Audio::Errors::UnsupportedFormatError(
           u8"Waveform audio file uses WAVEFORMATEXTENSIBLE with a format "
