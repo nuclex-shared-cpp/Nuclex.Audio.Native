@@ -67,6 +67,20 @@ namespace Nuclex { namespace Audio {
     /// <summary>Samples per second in each channel, typically 44100 or 48000</summary>
     public: std::size_t SampleRate;
 
+    /// <summary>Number of bits actually stored for a sample</summary>
+    /// <remarks>
+    ///   <para>
+    ///     To figure out the exposed audio sample format, check <see cref="SampleFormat" />.
+    ///   </para>
+    ///   <para>
+    ///     This is only for informative purposes. Some audio formats can have arbitrary
+    ///     bit depths that are not multiples of 8. The Nuclex.Audio.Native library will
+    ///     handle that for you (via bit-repeat-padding or conversion), but you can see
+    ///     the true bit depth of the encoded audio data using this field.
+    ///   </para>
+    /// </remarks>
+    public: std::size_t BitsPerSample;
+
     /// <summary>Number of audio channels in the track</summary>
     public: std::size_t ChannelCount;
 

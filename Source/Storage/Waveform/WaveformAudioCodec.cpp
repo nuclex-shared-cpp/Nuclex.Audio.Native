@@ -26,10 +26,17 @@ limitations under the License.
 
 #include "Nuclex/Audio/Storage/VirtualFile.h"
 #include "Nuclex/Audio/Errors/CorruptedFileError.h"
+#include "Nuclex/Audio/Errors/UnsupportedFormatError.h"
+
+#include <array> // for std::array, used a 'Guid'
+#include <algorithm> // for std::copy_n()
 
 namespace {
 
   // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>A UUID is just a very long ID value with 128 bits / or 16 bytes</summary>
+  typedef std::array<std::uint8_t, 16> Guid;
 
   /// <summary>Size of the read buffer when loading audio data from a Waveform file</summary>
   constexpr std::size_t ReadBufferSize = 16384;
@@ -56,11 +63,23 @@ namespace {
   constexpr std::size_t WaveFormatExtensibleChunkLength = 48; // 8 bytes header + 40 bytes data
 
   /// <summary>Audio format that indicates uncompressed PCM audio</summary>
-  constexpr std::uint16_t AudioFormatPcm = 1;
+  constexpr std::uint16_t WaveFormatPcm = 1;
   /// <summary>Audio format that indicates uncompressed floating point PCM audio</summary>
-  constexpr std::uint16_t AudioFormatFloat = 3;
+  constexpr std::uint16_t WaveFormatFloatPcm = 3;
   /// <summary>Audio format tag that indicates a WAVEFORMATEXTENSIBLe header</summary>
-  constexpr std::uint16_t AudioFormatExtensible = 65534;
+  constexpr std::uint16_t WaveFormatExtensible = 65534;
+
+  /// <summary>GUID for the integer PCM audio subformat in WAVEFORMATEXTENSIBLE</summary>
+  const Guid WaveFormatSubTypePcm = {
+    0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00,
+    0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x98, 0x71
+  };
+
+  /// <summary>GUID for the float PCM audio subformat in WAVEFORMATEXTENSIBLE</summary>
+  const Guid WaveFormatSubTypeIeeeFloat = {
+    0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00,
+    0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x98, 0x71
+  };
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -121,25 +140,52 @@ namespace {
   /// <typeparam name="TReader">Endian-specific data Reader matching the file</typeparam>
   /// <param name="buffer">Buffer holding the format chunk</param>
   /// <param name="chunkLength">Length of the format chunk in bytes, minus 8</param>
-  /// <returns>The parsed metadata of the audio file</returns>
+  /// <param name="trackInfo">Receives the parsed metadata of the audio file</returns>
   template<typename TReader>
-  Nuclex::Audio::ContainerInfo parseFormatChunk(
+  void parseFormatChunk(
+    Nuclex::Audio::TrackInfo &trackInfo,
     const std::uint8_t *chunk, std::size_t chunkLength
   ) {
-    Nuclex::Audio::ContainerInfo containerInfo;
-    containerInfo.DefaultTrackIndex = 0;
-    Nuclex::Audio::TrackInfo &trackInfo = containerInfo.Tracks.emplace_back();
 
-    // If the format indicates WAVEFORMATEXTENSIBLE, then the chunk and extra parameter
-    // lengths are required to match the specification
-    std::uint16_t audioFormat = TReader::ReadUInt16(chunk + 8);
-    if(audioFormat == AudioFormatExtensible) {
+    // These are safe to read without checking the length since this method is only ever
+    // invoked with if there are at least enough bytes for one WAVEFORMAT header present.
+    std::uint16_t formatTag = TReader::ReadUInt16(chunk + 8);
+    trackInfo.ChannelCount = static_cast<std::size_t>(
+      TReader::ReadUInt16(chunk + 10)
+    );
+    trackInfo.SampleRate = static_cast<std::size_t>(
+      TReader::ReadUInt32(chunk + 12)
+    );
+    std::uint32_t bytesPerSecond = TReader::ReadUInt32(chunk + 16);
+    std::uint16_t blockAlignment = TReader::ReadUInt16(chunk + 20);
+
+    // Any further data in the 'fmt ' chunk depends on the format tag. In the earliest
+    // revisions, 'WAVEFORMAT' only had the 'wBitsPerSample' field if the 'wFormatTag'
+    // was set to 'WAVE_FORMAT_PCM', but this was later retconned to be 'WAVEFORMATEX'
+    // and made mandatory for all present and future format tags.
+    if((formatTag == WaveFormatPcm) || (formatTag == WaveFormatFloatPcm)) {
+      if(chunkLength < 22 - 8) {
+        throw Nuclex::Audio::Errors::CorruptedFileError(
+          u8"Waveform audio file claims PCMWAVEFORMAT or WAVEFORMATEX header, "
+          u8"but 'fmt ' (metadata) chunk size is too small"
+        );
+      }
+
+      trackInfo.BitsPerSample = static_cast<std::size_t>(
+        TReader::ReadUInt16(chunk + 22)
+      );
+
+    } else if(formatTag == WaveFormatExtensible) {
       if(chunkLength != 40) {
         throw Nuclex::Audio::Errors::CorruptedFileError(
           u8"Waveform audio file claims WAVEFORMATEXTENSIBLE header, "
           u8"but 'fmt ' (metadata) chunk size doesn't match"
         );
       }
+
+      trackInfo.BitsPerSample = static_cast<std::size_t>(
+        TReader::ReadUInt16(chunk + 22)
+      );
 
       // According to Microsoft:
       //
@@ -153,29 +199,30 @@ namespace {
           u8"but extra parameter size violates file format specification"
         );
       }
-    }
 
-    // These are safe to read without checking the length since this method is only ever
-    // invoked with if there are at least enough bytes for one WAVEFORMAT header present.
-    trackInfo.ChannelCount = static_cast<std::size_t>(
-      TReader::ReadUInt16(chunk + 10)
-    );
-    trackInfo.SampleRate = static_cast<std::size_t>(
-      TReader::ReadUInt32(chunk + 12)
-    );
-    std::uint32_t bytesPerSecond = TReader::ReadUInt32(chunk + 16);
-    std::uint16_t blockAlignment = TReader::ReadUInt16(chunk + 20);
+      std::uint16_t validBitsPerSample = static_cast<std::size_t>(
+        TReader::ReadUInt16(chunk + 26)
+      );
 
-    //if(audioFormat == AudioFormatExtensible) 
-    if(chunkLength >= 16) { // PCMWAVEFORMAT or WAVEFORMATEX
-      std::uint16_t bitsPerSample = TReader::ReadUInt16(chunk + 22);
-      
+      std::uint32_t channelMask = TReader::ReadUInt32(chunk + 28);
+
+      Guid audioFormatSubType;
+      std::copy_n(chunk + 32, 16, audioFormatSubType.data());
+
+      if(audioFormatSubType == WaveFormatSubTypePcm) {
+      } else if(audioFormatSubType == WaveFormatSubTypePcm) {
+      } else {
+        throw Nuclex::Audio::Errors::UnsupportedFormatError(
+          u8"Waveform audio file uses WAVEFORMATEXTENSIBLE with a format "
+          u8"sub-type that isn't supported (only PCM and float are supported)."
+        );
+      }
     } else {
-
+      throw Nuclex::Audio::Errors::UnsupportedFormatError(
+        u8"Waveform audio file contains data in an unsupported format. "
+        u8"Only PCM and floating point PCM data formats are supported."
+      );
     }
-
-    throw std::runtime_error(u8"Waveform audio reader not fully implemented yet");
-    //return containerInfo;
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -227,7 +274,7 @@ namespace {
       }
     }
 
-    // Move to the chunk start offset. On the downside, we lose 12 bytes from the buffer,
+    // Advance to the chunk start offset. On the downside, we lose 12 bytes from the buffer,
     // on the upside, we don't need them (since the buffer is guaranteed to still cover
     // one WAVEFORMATEXTENSIBLE) and it saves us from using a secondary buffer pointer.
     buffer += 12;
@@ -245,15 +292,25 @@ namespace {
         (buffer[3] == 0x20)     //  4   | a Waveform audio file, containing metadata.
       );
 
-      // Figure the actual length of this chunk. Anticipate that the file may have been
-      // truncated, so if the chunk with its stated length can not be read
+      // Check the supposed length of this chunk. Anticipate that the file may have been
+      // truncated, so if the chunk with its stated length overruns the file size,
+      // we'll just bail out and complain that the file is corrupted.
       std::uint32_t chunkLength = TReader::ReadUInt32(buffer + 4);
-      if(isFormatChunk && (readByteCount >= chunkLength)) {
-        return parseFormatChunk<TReader>(buffer, chunkLength);
+      if(isFormatChunk) {
+        if(readByteCount >= chunkLength) {
+          Nuclex::Audio::ContainerInfo containerInfo;
+          containerInfo.DefaultTrackIndex = 0;
+          Nuclex::Audio::TrackInfo &trackInfo = containerInfo.Tracks.emplace_back();
+          parseFormatChunk<TReader>(trackInfo, buffer, chunkLength);
+          return containerInfo;
+        } else {
+          break; // file was truncated and is considered corrupt
+        }
       }
 
       // Chunks are 16-bit aligned, but this alignment does not influence the chunkLength
-      // field inside the chunk itself. So if 
+      // field inside the chunk itself. So if the chunk length is an even number of bytes,
+      // it will be padded with a zero byte. We need to account for this here.
       if((chunkLength & 1) != 0) {
         ++chunkLength;
       }

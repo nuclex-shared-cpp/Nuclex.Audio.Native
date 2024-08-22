@@ -100,7 +100,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     );
 
     /// <summary>Frees all memory used by the instance</summary>
-    public: virtual ~VirtualFile() = default;
+    public: NUCLEX_AUDIO_API virtual ~VirtualFile() = default;
 
     /// <summary>Determines the current size of the file in bytes</summary>
     /// <returns>The size of the file in bytes</returns>
