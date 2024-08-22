@@ -148,8 +148,8 @@ namespace {
   ) {
     using Nuclex::Audio::ChannelPlacement;
 
-    // These are safe to read without checking the length since this method is only ever
-    // invoked with if there are at least enough bytes for one WAVEFORMAT header present.
+    // These fields are safe to read without checking the length since this method is only
+    // ever invoked if there are at least enough bytes for one full WAVEFORMAT header.
     std::uint16_t formatTag = TReader::ReadUInt16(chunk + 8);
     trackInfo.ChannelCount = static_cast<std::size_t>(
       TReader::ReadUInt16(chunk + 10)
@@ -172,6 +172,8 @@ namespace {
         );
       }
 
+      // We've got a PCMWAVEFORMAT or WAVEFORMATEX header, so bits per sample must be
+      // a multiple of 8.
       trackInfo.BitsPerSample = static_cast<std::size_t>(
         TReader::ReadUInt16(chunk + 22)
       );
@@ -189,6 +191,10 @@ namespace {
         trackInfo.SampleFormat = Nuclex::Audio::AudioSampleFormat::UnsignedInteger_8;
       }
 
+      // In the original Waveform audio format specification, only 1 or 2 channels
+      // were mentioned (without explicitly stating that more would be in violation).
+      // Either way, nobody cares, our only problem with more channels is that their
+      // placements are unknown. We do some guesswork here.
       if(trackInfo.ChannelCount == 8) {
         trackInfo.ChannelPlacements = (
           ChannelPlacement::FrontLeft | ChannelPlacement::FrontRight |
@@ -311,14 +317,14 @@ namespace {
     std::size_t readByteCount
   ) {
 
-    // The RIFF format states the size of the whole file (minus the 8 byts from the four-cc
+    // The RIFF format states the size of the whole file (minus the 8 bytes from the four-cc
     // and the length field itself). It's probably not a good idea to check it against 
     // the precise, actual file size because some tool might have appended tagging information
     // or the file could be truncated, so we just check it for plausibility and avoid reading
     // any data that trails behind the file.
     {
       std::uint32_t expectedFileSize = TReader::ReadUInt32(buffer + 4);
-      if(expectedFileSize > 0x8000000) {
+      if(expectedFileSize >= 0x8000000) {
         return std::optional<Nuclex::Audio::ContainerInfo>();
       }
       if(expectedFileSize > fileSize + 8) {
@@ -326,8 +332,8 @@ namespace {
       }
     }
 
-    // Next is the format id. RIFF containers are used for video data (.avi) and some other
-    // things, so we need to make sure ours says 'WAVE' for Waveform audio.
+    // Next is the format id. RIFF containers are also used for video data (.avi) and some
+    // other things, so we need to make sure ours says 'WAVE' for Waveform audio.
     {
       bool formatIsWaveform = (
         (buffer[8] == 0x57) &&  //  1 W | WAVE (format id)
@@ -343,13 +349,13 @@ namespace {
     // Advance to the chunk start offset. On the downside, we lose 12 bytes from the buffer,
     // on the upside, we don't need them (since the buffer is guaranteed to still cover
     // one WAVEFORMATEXTENSIBLE) and it saves us from using a secondary buffer pointer.
-    buffer += 12;
-    readByteCount -= 12;
+    std::uint64_t readOffset = 12;
+    buffer += readOffset;
+    readByteCount -= readOffset;
 
     // We can just assume that the initial read covers the first sub-chunk since
     // one of the checks done by the caller is to verify that this file has at least
     // the size that the smallest possible Waveform audio file can take.
-    std::uint64_t readOffset = 12;
     for(;;) {
       bool isFormatChunk = (
         (buffer[0] == 0x66) &&  //  1 f | "fmt " (audio format chunk)
@@ -374,20 +380,21 @@ namespace {
         }
       }
 
-      // Chunks are 16-bit aligned, but this alignment does not influence the chunkLength
-      // field inside the chunk itself. So if the chunk length is an even number of bytes,
+      // Chunks are 16-bit aligned, but this alignment does not influence the chunk length
+      // field inside the chunk itself. This, if the chunk length is an even number of bytes,
       // it will be padded with a zero byte. We need to account for this here.
       if((chunkLength & 1) != 0) {
         ++chunkLength;
       }
 
-      // The chunk was truncated or not a 'fmt ' chunk. Skip to the next chunk.
+      // Skip to the next chunk. If this would put us beyond the end of the file, or so close
+      // to it that no (complete) 'fmt ' chunk can follow, we can only bail out.
       readOffset += chunkLength + 8;
       if(fileSize < readOffset + WaveFormatChunkLength) {
         break; // File would end before a (complete) 'fmt ' chunk can arrive
       }
 
-      // Figure out how many bytes to read next. We'l try to read enough bytes to
+      // Figure out how many bytes to read next. We'll try to read enough bytes to
       // grab a potential WAVEFORMATEXTENSIBLE chunk in one go, but will be happy
       // with fewer bytes if the file ends earlier.
       readByteCount = WaveFormatExtensibleChunkLength;
@@ -399,8 +406,8 @@ namespace {
 
     // At this point, we clearly identified the file as a Waveform audio file, but it
     // was lacking the 'fmt ' chunk, which is mandatory. Thus, instead of returning
-    // an empty result (thereby stating that it's another file type), we now throw an error
-    // to indicate that this is in fact a corrupted audio file.
+    // an empty result (which would state that it's another file type), we now throw
+    // an error to indicate that this is in fact a corrupted audio file.
     throw Nuclex::Audio::Errors::CorruptedFileError(
       u8"No valid 'fmt ' (format metadata) chunk present in Waveform audio file"
     );

@@ -26,7 +26,6 @@ License along with this library
 #include <Nuclex/Support/Endian.h> // for Endian::Flip()
 
 #include <cstdint> // for std::uint8_t, std::uint16_t, std::uint32_t, std::uint64_t
-#include <type_traits> // for std::enable_if
 
 namespace Nuclex { namespace Audio { namespace Storage {
 

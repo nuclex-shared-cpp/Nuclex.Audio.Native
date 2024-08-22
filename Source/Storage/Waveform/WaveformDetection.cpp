@@ -174,17 +174,18 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
         (static_cast<std::uint32_t>(fileHeader[19]))
       );
     } else {
-      return false;
+      return false; // No RIFF/RIFX/XFIR/FFIR header? Not a Waveform audio file.
     }
 
     return (
-      (blockSize >= 36) &&
-      (blockSize < 0x80000000) &&
-      (fileHeader[8] == 0x57) &&  //  1 W | WAVE (format id)
-      (fileHeader[9] == 0x41) &&  //  2 A |
-      (fileHeader[10] == 0x56) && //  3 V | RIFF is a chunked format for many purposes,
-      (fileHeader[11] == 0x45) && //  4 E | we're looking for a RIFF file with audio data.
-      (firstChunkSize < 0x80000000) // Size of unknown first chunk
+      // (isLittleEndian | isBigEndian) implied -> RIFF header variants checked
+      (blockSize >= 36) &&          // Big enough to be a Waveformat file at all
+      (blockSize < 0x80000000) &&   // Plausible overall file size
+      (fileHeader[8] == 0x57) &&    //  1 W | WAVE (format id)
+      (fileHeader[9] == 0x41) &&    //  2 A |
+      (fileHeader[10] == 0x56) &&   //  3 V | RIFF is a chunked format for many purposes,
+      (fileHeader[11] == 0x45) &&   //  4 E | we're looking for a RIFF file with audio data.
+      (firstChunkSize < 0x80000000) // Plausible size of unknown first chunk
     );
   }
 
