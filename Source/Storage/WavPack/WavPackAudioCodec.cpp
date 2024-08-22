@@ -94,13 +94,16 @@ namespace {
     // This returns the number of "complete samples" (aka frames), meaning the number
     // samples per channel (rather than the sum of the sample counts in all channels).
     std::uint64_t frameCount = WavPackApi::GetNumSamples64(context);
+
+    std::uint32_t sampleRate = WavPackApi::GetSampleRate(context);
+    trackInfo.SampleRate = static_cast<std::size_t>(sampleRate);
     
     // We want an accurate result (some audio sync tool or such may depend on it),
     // so we multiply first. No bounds checking under the assumption that nobody will
     // ever feed this library a WavPack file with more than 584'942 years of audio.        
     const std::uint64_t MicrosecondsPerSecond = 1'000'000;
     trackInfo.Duration = std::chrono::microseconds(
-      frameCount * MicrosecondsPerSecond / WavPackApi::GetSampleRate(context)
+      frameCount * MicrosecondsPerSecond / sampleRate
     );
 
     // Figure out the data format closest to the data stored by WavPack. Normally it

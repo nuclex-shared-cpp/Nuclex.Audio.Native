@@ -20,10 +20,7 @@ limitations under the License.
 // If the library is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_AUDIO_SOURCE 1
 
-#include "../../../Source/Storage/WavPack/WavPackAudioCodec.h"
-
-#if defined(NUCLEX_AUDIO_HAVE_WAVPACK)
-
+#include "../../../Source/Storage/Waveform/WaveformAudioCodec.h"
 #include "../FailingVirtualFile.h"
 
 #include <gtest/gtest.h>
@@ -37,13 +34,13 @@ namespace {
 
 } // anonymous namespace
 
-namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
+namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(WavPackAudioCodecTest, ExceptionsFromVirtualFileResurface) {
+  TEST(WaveformAudioCodecTest, ExceptionsFromVirtualFileResurface) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
-      u8"Resources/wavpack-stereo-float32-v416.wv"
+      u8"Resources/waveform-stereo-float32le-pcmwaveformat.wav"
     );
     std::shared_ptr<const VirtualFile> failingFile = std::make_shared<FailingVirtualFile>(
       file
@@ -53,7 +50,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     // Should a plain runtime_error surface here, tjhen error checking was happening but
     // the libwavpack error return took precedence over the VirtualFile exception, which is
     // not what we want because it obscures the root cause of the error.
-    WavPackAudioCodec codec;
+    WaveformAudioCodec codec;
     EXPECT_THROW(
       std::optional<ContainerInfo> info = codec.TryReadInfo(failingFile),
       std::domain_error
@@ -62,12 +59,12 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(WavPackAudioCodecTest, CanReadInfoFromFloatStereoFile) {
+  TEST(WaveformAudioCodecTest, CanReadInfoFromFloatStereoFile) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
-      u8"Resources/wavpack-stereo-float32-v416.wv"
+      u8"Resources/waveform-stereo-float32le-pcmwaveformat.wav"
     );
 
-    WavPackAudioCodec codec;
+    WaveformAudioCodec codec;
     std::optional<ContainerInfo> info = codec.TryReadInfo(file);
 
     ASSERT_TRUE(info.has_value());
@@ -82,12 +79,12 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(WavPackAudioCodecTest, CanReadInfoFromFloatSurroundFile) {
+  TEST(WaveformAudioCodecTest, CanReadInfoFromFloatSurroundFile) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
-      u8"Resources/wavpack-5dot1-int16-v416.wv"
+      u8"Resources/waveform-5dot1-int16le-waveformatextensible.wav"
     );
 
-    WavPackAudioCodec codec;
+    WaveformAudioCodec codec;
     std::optional<ContainerInfo> info = codec.TryReadInfo(file);
 
     ASSERT_TRUE(info.has_value());
@@ -109,6 +106,4 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
-}}}} // namespace Nuclex::Audio::Storage::WavPack
-
-#endif // defined(NUCLEX_AUDIO_HAVE_WAVPACK)
+}}}} // namespace Nuclex::Audio::Storage::Waveform

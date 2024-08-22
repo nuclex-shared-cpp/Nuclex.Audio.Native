@@ -162,10 +162,10 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
       );
     } else if(isBigEndian) {
       blockSize = (
-        (static_cast<std::uint32_t>(fileHeader[7]) << 24) |
-        (static_cast<std::uint32_t>(fileHeader[6]) << 16) |
-        (static_cast<std::uint32_t>(fileHeader[5]) << 8) |
-        (static_cast<std::uint32_t>(fileHeader[4]))
+        (static_cast<std::uint32_t>(fileHeader[4]) << 24) |
+        (static_cast<std::uint32_t>(fileHeader[5]) << 16) |
+        (static_cast<std::uint32_t>(fileHeader[6]) << 8) |
+        (static_cast<std::uint32_t>(fileHeader[7]))
       );
       firstChunkSize = (
         (static_cast<std::uint32_t>(fileHeader[16]) << 24) |

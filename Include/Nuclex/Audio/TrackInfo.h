@@ -64,6 +64,9 @@ namespace Nuclex { namespace Audio {
     /// <summary>Duration of the audio track</summary>
     public: std::chrono::microseconds Duration;
 
+    /// <summary>Samples per second in each channel, typically 44100 or 48000</summary>
+    public: std::size_t SampleRate;
+
     /// <summary>Number of audio channels in the track</summary>
     public: std::size_t ChannelCount;
 
