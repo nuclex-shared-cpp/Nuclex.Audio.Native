@@ -20,7 +20,7 @@ limitations under the License.
 // If the library is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_AUDIO_SOURCE 1
 
-#include "./WaveformHelpers.h"
+#include "./WaveformReader.h"
 
 namespace {
 
@@ -33,7 +33,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
   // ------------------------------------------------------------------------------------------- //
 
-  ChannelPlacement Helpers::GuessChannelPlacement(std::size_t channelCount) {
+  ChannelPlacement WaveformReader::GuessChannelPlacement(std::size_t channelCount) {
     if(channelCount == 8) {
       return (
         ChannelPlacement::FrontLeft | ChannelPlacement::FrontRight |
