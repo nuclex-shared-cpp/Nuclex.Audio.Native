@@ -27,6 +27,7 @@ limitations under the License.
 
 #include <array> // for std::array, used a 'Guid'
 #include <algorithm> // for std::copy_n()
+#include <cassert> // for assert()
 
 namespace {
 
@@ -113,10 +114,10 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
     target(target),
     formatChunkParsed(false),
     factChunkParsed(false),
-    dataChunkParsed(false),
+    afterDataChunkParsed(false),
     blockAlignment(0),
-    totalSampleCount(std::size_t(-1)),
-    firstSampleIndex(nullptr) {}
+    firstSampleOffset(std::uint64_t(-1)),
+    afterLastSampleOffset(std::uint64_t(-1)) {}
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -152,10 +153,48 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
   // ------------------------------------------------------------------------------------------- //
 
+  void WaveformReader::SetDataChunkStart(
+    std::uint64_t startOffset, std::uint64_t remainingByteCount
+  ) {
+    if(this->firstSampleOffset != std::uint64_t(-1)) {
+      throw Errors::CorruptedFileError(
+        u8"Waveform audio file contains more than one 'data' (audio data) chunk"
+      );
+    }
+
+    this->firstSampleOffset = startOffset + 8;
+    this->afterLastSampleOffset = startOffset + remainingByteCount;
+
+    if(this->formatChunkParsed) {
+      calculateDuration();
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void WaveformReader::SetPostDataChunkStart(std::uint64_t startOffset) {
+    assert(
+      (this->firstSampleOffset != std::uint64_t(-1)) &&
+      u8"Post-'data' chunk offset is set after encountering the 'data' chunk first"
+    );
+    this->afterLastSampleOffset = startOffset;
+
+    if(this->formatChunkParsed) {
+      calculateDuration();
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   template<typename TReader>
   void WaveformReader::parseFormatChunkInternal(
     const std::uint8_t *chunk, std::size_t chunkLength
   ) {
+    if(this->formatChunkParsed) {
+      throw Errors::CorruptedFileError(
+        u8"Waveform audio file contains more than one 'fmt ' (metadata) chunk"
+      );
+    }
 
     // These fields are safe to read without checking the length since this method is only
     // ever invoked if there are at least enough bytes for one full WAVEFORMAT header.
@@ -279,12 +318,21 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
     this->formatChunkParsed = true;
 
+    if(this->firstSampleOffset != std::uint64_t(-1)) {
+      calculateDuration();
+    }
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   template<typename TReader>
   void WaveformReader::parseFactChunkInternal(const std::uint8_t *chunk) {
+    if(this->factChunkParsed) {
+      throw Errors::CorruptedFileError(
+        u8"Waveform audio file contains more than one 'fact' (extra metadata) chunk"
+      );
+    }
+
     // Our dilemma:
     //
     // This chunk became mandatory for the "new wave format," aka the format everyone is
@@ -293,11 +341,32 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
     // It's also only useful for validation, but to know the actual (playable) length of
     // the Waveform audio file, we have to look at the data chunk and the number of bytes
     // that come after it.
-
     std::uint32_t sampleCount = TReader::ReadUInt32(chunk + 8);
     (void)sampleCount;
+
     this->factChunkParsed = true;
   }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void WaveformReader::calculateDuration() {
+    assert(
+      this->formatChunkParsed &&
+      u8"calculateDuration() is called with the format chunk already parsed"
+    );
+    assert(
+      (this->firstSampleOffset != std::uint64_t(-1)) &&
+      u8"calculateDuration() is called with the data chunk extents known"
+    );
+
+    std::uint64_t totalSampleCount = (
+      (this->afterLastSampleOffset - this->firstSampleOffset) / this->blockAlignment
+    );
+    this->target.Duration = std::chrono::microseconds(
+      totalSampleCount * 1'000'000 / this->target.SampleRate
+    );
+  }
+
 
   // ------------------------------------------------------------------------------------------- //
 

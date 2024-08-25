@@ -64,7 +64,10 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
     public: bool IsComplete() const {
       // We *should* check for factChunkParsed since it's a requirement in new waveform
       // audio files, but there's so much software that doesn't write it that we can't.
-      return this->formatChunkParsed && this->dataChunkParsed;
+      return (
+        this->formatChunkParsed &&
+        (this->firstSampleOffset != std::uint64_t(-1))
+      );
     }
 
     /// <summary>Parses the information stored in the audio format ('fmt ') chunk</summary>
@@ -88,6 +91,24 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
     public: template<typename TReader = LittleEndianReader>
     void ParseFactChunk(const std::uint8_t *buffer);
 
+    /// <summary>Records the offset of the 'data' chunk in the Waveform file</summary>
+    /// <param name="startOffset">Absolute offset of the data chunk's header</param>
+    /// <param name="remainingByteCount">Number of bytes that remain in the file</param>
+    /// <remarks>
+    ///   If this is the last chunk in the file (and <see cref="SetAfterDataChunkStart" />
+    ///   is never called, then the remaining bytes in the file will be used as the number
+    ///   of bytes the Waveform file's audio data is long.
+    /// </remarks>
+    public: void SetDataChunkStart(std::uint64_t startOffset, std::uint64_t remainingByteCount);
+
+    /// <summary>Records the offset of the first chunk after the 'data' chunk</summary>
+    /// <param name="startOffset">Offset of the start of the first post 'data' chunk</param>
+    /// <remarks>
+    ///   This allows the Waveform reader to accurately determine the size of the audio data
+    ///   stored in the Waveform audio file even if the 'data' chunk is not that last chunk.
+    /// </remarks>
+    public: void SetPostDataChunkStart(std::uint64_t startOffset);
+
     /// <summary>Actual implementation of the ParseFormatChunk() method</summary>
     /// <typeparam name="TReader">
     ///   Reader used to read numeric values in the file as big or little endian
@@ -109,21 +130,24 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
     private: template<typename TReader>
     void parseFactChunkInternal(const std::uint8_t *buffer);
 
+    /// <summary>Calculates the playback duration of the audio data</summary>
+    private: void calculateDuration();
+
     /// <summary>Track information container data will be stored in</summary>
     private: Nuclex::Audio::TrackInfo &target;
     /// <summary>Whether the format metadata chunk has been parsed yet</summary>
     private: bool formatChunkParsed;
     /// <summary>Whether the extra metadata chunk has been parsed yet</summary>
     private: bool factChunkParsed;
-    /// <summary>Whether the data chunk has been parsed yet</summary>
-    private: bool dataChunkParsed;
+    /// <summary>Whether the post-data chunk has been recorded yet</summary>
+    private: bool afterDataChunkParsed;
 
     /// <summary>Size of one frame (one sample of each channel in a row)</summary>
     private: std::size_t blockAlignment;
-    /// <summary>Total number of audio samples (from 'fact' chunk)</summary>
-    private: std::size_t totalSampleCount;
     /// <summary>Index of the first audio sample in the file</summary>
-    private: const std::uint8_t *firstSampleIndex;
+    private: std::uint64_t firstSampleOffset;
+    /// <summary>Index one past the the last audio sample in the file</summary>
+    private: std::uint64_t afterLastSampleOffset;
 
   };
 

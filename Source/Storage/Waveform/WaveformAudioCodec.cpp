@@ -228,7 +228,7 @@ namespace {
         );
         reader.ParseFactChunk<TReader>(buffer);
       } else if(WaveformReader::IsDataChunk(buffer)) {
-        //reader.ParseDataChunk<TReader>(buffer, chunkLength);
+        reader.SetDataChunkStart(readOffset, fileSize - readOffset);
       }
 
       // Skip to the next chunk. Chunks are 16-bit aligned, but this alignment is not recorded
