@@ -139,37 +139,15 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
   // ------------------------------------------------------------------------------------------- //
 
   template<>
-  void WaveformReader::ParseFactChunk<LittleEndianReader>(
-    const std::uint8_t *buffer, std::size_t chunkLength
-  ) {
-    parseFactChunkInternal<LittleEndianReader>(buffer, chunkLength);
+  void WaveformReader::ParseFactChunk<LittleEndianReader>(const std::uint8_t *buffer) {
+    parseFactChunkInternal<LittleEndianReader>(buffer);
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   template<>
-  void WaveformReader::ParseFactChunk<BigEndianReader>(
-    const std::uint8_t *buffer, std::size_t chunkLength
-  ) {
-    parseFactChunkInternal<BigEndianReader>(buffer, chunkLength);
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  template<>
-  void WaveformReader::ParseDataChunk<LittleEndianReader>(
-    const std::uint8_t *buffer, std::size_t chunkLength
-  ) {
-    parseDataChunkInternal<LittleEndianReader>(buffer, chunkLength);
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  template<>
-  void WaveformReader::ParseDataChunk<BigEndianReader>(
-    const std::uint8_t *buffer, std::size_t chunkLength
-  ) {
-    parseDataChunkInternal<BigEndianReader>(buffer, chunkLength);
+  void WaveformReader::ParseFactChunk<BigEndianReader>(const std::uint8_t *buffer) {
+    parseFactChunkInternal<BigEndianReader>(buffer);
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -306,9 +284,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
   // ------------------------------------------------------------------------------------------- //
 
   template<typename TReader>
-  void WaveformReader::parseFactChunkInternal(
-    const std::uint8_t *chunk, std::size_t chunkLength
-  ) {
+  void WaveformReader::parseFactChunkInternal(const std::uint8_t *chunk) {
     // Our dilemma:
     //
     // This chunk became mandatory for the "new wave format," aka the format everyone is
@@ -318,19 +294,9 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
     // the Waveform audio file, we have to look at the data chunk and the number of bytes
     // that come after it.
 
+    std::uint32_t sampleCount = TReader::ReadUInt32(chunk + 8);
+    (void)sampleCount;
     this->factChunkParsed = true;
-
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  template<typename TReader>
-  void WaveformReader::parseDataChunkInternal(
-    const std::uint8_t *chunk, std::size_t chunkLength
-  ) {
-
-    this->dataChunkParsed = true;
-
   }
 
   // ------------------------------------------------------------------------------------------- //

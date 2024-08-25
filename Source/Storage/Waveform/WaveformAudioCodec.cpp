@@ -127,13 +127,13 @@ namespace {
     if(recordedChunkLengthWithHeader < minimumChunkLengthWithHeader) {
       std::string message(u8"Waveform audio file contains too short ", 39);
       message.append(chunkName);
-      //throw Nuclex::Audio::Errors::CorruptedFileError(message);
+      throw Nuclex::Audio::Errors::CorruptedFileError(message);
     }
     if(readByteCount < recordedChunkLengthWithHeader) {
       std::string message(u8"Waveform audio file truncated, ", 31);
       message.append(chunkName);
       message.append(u8" is truncated", 13);
-      //throw Nuclex::Audio::Errors::CorruptedFileError(message);
+      throw Nuclex::Audio::Errors::CorruptedFileError(message);
     }
   }
 
@@ -226,9 +226,9 @@ namespace {
           chunkLengthWithHeader, 8 + 4, readByteCount,
           std::string_view(u8"'fact' (extra meatdata) chunk", 29)
         );
-        reader.ParseFactChunk<TReader>(buffer, chunkLength);
+        reader.ParseFactChunk<TReader>(buffer);
       } else if(WaveformReader::IsDataChunk(buffer)) {
-        reader.ParseDataChunk<TReader>(buffer, chunkLength);
+        //reader.ParseDataChunk<TReader>(buffer, chunkLength);
       }
 
       // Skip to the next chunk. Chunks are 16-bit aligned, but this alignment is not recorded
