@@ -114,8 +114,9 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
     formatChunkParsed(false),
     factChunkParsed(false),
     dataChunkParsed(false),
-    firstSampleIndex(nullptr),
-    blockAlignment(0) {}
+    blockAlignment(0),
+    totalSampleCount(std::size_t(-1)),
+    firstSampleIndex(nullptr) {}
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -137,6 +138,42 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
   // ------------------------------------------------------------------------------------------- //
 
+  template<>
+  void WaveformReader::ParseFactChunk<LittleEndianReader>(
+    const std::uint8_t *buffer, std::size_t chunkLength
+  ) {
+    parseFactChunkInternal<LittleEndianReader>(buffer, chunkLength);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<>
+  void WaveformReader::ParseFactChunk<BigEndianReader>(
+    const std::uint8_t *buffer, std::size_t chunkLength
+  ) {
+    parseFactChunkInternal<BigEndianReader>(buffer, chunkLength);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<>
+  void WaveformReader::ParseDataChunk<LittleEndianReader>(
+    const std::uint8_t *buffer, std::size_t chunkLength
+  ) {
+    parseDataChunkInternal<LittleEndianReader>(buffer, chunkLength);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<>
+  void WaveformReader::ParseDataChunk<BigEndianReader>(
+    const std::uint8_t *buffer, std::size_t chunkLength
+  ) {
+    parseDataChunkInternal<BigEndianReader>(buffer, chunkLength);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   template<typename TReader>
   void WaveformReader::parseFormatChunkInternal(
     const std::uint8_t *chunk, std::size_t chunkLength
@@ -151,11 +188,10 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
     this->target.SampleRate = static_cast<std::size_t>(
       TReader::ReadUInt32(chunk + 12)
     );
-
     //std::uint32_t bytesPerSecond = TReader::ReadUInt32(chunk + 16);
-    //this->blockAlignment = static_cast<std::size_t>(
-    //  TReader::ReadUInt16(chunk + 20)
-    //);
+    this->blockAlignment = static_cast<std::size_t>(
+      TReader::ReadUInt16(chunk + 20)
+    );
 
     // Any further data in the 'fmt ' chunk depends on the format tag. In the earliest
     // revisions, 'WAVEFORMAT' only had the 'wBitsPerSample' field if the 'wFormatTag'
@@ -204,7 +240,9 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
         );
       }
 
-      std::uint16_t bitsPerSample = TReader::ReadUInt16(chunk + 22);
+      // This would hold the stored number of bits per sample. It should be redundant,
+      // unless some 
+      //std::uint16_t bitsPerSample = TReader::ReadUInt16(chunk + 22);
 
       // According to Microsoft:
       //
@@ -219,6 +257,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
         );
       }
 
+      // This field holds the 'valid' bits per sample (can be any number, the remaining
+      // bits up to the next byte are zero-padded in each sample).
       this->target.BitsPerSample = static_cast<std::size_t>(
         TReader::ReadUInt16(chunk + 26)
       );
@@ -260,6 +300,36 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
     }
 
     this->formatChunkParsed = true;
+
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<typename TReader>
+  void WaveformReader::parseFactChunkInternal(
+    const std::uint8_t *chunk, std::size_t chunkLength
+  ) {
+    // Our dilemma:
+    //
+    // This chunk became mandatory for the "new wave format," aka the format everyone is
+    // one since 1994. Except that almost no application respects this.
+    //
+    // It's also only useful for validation, but to know the actual (playable) length of
+    // the Waveform audio file, we have to look at the data chunk and the number of bytes
+    // that come after it.
+
+    this->factChunkParsed = true;
+
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<typename TReader>
+  void WaveformReader::parseDataChunkInternal(
+    const std::uint8_t *chunk, std::size_t chunkLength
+  ) {
+
+    this->dataChunkParsed = true;
 
   }
 

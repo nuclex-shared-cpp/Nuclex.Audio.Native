@@ -22,10 +22,11 @@ limitations under the License.
 
 #include "Nuclex/Audio/Config.h"
 
-#include "Nuclex/Audio/TrackInfo.h" // for TrackInfo
+#include "Nuclex/Audio/ContainerInfo.h" // for ContainerInfo
 #include "../EndianReader.h" // for LittleEndianReader / BigEndianReader
 
-#include <cstdint>
+#include <cstdint> // for std::uint8_t
+#include <type_traits> // for std::is_same
 
 namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
@@ -58,7 +59,15 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
     /// <param name="target">TrackInfo structure metadata will be placed in</param>
     public: WaveformReader(Nuclex::Audio::TrackInfo &target);
 
-    /// <summary>Parses the information stored in the format ('fmt ') chunk</summary>
+    /// <summary>Checks whether the minimum required chunks have been parsed</summary>
+    /// <returns>True if the minimum required chunks were present</returns>
+    public: bool IsComplete() const {
+      // We *should* check for factChunkParsed since it's a requirement in new waveform
+      // audio files, but there's so much software that doesn't write it that we can't.
+      return this->formatChunkParsed && this->dataChunkParsed;
+    }
+
+    /// <summary>Parses the information stored in the audio format ('fmt ') chunk</summary>
     /// <typeparam name="TReader">
     ///   Reader used to read numeric values in the file as big or little endian
     /// </typeparam>
@@ -69,7 +78,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
     public: template<typename TReader = LittleEndianReader>
     void ParseFormatChunk(const std::uint8_t *buffer, std::size_t chunkLength);
 
-    /// <summary>Parses the information stored in the fact ('fact') chunk</summary>
+    /// <summary>Parses the information stored in the extra metadata ('fact') chunk</summary>
     /// <typeparam name="TReader">
     ///   Reader used to read numeric values in the file as big or little endian
     /// </typeparam>
@@ -80,7 +89,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
     public: template<typename TReader = LittleEndianReader>
     void ParseFactChunk(const std::uint8_t *buffer, std::size_t chunkLength);
 
-    /// <summary>Parses the information stored in the data ('data') chunk</summary>
+    /// <summary>Parses the information stored in the audio data ('data') chunk</summary>
     /// <typeparam name="TReader">
     ///   Reader used to read numeric values in the file as big or little endian
     /// </typeparam>
@@ -102,6 +111,28 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
     private: template<typename TReader>
     void parseFormatChunkInternal(const std::uint8_t *buffer, std::size_t chunkLength);
 
+    /// <summary>Actual implementation of the ParseFactChunk() method</summary>
+    /// <typeparam name="TReader">
+    ///   Reader used to read numeric values in the file as big or little endian
+    /// </typeparam>
+    /// <param name="buffer">
+    ///   Buffer containing a data chunk, starting at its FourCC header
+    /// </param>
+    /// <param name="chunkLength">Length of the chunk in bytes, minus 8 bytes</param>
+    private: template<typename TReader>
+    void parseFactChunkInternal(const std::uint8_t *buffer, std::size_t chunkLength);
+
+    /// <summary>Actual implementation of the ParseDataChunk() method</summary>
+    /// <typeparam name="TReader">
+    ///   Reader used to read numeric values in the file as big or little endian
+    /// </typeparam>
+    /// <param name="buffer">
+    ///   Buffer containing a data chunk, starting at its FourCC header
+    /// </param>
+    /// <param name="chunkLength">Length of the chunk in bytes, minus 8 bytes</param>
+    private: template<typename TReader>
+    void parseDataChunkInternal(const std::uint8_t *buffer, std::size_t chunkLength);
+
     /// <summary>Track information container data will be stored in</summary>
     private: Nuclex::Audio::TrackInfo &target;
     /// <summary>Whether the format metadata chunk has been parsed yet</summary>
@@ -111,10 +142,12 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
     /// <summary>Whether the data chunk has been parsed yet</summary>
     private: bool dataChunkParsed;
 
+    /// <summary>Size of one frame (one sample of each channel in a row)</summary>
+    private: std::size_t blockAlignment;
+    /// <summary>Total number of audio samples (from 'fact' chunk)</summary>
+    private: std::size_t totalSampleCount;
     /// <summary>Index of the first audio sample in the file</summary>
     private: const std::uint8_t *firstSampleIndex;
-    /// <summary>Size of one frame (one sample of each channel in a row)</summary>
-    private: const std::size_t blockAlignment;
 
   };
 
@@ -153,6 +186,19 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
   // ------------------------------------------------------------------------------------------- //
 
+  template<typename TReader>
+  inline void WaveformReader::ParseFormatChunk(
+    const std::uint8_t *buffer, std::size_t chunkLength
+  ) {
+    static_assert(
+      std::is_same<TReader, LittleEndianReader>::value ||
+      std::is_same<TReader, BigEndianReader>::value,
+      u8"TReader must be either a LittleEndianReader or a BigEndianReader"
+    );
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   template<>
   void WaveformReader::ParseFormatChunk<LittleEndianReader>(
     const std::uint8_t *buffer, std::size_t chunkLength
@@ -167,6 +213,19 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
   // ------------------------------------------------------------------------------------------- //
 
+  template<typename TReader>
+  inline void WaveformReader::ParseFactChunk(
+    const std::uint8_t *buffer, std::size_t chunkLength
+  ) {
+    static_assert(
+      std::is_same<TReader, LittleEndianReader>::value ||
+      std::is_same<TReader, BigEndianReader>::value,
+      u8"TReader must be either a LittleEndianReader or a BigEndianReader"
+    );
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   template<>
   void WaveformReader::ParseFactChunk<LittleEndianReader>(
     const std::uint8_t *buffer, std::size_t chunkLength
@@ -178,6 +237,19 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
   void WaveformReader::ParseFactChunk<BigEndianReader>(
     const std::uint8_t *buffer, std::size_t chunkLength
   );
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<typename TReader>
+  inline void WaveformReader::ParseDataChunk(
+    const std::uint8_t *buffer, std::size_t chunkLength
+  ) {
+    static_assert(
+      std::is_same<TReader, LittleEndianReader>::value ||
+      std::is_same<TReader, BigEndianReader>::value,
+      u8"TReader must be either a LittleEndianReader or a BigEndianReader"
+    );
+  }
 
   // ------------------------------------------------------------------------------------------- //
 
