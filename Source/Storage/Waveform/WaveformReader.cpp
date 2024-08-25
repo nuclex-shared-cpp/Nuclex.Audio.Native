@@ -114,7 +114,6 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
     target(target),
     formatChunkParsed(false),
     factChunkParsed(false),
-    afterDataChunkParsed(false),
     blockAlignment(0),
     firstSampleOffset(std::uint64_t(-1)),
     afterLastSampleOffset(std::uint64_t(-1)) {}
@@ -164,20 +163,6 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
     this->firstSampleOffset = startOffset + 8;
     this->afterLastSampleOffset = startOffset + remainingByteCount;
-
-    if(this->formatChunkParsed) {
-      calculateDuration();
-    }
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  void WaveformReader::SetPostDataChunkStart(std::uint64_t startOffset) {
-    assert(
-      (this->firstSampleOffset != std::uint64_t(-1)) &&
-      u8"Post-'data' chunk offset is set after encountering the 'data' chunk first"
-    );
-    this->afterLastSampleOffset = startOffset;
 
     if(this->formatChunkParsed) {
       calculateDuration();

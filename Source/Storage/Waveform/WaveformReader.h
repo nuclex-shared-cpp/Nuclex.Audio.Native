@@ -101,14 +101,6 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
     /// </remarks>
     public: void SetDataChunkStart(std::uint64_t startOffset, std::uint64_t remainingByteCount);
 
-    /// <summary>Records the offset of the first chunk after the 'data' chunk</summary>
-    /// <param name="startOffset">Offset of the start of the first post 'data' chunk</param>
-    /// <remarks>
-    ///   This allows the Waveform reader to accurately determine the size of the audio data
-    ///   stored in the Waveform audio file even if the 'data' chunk is not that last chunk.
-    /// </remarks>
-    public: void SetPostDataChunkStart(std::uint64_t startOffset);
-
     /// <summary>Actual implementation of the ParseFormatChunk() method</summary>
     /// <typeparam name="TReader">
     ///   Reader used to read numeric values in the file as big or little endian
@@ -139,8 +131,6 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
     private: bool formatChunkParsed;
     /// <summary>Whether the extra metadata chunk has been parsed yet</summary>
     private: bool factChunkParsed;
-    /// <summary>Whether the post-data chunk has been recorded yet</summary>
-    private: bool afterDataChunkParsed;
 
     /// <summary>Size of one frame (one sample of each channel in a row)</summary>
     private: std::size_t blockAlignment;
