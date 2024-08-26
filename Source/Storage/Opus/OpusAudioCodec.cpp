@@ -26,6 +26,9 @@ limitations under the License.
 
 #include "Nuclex/Audio/Storage/VirtualFile.h"
 
+#include <opusfile.h>
+#include <stdexcept> // for std::runtime_error
+
 namespace {
 
   // ------------------------------------------------------------------------------------------- //
@@ -36,6 +39,32 @@ namespace {
 namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
   // ------------------------------------------------------------------------------------------- //
+
+  const std::string &OpusAudioCodec::GetName() const {
+    const static std::string codecName(u8"Opus", 18);
+    return codecName;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  const std::vector<std::string> &OpusAudioCodec::GetFileExtensions() const  {
+    const static std::vector<std::string> extensions {
+      std::string(u8"opus", 4),
+      std::string(u8"ogg", 3)
+    };
+
+    return extensions;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::optional<ContainerInfo> OpusAudioCodec::TryReadInfo(
+    const std::shared_ptr<const VirtualFile> &source,
+    const std::string &extensionHint /* = std::string() */
+  ) const {
+    (void)extensionHint;
+    throw std::runtime_error(u8"Not implemented yet");
+  }
 
   // ------------------------------------------------------------------------------------------- //
 
