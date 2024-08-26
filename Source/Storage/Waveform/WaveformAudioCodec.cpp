@@ -150,7 +150,7 @@ namespace {
   ///   a Waveform audio file
   /// </returns>
   template<typename TReader>
-  std::optional<Nuclex::Audio::ContainerInfo> scanChunksAndFillContainerInfo(
+  std::optional<Nuclex::Audio::ContainerInfo> scanChunksAndExtractContainerInfo(
     const std::shared_ptr<const Nuclex::Audio::Storage::VirtualFile> &source,
     std::uint64_t fileSize,
     std::uint8_t *buffer /*[OptimistcInitialByteCount]*/,
@@ -159,7 +159,7 @@ namespace {
     using Nuclex::Audio::Storage::Waveform::WaveformReader;
     assert(
       (readByteCount >= (WaveFormatChunkLengthWithHeader + 12)) &&
-      u8"Call to scanChunksAndFillContainerInfo() starts with enough data for one chunk header"
+      u8"Call to scanChunksAndExtractContainerInfo() starts with enough data for one chunk header"
     );
 
     // The RIFF format states the size of the whole file (minus the 8 bytes from the four-cc
@@ -319,11 +319,11 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
     // Figure out what kind of file we're dealing with
     FourCC fourCC = checkFourCC(buffer.data());
     if((fourCC == FourCC::Riff) || (fourCC == FourCC::Xfir)) {
-      return scanChunksAndFillContainerInfo<LittleEndianReader>(
+      return scanChunksAndExtractContainerInfo<LittleEndianReader>(
         source, fileSize, buffer.data(), readByteCount
       );
     } else if((fourCC == FourCC::Rifx) || (fourCC == FourCC::Ffir)) {
-      return scanChunksAndFillContainerInfo<BigEndianReader>(
+      return scanChunksAndExtractContainerInfo<BigEndianReader>(
         source, fileSize, buffer.data(), readByteCount
       );
     } else {

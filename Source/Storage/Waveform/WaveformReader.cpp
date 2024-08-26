@@ -352,7 +352,6 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
     );
   }
 
-
   // ------------------------------------------------------------------------------------------- //
 
 }}}} // namespace Nuclex::Audio::Storage::Waveform
