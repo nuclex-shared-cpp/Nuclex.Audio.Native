@@ -17,8 +17,8 @@ limitations under the License.
 */
 #pragma endregion // Apache License 2.0
 
-#ifndef NUCLEX_AUDIO_STORAGE_OPUS_OPUSHELPERS_H
-#define NUCLEX_AUDIO_STORAGE_OPUS_OPUSHELPERS_H
+#ifndef NUCLEX_AUDIO_STORAGE_OPUS_OPUSDETECTION_H
+#define NUCLEX_AUDIO_STORAGE_OPUS_OPUSDETECTION_H
 
 #include "Nuclex/Audio/Config.h"
 
@@ -54,7 +54,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Helper class for reading OPUS files using libopus</summary>
-  class Helpers {
+  class Detection {
 
     /// <summary>Checks if the specified file extension indicates an .opus file</summary>
     /// <param name="extension">File extension (can be with or without leading dot)</param>
@@ -84,4 +84,4 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
 #endif // defined(NUCLEX_AUDIO_HAVE_OPUS)
 
-#endif // NUCLEX_AUDIO_STORAGE_OPUS_OPUSHELPERS_H
+#endif // NUCLEX_AUDIO_STORAGE_OPUS_OPUSDETECTION_H

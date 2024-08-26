@@ -20,7 +20,7 @@ limitations under the License.
 // If the library is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_AUDIO_SOURCE 1
 
-#include "../../../Source/Storage/Opus/OpusHelpers.h"
+#include "../../../Source/Storage/Opus/OpusDetection.h"
 
 #if defined(NUCLEX_AUDIO_HAVE_OPUS)
 
@@ -168,37 +168,37 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(OpusHelpersTest, DetectsOpusFilesWithoutLibOpusFile) {
+  TEST(OpusDetectionTest, DetectsOpusFilesWithoutLibOpusFile) {
     {
       std::uint8_t dummyData[32] = {
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5,
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5
       };
       const InMemoryFile dummyFile(dummyData, sizeof(dummyData));
-      EXPECT_FALSE(Helpers::CheckIfOpusHeaderPresentLite(dummyFile));
+      EXPECT_FALSE(Detection::CheckIfOpusHeaderPresentLite(dummyFile));
     }
 
     {
       const InMemoryFile opusFile(prettySmallOpusFile, sizeof(prettySmallOpusFile));
-      EXPECT_TRUE(Helpers::CheckIfOpusHeaderPresentLite(opusFile));
+      EXPECT_TRUE(Detection::CheckIfOpusHeaderPresentLite(opusFile));
     }
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(OpusHelpersTest, DetectsOpusFiles) {
+  TEST(OpusDetectionTest, DetectsOpusFiles) {
     {
       std::uint8_t dummyData[32] = {
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5,
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5
       };
       const InMemoryFile dummyFile(dummyData, sizeof(dummyData));
-      EXPECT_FALSE(Helpers::CheckIfOpusHeaderPresent(dummyFile));
+      EXPECT_FALSE(Detection::CheckIfOpusHeaderPresent(dummyFile));
     }
 
     {
       const InMemoryFile opusFile(prettySmallOpusFile, sizeof(prettySmallOpusFile));
-      EXPECT_TRUE(Helpers::CheckIfOpusHeaderPresent(opusFile));
+      EXPECT_TRUE(Detection::CheckIfOpusHeaderPresent(opusFile));
     }
   }
 

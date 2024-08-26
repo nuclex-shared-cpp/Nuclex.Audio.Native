@@ -20,7 +20,7 @@ limitations under the License.
 // If the library is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_AUDIO_SOURCE 1
 
-#include "./OpusHelpers.h"
+#include "./OpusDetection.h"
 
 #if defined(NUCLEX_AUDIO_HAVE_OPUS)
 
@@ -39,7 +39,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
   // ------------------------------------------------------------------------------------------- //
 
-  bool Helpers::DoesFileExtensionSayOpus(const std::string &extension) {
+  bool Detection::DoesFileExtensionSayOpus(const std::string &extension) {
     bool extensionSaysOpus;
 
     // OPUS audio generally only uses one file extension, .opus.
@@ -72,7 +72,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
   // ------------------------------------------------------------------------------------------- //
 
-  bool Helpers::CheckIfOpusHeaderPresent(const VirtualFile &source) {
+  bool Detection::CheckIfOpusHeaderPresent(const VirtualFile &source) {
     std::uint64_t size = source.GetSize();
     if(size < SmallestPossibleOpusSize) {
       return false; // File is too small to be an .opus file
@@ -101,7 +101,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
   // ------------------------------------------------------------------------------------------- //
 
-  bool Helpers::CheckIfOpusHeaderPresentLite(const VirtualFile &source) {
+  bool Detection::CheckIfOpusHeaderPresentLite(const VirtualFile &source) {
     if(source.GetSize() < SmallestPossibleOpusSize) {
       return false; // File is too small to be a .opus file
     }
@@ -126,10 +126,10 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     // Opus packet: https://wiki.xiph.org/OggOpus#Packet_Organization
     //
     return (
-      (fileHeader[0] == 0x4f) &&  //  1 Oggs (magic header)
-      (fileHeader[1] == 0x67) &&  //  2
-      (fileHeader[2] == 0x67) &&  //  3
-      (fileHeader[3] == 0x53) &&  //  4
+      (fileHeader[0] == 0x4f) &&  //  1 O | Oggs (FourCC magic header)
+      (fileHeader[1] == 0x67) &&  //  2 g |
+      (fileHeader[2] == 0x67) &&  //  3 g | All Opus audio files are OGG containers,
+      (fileHeader[3] == 0x53) &&  //  4 s | so the first thing we should see is an OGG FourCC
       (fileHeader[4] == 0x0) &&   //  - stream_structure version (currently 0 - use range?)
       (fileHeader[5] == 0x2) &&   //  - 2 = first page of logical bitstream (= file start intact)
       (                           //  - uint64, total samples encoded at this point, should be 0
