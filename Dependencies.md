@@ -38,9 +38,15 @@ the following directory layout:
 If that's a bit overwhelming, try cloning (with `--recurse-submodules`) my "opus-transcoder"
 or another application that uses this library to get that directory tree.
 
-The dependencies of the code itself are rather tame:
+The dependencies of the code itself involve all of the popular audio libraris:
 
   * Nuclex.Support.Native
+  * ogg (optional, if the vorbis or opus codecs are enabled)
+  * vorbis (optional, if the vorbis codec is enabled)
+  * opus (optional, if the opus codec is enabled)
+  * opusfile (optional, if the opus codec is enabled)
+  * flac (optional, if the flac codec is enabled)
+  * wavpack (optional, if the wavpack codec is enabled)
   * gtest (optional, if unit tests are built)
   * celero (optional, if benchmarks are built)
 
