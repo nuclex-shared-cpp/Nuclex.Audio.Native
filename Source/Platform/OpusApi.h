@@ -40,6 +40,26 @@ namespace Nuclex { namespace Audio { namespace Platform {
   /// <summary>Wraps the Opus / opusfile API with error checking</summary>
   class OpusApi {
 
+    /// <summary>Opens an Opus audio file accessed through file callbacks</summary>
+    /// <param name="state">State, will be passed unmodified to all file callbacks</param>
+    /// <param name="callbacks">Callbacks through which file accesses will happen</param>
+    /// <param name="initialBytes">Extra buffer of bytes that have alraedy been read</param>
+    /// <param name="initialByteCount">Number of bytes in the extra buffere</param>
+    /// <returns>
+    ///   A shared pointer to the opened opus file which can be used with other functions
+    ///   provided by the libopusfile library.
+    /// </returns>
+    /// <remarks>
+    ///   The returned shared pointer has a custom deleter set up, so this is fully RAII
+    ///   compatible and once the pointer goes out of scope, the WavPack context is
+    ///   closed again.
+    /// </remarks>
+    public: static std::shared_ptr<::OggOpusFile> OpenFromCallbacks(
+      void *state,
+      const ::OpusFileCallbacks *callbacks,
+      const std::uint8_t *initialBytes = nullptr,
+      std::size_t initialByteCount = 0
+    );
 
   };
 
