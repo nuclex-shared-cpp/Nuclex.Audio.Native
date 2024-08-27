@@ -100,11 +100,11 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     /// </returns>
     public: static std::unique_ptr<ReadOnlyStreamAdapterState> CreateAdapterForReading(
       const std::shared_ptr<const VirtualFile> &readOnlyFile,
-      WavpackStreamReader64 &streamReader
+      ::WavpackStreamReader64 &streamReader
     );
 
     /// <summayr>Constructs a StreamReader adapter for a writable stream</summary>
-    /// <param name="writableFile">Virtual file the adapter will written to</param>
+    /// <param name="writableFile">Virtual file the adapter will write to</param>
     /// <param name="streamReader">
     ///   WavPack StreamReader that will be set up to use the adapter
     /// </param>
@@ -113,7 +113,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     /// </returns>
     public: static std::unique_ptr<WritableStreamAdapterState> CreateAdapterForWriting(
       const std::shared_ptr<VirtualFile> &writableFile,
-      WavpackStreamReader64 &streamReader
+      ::WavpackStreamReader64 &streamReader
     );
 
   };

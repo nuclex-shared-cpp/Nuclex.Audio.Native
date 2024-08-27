@@ -46,13 +46,13 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Stores informations processed by the Opus stream adapters</summary>
-  struct StreamAdapterState {
+  struct FileAdapterState {
 
     /// <summary>
     ///   Re-throws any exceptions that happened while libopsufile accessed the adapter
     /// </summary>
     /// <param name="streamAdapterState">State that will be checked for an exception</param>
-    public: static void RethrowPotentialException(StreamAdapterState &state);
+    public: static void RethrowPotentialException(FileAdapterState &state);
 
     /// <summary>Whether this environment supports writing to the virtual file</summary>
     public: bool IsReadOnly;
@@ -66,7 +66,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Stores informations processed by the Opus stream reader adapter</summary>
-  struct ReadOnlyStreamAdapterState : public StreamAdapterState {
+  struct ReadOnlyFileAdapterState : public FileAdapterState {
 
     /// <summary>Virtual file this adapter is forwarding calls to</summary>
     public: std::shared_ptr<const VirtualFile> File;
@@ -76,7 +76,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Stores informations processed by the Opus stream writer adapter</summary>
-  struct WritableStreamAdapterState : public StreamAdapterState {
+  struct WritableFileAdapterState : public FileAdapterState {
 
     /// <summary>Virtual file this adapter is forwarding calls to</summary>
     public: std::shared_ptr<VirtualFile> File;
@@ -85,33 +85,33 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Constructs Opus StreamReader adapters and hooks up stream readers</summary>
-  class StreamAdapterFactory {
+  /// <summary>Constructs Opus file adapters and hooks up file callbacks</summary>
+  class FileAdapterFactory {
 
-    /// <summayr>Constructs a StreamReader adapter for a read-only stream</summary>
+    /// <summayr>Constructs a virtual file adapter for a read-only file</summary>
     /// <param name="readOnlyFile">Virtual file the adapter will read from</param>
-    /// <param name="streamReader">
-    ///   Opus StreamReader that will be set up to use the adapter
+    /// <param name="fileCallbacks">
+    ///   Opus file callback set that will be set up to use the adapter
     /// </param>
     /// <returns>
-    ///   A state that needs to be passed as the 'id' parameter though Opus
+    ///   A state that needs to be passed as the 'stae' parameter though libopusfile
     /// </returns>
-    public: static std::unique_ptr<ReadOnlyStreamAdapterState> CreateAdapterForReading(
+    public: static std::unique_ptr<ReadOnlyFileAdapterState> CreateAdapterForReading(
       const std::shared_ptr<const VirtualFile> &readOnlyFile,
-      OpusFileCallbacks &fileCallbacks
+      ::OpusFileCallbacks &fileCallbacks
     );
 
-    /// <summayr>Constructs a StreamReader adapter for a writable stream</summary>
-    /// <param name="writableFile">Virtual file the adapter will written to</param>
-    /// <param name="streamReader">
-    ///   Opus StreamReader that will be set up to use the adapter
+    /// <summayr>Constructs a virtual file adapter for a writable file</summary>
+    /// <param name="writableFile">Virtual file the adapter will write to</param>
+    /// <param name="fileCallbacks">
+    ///   Opus file callback set that will be set up to use the adapter
     /// </param>
     /// <returns>
-    ///   A state that needs to be passed as the 'id' parameter though Opus
+    ///   A state that needs to be passed as the 'stae' parameter though libopusfile
     /// </returns>
-    public: static std::unique_ptr<WritableStreamAdapterState> CreateAdapterForWriting(
+    public: static std::unique_ptr<WritableFileAdapterState> CreateAdapterForWriting(
       const std::shared_ptr<VirtualFile> &writableFile,
-      OpusFileCallbacks &fileCallbacks
+      ::OpusFileCallbacks &fileCallbacks
     );
 
   };

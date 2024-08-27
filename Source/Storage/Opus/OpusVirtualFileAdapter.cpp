@@ -87,6 +87,62 @@ namespace {
 namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
   // ------------------------------------------------------------------------------------------- //
+
+  std::unique_ptr<ReadOnlyFileAdapterState> FileAdapterFactory::CreateAdapterForReading(
+    const std::shared_ptr<const VirtualFile> &readOnlyFile,
+    ::OpusFileCallbacks &fileCallbacks
+  ) {
+    std::unique_ptr<ReadOnlyFileAdapterState> adapter = (
+      std::make_unique<ReadOnlyFileAdapterState>()
+    );
+
+    adapter->IsReadOnly = true;
+    adapter->FileCursor = 0;
+    adapter->Error = std::exception_ptr();
+    adapter->File = readOnlyFile;
+
+    fileCallbacks.read = &opusReadBytes;
+    fileCallbacks.seek = &opusSeek;
+    fileCallbacks.tell = &opusTell;
+    fileCallbacks.close = &opusClose;
+
+    return adapter;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::unique_ptr<WritableFileAdapterState> FileAdapterFactory::CreateAdapterForWriting(
+    const std::shared_ptr<VirtualFile> &writableFile,
+    ::OpusFileCallbacks &fileCallbacks
+  ) {
+    std::unique_ptr<WritableFileAdapterState> adapter = (
+      std::make_unique<WritableFileAdapterState>()
+    );
+
+    adapter->IsReadOnly = false;
+    adapter->FileCursor = 0;
+    adapter->Error = std::exception_ptr();
+    adapter->File = writableFile;
+
+    fileCallbacks.read = &opusReadBytes;
+    fileCallbacks.seek = &opusSeek;
+    fileCallbacks.tell = &opusTell;
+    fileCallbacks.close = &opusClose;
+
+    return adapter;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void FileAdapterState::RethrowPotentialException(FileAdapterState &fileAdapterState) {
+    if(static_cast<bool>(fileAdapterState.Error)) {
+      ON_SCOPE_EXIT {
+        fileAdapterState.Error = nullptr;
+      };
+      std::rethrow_exception(fileAdapterState.Error);
+    }
+  }
+
   // ------------------------------------------------------------------------------------------- //
 
 }}}} // namespace Nuclex::Audio::Storage::Opus

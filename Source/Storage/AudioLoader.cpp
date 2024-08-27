@@ -77,6 +77,9 @@ namespace Nuclex { namespace Audio { namespace Storage {
   AudioLoader::AudioLoader() :
     mostRecentCodecIndex(InvalidIndex),
     secondMostRecentCodecIndex(InvalidIndex) {
+#if defined(NUCLEX_AUDIO_HAVE_OPUS)
+    RegisterCodec(std::make_unique<Opus::OpusAudioCodec>());
+#endif
 #if defined(NUCLEX_AUDIO_HAVE_WAVPACK)
     RegisterCodec(std::make_unique<WavPack::WavPackAudioCodec>());
 #endif

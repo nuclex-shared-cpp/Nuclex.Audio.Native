@@ -63,7 +63,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     const std::string &extensionHint /* = std::string() */
   ) const {
     (void)extensionHint;
-    throw std::runtime_error(u8"Not implemented yet");
+    return std::optional<ContainerInfo>();
+    //throw std::runtime_error(u8"Not implemented yet");
   }
 
   // ------------------------------------------------------------------------------------------- //
