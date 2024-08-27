@@ -40,6 +40,17 @@ namespace Nuclex { namespace Audio {
   /// </remarks>
   class NUCLEX_AUDIO_TYPE TrackInfo {
 
+    // ----------------------------------------------------------------------------------------- //
+
+    // From the module that decoded it
+
+    /// <summary>Name of the codec used to compress / store the audio samples</summary>
+    public: std::string CodecName;
+
+    // ----------------------------------------------------------------------------------------- //
+
+    // From the media container (.mpa, .mka, .ogg) usually. Often empty.
+
     /// <summary>The name of the audio track, if provided by the container</summary>
     /// <remarks>
     ///   For single track containers such as .wav, .flac or .opus, there will only be
@@ -58,14 +69,34 @@ namespace Nuclex { namespace Audio {
     /// </remarks>
     public: std::optional<std::string> LanguageCode;
 
-    /// <summary>Name of the codec used to compress / store the audio samples</summary>
-    public: std::string CodecName;
+    // ----------------------------------------------------------------------------------------- //
+
+    // From the actual audio data
+
+    /// <summary>Number of audio channels in the track</summary>
+    public: std::size_t ChannelCount;
+
+    /// <summary>Placements for which this track provides audio channels</summary>
+    public: ChannelPlacement ChannelPlacements;
 
     /// <summary>Duration of the audio track</summary>
     public: std::chrono::microseconds Duration;
 
     /// <summary>Samples per second in each channel, typically 44100 or 48000</summary>
     public: std::size_t SampleRate;
+
+    /// <summary>Format in which the audio samples are recorded</summary>
+    /// <remarks>
+    ///   <para>
+    ///     This can, but doesn't have to be the same format in which you read data.
+    ///     For offline audio processing, you could simply always request the data as
+    ///     fldeal with floats or
+    ///     doub
+    ///     For example, to read 24-bit audio you will have to use arrays of
+    ///     32-bit integers (which will be appropriately repeat-padded). You can use
+    ///   this to decide on a code path, i.e. hav
+    /// </remarks>
+    public: AudioSampleFormat SampleFormat;
 
     /// <summary>Number of bits actually used for a sample</summary>
     /// <remarks>
@@ -81,24 +112,9 @@ namespace Nuclex { namespace Audio {
     /// </remarks>
     public: std::size_t BitsPerSample;
 
-    /// <summary>Number of audio channels in the track</summary>
-    public: std::size_t ChannelCount;
+    // ----------------------------------------------------------------------------------------- //
 
-    /// <summary>Placements for which this track provides audio channels</summary>
-    public: ChannelPlacement ChannelPlacements;
-
-    /// <summary>Format in which the audio samples are recorded</summary>
-    /// <remarks>
-    ///   <para>
-    ///     This can, but doesn't have to be the same format in which you read data.
-    ///     For offline audio processing, you could simply always request the data as
-    ///     fldeal with floats or
-    ///     doub
-    ///     For example, to read 24-bit audio you will have to use arrays of
-    ///     32-bit integers (which will be appropriately repeat-padded). You can use
-    ///   this to decide on a code path, i.e. hav
-    /// </remarks>
-    public: AudioSampleFormat SampleFormat;
+    // Helpers
 
     // CHECK: Is IsMono() confusing? If one splits 5.1 audio into 6 channels they would
     //        be mono, but this method would return false because they're not
