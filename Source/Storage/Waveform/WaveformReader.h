@@ -132,6 +132,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
     /// <summary>Whether the extra metadata chunk has been parsed yet</summary>
     private: bool factChunkParsed;
 
+    /// <summaery>Number of bits used to store each audio sample in the file</summary>
+    private: std::size_t storedBitsPerSample;
     /// <summary>Size of one frame (one sample of each channel in a row)</summary>
     private: std::size_t blockAlignment;
     /// <summary>Index of the first audio sample in the file</summary>

@@ -114,6 +114,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
     target(target),
     formatChunkParsed(false),
     factChunkParsed(false),
+    storedBitsPerSample(0),
     blockAlignment(0),
     firstSampleOffset(std::uint64_t(-1)),
     afterLastSampleOffset(std::uint64_t(-1)) {}
@@ -209,7 +210,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
       }
 
       // We've got a PCMWAVEFORMAT or WAVEFORMATEX header, so bits per sample must be
-      // a multiple of 8. We'll still parse it expecting nonconformant values.
+      // a multiple of 8. To be safe, we'll still parse it expecting nonconformant values.
       this->target.BitsPerSample = static_cast<std::size_t>(
         TReader::ReadUInt16(chunk + 22)
       );
@@ -230,8 +231,10 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
       // In the original Waveform audio format specification, only 1 or 2 channels
       // were mentioned (without explicitly stating that more would be in violation).
       // Either way, nobody cares, our only problem with more channels is that their
-      // placements are unknown. We do some guesswork here.
-      this->target.ChannelPlacements = WaveformReader::GuessChannelPlacement(this->target.ChannelCount);
+      // placements are unknown, so we have to guess them.
+      this->target.ChannelPlacements = (
+        WaveformReader::GuessChannelPlacement(this->target.ChannelCount)
+      );
 
     } else if(formatTag == WaveFormatExtensible) {
 
@@ -242,9 +245,11 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
         );
       }
 
-      // This would hold the stored number of bits per sample. It should be redundant,
-      // unless some 
-      //std::uint16_t bitsPerSample = TReader::ReadUInt16(chunk + 22);
+      // This offset holds the number of *stored* bits per sample (whereas the next
+      // bits per sample value, below, is the number of *used* bits per sample).
+      this->storedBitsPerSample = static_cast<std::size_t>(
+        TReader::ReadUInt16(chunk + 22)
+      );
 
       // According to Microsoft:
       //
@@ -259,8 +264,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
         );
       }
 
-      // This field holds the 'valid' bits per sample (can be any number, the remaining
-      // bits up to the next byte are zero-padded in each sample).
+      // This field holds the *used* bits per sample (which can be any number,
+      // the remaining bits up to the next byte are zero-padded in each sample).
       this->target.BitsPerSample = static_cast<std::size_t>(
         TReader::ReadUInt16(chunk + 26)
       );
@@ -344,8 +349,38 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
       u8"calculateDuration() is called with the data chunk extents known"
     );
 
+    // We have 'storedBitsPerSample' which already specifies the number of bytes one frame
+    // should use, but the Waveform audio file format provides a 'blockAlignment' field.
+    // The specification is rather muddy about this:
+    //
+    //   "Playback software needs to process a multiple of wBlockAlign bytes of data at
+    //   a time, so the value of wBlockAlign can be used for buffer alignment"
+    //
+    // That leaves room for 'wBlockAlign' to be one frame, two frames, the whole file even.
+    // The "ADPCM" format, for example mandates bigger, power-of-two block alignments
+    // (but it has an actual concept of blocks), other formats use values of '0' or '1' to
+    // indicate that data is not aligned to blocks.
+    //
+    // Regarding plain PCM or FLOAT audio files, here is what 5 randomly sampled libraries do:
+    //
+    //   mhroth/tinywav:  .BlockAlign = numChannels * tw->sampFmt;
+    //   adamstark/AudioFile:  numBytesPerBlock = getNumChannels() * (bitDepth / 8);
+    //   evpobr/libsndwave:  ..._writef (psf, "22", BHW2 (psf->bytewidth * psf->sf.channels)
+    //   audionamix/wave:  header.fmt.byte_per_block = bytes_per_sample * channel_number;
+    //   Signalsmith-Audio/audio-wav-example:  write16(file, channels*bytesPerSample);
+    //
+    // So the assumption that 'wBlockAlign' is (bytesPerSample x channelCount) is relatively
+    // safe. We'll still be a little bit defensive and use a fallback for invalid values:
+    //
+    std::size_t bytesPerFrame = (
+      (this->storedBitsPerSample + 7) / 8 * this->target.ChannelCount
+    );
+    if(this->blockAlignment >= bytesPerFrame) {
+      bytesPerFrame = this->blockAlignment;
+    }
+
     std::uint64_t totalSampleCount = (
-      (this->afterLastSampleOffset - this->firstSampleOffset) / this->blockAlignment
+      (this->afterLastSampleOffset - this->firstSampleOffset) / bytesPerFrame
     );
     this->target.Duration = std::chrono::microseconds(
       totalSampleCount * 1'000'000 / this->target.SampleRate

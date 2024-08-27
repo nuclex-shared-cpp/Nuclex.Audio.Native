@@ -114,7 +114,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     //
     // Now this library has two paths, either via libopus and its built-in .ogg streaming
     // facilities or via the (as of yet unwritten) container support that will provide
-    // the OPUS stream directly out of the .mp3, .mka or .ogg container.
+    // the OPUS stream directly out of the .mpa, .mka or .ogg container.
     //
     // But:
     //   "The first packet in the logical Ogg stream MUST contain the identification header,

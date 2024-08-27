@@ -58,8 +58,6 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     public: bool IsReadOnly;
     /// <summary>Current position of the emulated file cursor</summary>
     public: std::uint64_t FileCursor;
-    /// <summary>Bytes that have been buffered for read operations</summary>
-    public: std::vector<std::uint8_t> BufferedBytes;
     /// <summary>Stores any exception thrown by the virtual file interface</summary>
     public: std::exception_ptr Error;
 

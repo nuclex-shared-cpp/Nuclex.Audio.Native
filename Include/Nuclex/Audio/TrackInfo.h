@@ -67,7 +67,7 @@ namespace Nuclex { namespace Audio {
     /// <summary>Samples per second in each channel, typically 44100 or 48000</summary>
     public: std::size_t SampleRate;
 
-    /// <summary>Number of bits actually stored for a sample</summary>
+    /// <summary>Number of bits actually used for a sample</summary>
     /// <remarks>
     ///   <para>
     ///     To figure out the exposed audio sample format, check <see cref="SampleFormat" />.
