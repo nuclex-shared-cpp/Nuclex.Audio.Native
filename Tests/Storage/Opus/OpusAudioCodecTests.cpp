@@ -20,9 +20,9 @@ limitations under the License.
 // If the library is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_AUDIO_SOURCE 1
 
-#include "../../../Source/Storage/WavPack/WavPackAudioCodec.h"
+#include "../../../Source/Storage/Opus/OpusAudioCodec.h"
 
-#if defined(NUCLEX_AUDIO_HAVE_WAVPACK)
+#if defined(NUCLEX_AUDIO_HAVE_OPUS)
 
 #include "../FailingVirtualFile.h"
 
@@ -37,13 +37,13 @@ namespace {
 
 } // anonymous namespace
 
-namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
+namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(WavPackAudioCodecTest, ExceptionsFromVirtualFileResurface) {
+  TEST(OpusAudioCodecTest, ExceptionsFromVirtualFileResurface) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
-      u8"Resources/wavpack-stereo-float32-v416.wv"
+      u8"Resources/opus-stereo-v152.opus"
     );
     std::shared_ptr<const VirtualFile> failingFile = std::make_shared<FailingVirtualFile>(
       file
@@ -51,9 +51,9 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
     // If the error is forwarded correctly, the domain_error will resurface from the call.
     // Should a plain runtime_error surface here, then error checking was happening but
-    // the libwavpack error return took precedence over the VirtualFile exception, which is
+    // the libopusfile error return took precedence over the VirtualFile exception, which is
     // not what we want because it obscures the root cause of the error.
-    WavPackAudioCodec codec;
+    OpusAudioCodec codec;
     EXPECT_THROW(
       std::optional<ContainerInfo> info = codec.TryReadInfo(failingFile),
       std::domain_error
@@ -62,12 +62,12 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(WavPackAudioCodecTest, CanReadInfoFromFloatStereoFile) {
+  TEST(OpusAudioCodecTest, CanReadInfoFromFloatStereoFile) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
-      u8"Resources/wavpack-stereo-float32-v416.wv"
+      u8"Resources/opus-stereo-v152.opus"
     );
 
-    WavPackAudioCodec codec;
+    OpusAudioCodec codec;
     std::optional<ContainerInfo> info = codec.TryReadInfo(file);
 
     ASSERT_TRUE(info.has_value());
@@ -82,12 +82,12 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(WavPackAudioCodecTest, CanReadInfoFromFloatSurroundFile) {
+  TEST(OpusAudioCodecTest, CanReadInfoFromFloatSurroundFile) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
-      u8"Resources/wavpack-5dot1-int16-v416.wv"
+      u8"Resources/opus-5dot1-v152.opus"
     );
 
-    WavPackAudioCodec codec;
+    OpusAudioCodec codec;
     std::optional<ContainerInfo> info = codec.TryReadInfo(file);
 
     ASSERT_TRUE(info.has_value());
