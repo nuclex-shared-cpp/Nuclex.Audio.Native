@@ -62,7 +62,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(OpusAudioCodecTest, CanReadInfoFromFloatStereoFile) {
+  TEST(OpusAudioCodecTest, CanReadInfoFromStereoFile) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
       u8"Resources/opus-stereo-v152.opus"
     );
@@ -82,7 +82,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(OpusAudioCodecTest, CanReadInfoFromFloatSurroundFile) {
+  TEST(OpusAudioCodecTest, CanReadInfoFromSurroundFile) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
       u8"Resources/opus-5dot1-v152.opus"
     );

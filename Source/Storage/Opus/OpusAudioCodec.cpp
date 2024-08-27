@@ -74,6 +74,45 @@ namespace {
 
   // ------------------------------------------------------------------------------------------- //
 
+  /// <summary>Extracts information about a WavPack file into a TrackInfo object</summary>
+  /// <param name="opusFile">Opened WavPack audio file the informations are taken from</param>
+  /// <param name="trackInfo">Target TrackInfo instance that will be filled</param>
+  void extractTrackInfo(
+    std::shared_ptr<::OggOpusFile> opusFile, Nuclex::Audio::TrackInfo &trackInfo
+  ) {
+    using Nuclex::Audio::Platform::OpusApi;
+
+    // Opus audio streams can be chained together (sequentially and not in the sense of
+    // interleaving it as another stream in the OGG container). This would mean that
+    // the audio stream properties (i.e. channel count, sample rate) might change while
+    // we are decoding...
+    //
+    // TODO: Investigate, in detail, how libopusfile deals with multiple links in Opus files.
+    //   I'm unsure of how to deal with this, and the degree to which libopusfile will
+    //   automate things - if it just switches to the next link, what if the channel count
+    //   suddenly changes? Will libopusfile upmix and downmix? Leave it all to us?
+    //
+    std::size_t linkCount = OpusApi::CountLinks(opusFile);
+    if(linkCount != 1) {
+      throw std::runtime_error(u8"Multi-link Opus files are not supported");
+    }
+
+    const ::OpusHead &header = OpusApi::GetHeader(opusFile);
+
+    trackInfo.ChannelCount = static_cast<std::size_t>(header.channel_count);
+
+    // Opus audio is always encoded at 48000 samples per second, no matter what the original
+    // input sample rate had been. The .input_sample_rate field merely states what
+    // the original sample rate had been, but is not useful for playback of the Opus file.
+    //trackInfo.SampleRate = static_cast<std::size_t>(header.input_sample_rate)
+    trackInfo.SampleRate = 48000;
+
+    // TODO: Check if Opus always decodes into floating point audio samples.
+    trackInfo.SampleFormat = Nuclex::Audio::AudioSampleFormat::Float_32;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
 } // anonymous namespace
 
 namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
@@ -151,7 +190,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
       // Standalone .opus files only have a single track, always.
       TrackInfo &trackInfo = containerInfo.Tracks.emplace_back();
       trackInfo.CodecName = GetName();
-      //extractTrackInfo(context, trackInfo);
+      extractTrackInfo(opusFile, trackInfo);
 
       return containerInfo;
 

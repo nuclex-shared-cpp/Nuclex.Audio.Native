@@ -62,7 +62,7 @@ namespace {
       } else {
         fileLength -= state.FileCursor;
         if(fileLength < static_cast<std::uint64_t>(byteCount)) {
-          byteCount = static_cast<std::size_t>(byteCount);
+          byteCount = static_cast<std::size_t>(fileLength);
         }
       }
     }
@@ -74,6 +74,8 @@ namespace {
       state.Error = std::current_exception();
       return -1;
     }
+
+    state.FileCursor += byteCount;
 
     return byteCount;
   }

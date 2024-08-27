@@ -63,6 +63,29 @@ namespace Nuclex { namespace Audio { namespace Platform {
 
   // ------------------------------------------------------------------------------------------- //
 
+  const OpusHead &OpusApi::GetHeader(
+    const std::shared_ptr<::OggOpusFile> &opusFile, int linkIndex /* = -1 */
+  ) {
+    // The op_head() method simply looks up an array and clamps the link index to the number
+    // of links in the OGG container (and -1 means the current link). So it cannot ever fail,
+    // though if the OGG container somehow had zero links or the current link was invalid,
+    // it would invoke undefined behavior, most likely returning an out-of-bounds pointer.
+    //
+    // Last checked in libopusfile, opusfile.c in 2024.
+    return *::op_head(opusFile.get(), linkIndex);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::size_t OpusApi::CountLinks(const std::shared_ptr<::OggOpusFile> &opusFile) {
+    // Can't fail either, directly returns a structure member in the OggOpusfile struct.
+    //
+    // Last checked in libopusfile, opusfile.c in 2024
+    return static_cast<std::size_t>(::op_link_count(opusFile.get()));
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
 }}} // namespace Nuclex::Audio::Platform
 
 #endif // defined(NUCLEX_AUDIO_HAVE_OPUS)

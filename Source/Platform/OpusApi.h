@@ -62,6 +62,29 @@ namespace Nuclex { namespace Audio { namespace Platform {
       std::size_t initialByteCount = 0
     );
 
+    /// <summary>Retrieves header information describing an audio track</summary>
+    /// <param name="opusFile">
+    ///   Opened Opus audio file to retrieve header information for
+    /// </param>
+    /// <param name="linkIndex">
+    ///   Index of the link whose channels to count, -1 for the current link.
+    ///   These are *not* the same as tracks in a Matroska or MP4 container,
+    ///   links are used to chain audio streams sequentially, not interleave them.
+    /// </param>
+    /// <returns>An OpusHead structure with metadata about the Opus audio file</returns>
+    /// <remarks>
+    ///   The returned OpusHead structure is part of the internal libopus plumbing,
+    ///   so it will stay valid, at least until other libopus operations are performed.
+    /// </remarks>
+    public: static const OpusHead &GetHeader(
+      const std::shared_ptr<::OggOpusFile> &opusFile, int linkIndex = -1
+    );
+
+    /// <summary>Counts the number of links in the OGG contianer</summary>
+    /// <param name="opusFile">Opened Opus audio file to count the links in</param>
+    /// <returns>The number of links on the OGG container</returns>
+    public: static std::size_t CountLinks(const std::shared_ptr<::OggOpusFile> &opusFile);
+
   };
 
   // ------------------------------------------------------------------------------------------- //
