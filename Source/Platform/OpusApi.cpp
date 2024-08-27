@@ -40,6 +40,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
   // ------------------------------------------------------------------------------------------- //
 
   std::shared_ptr<::OggOpusFile> OpusApi::OpenFromCallbacks(
+    const Nuclex::Support::Events::Delegate<void()> &throwRootCauseException,
     void *state,
     const ::OpusFileCallbacks *callbacks,
     const std::uint8_t *initialBytes /* = nullptr */,
@@ -50,6 +51,8 @@ namespace Nuclex { namespace Audio { namespace Platform {
       state, callbacks, initialBytes, initialByteCount, &errorCode
     );
     if(opusFile == nullptr) {
+      throwRootCauseException();
+
       std::string message(u8"Error opening virtual file via libopusfile: ", 44);
       message.append(::opus_strerror(errorCode));
       throw std::runtime_error(message);

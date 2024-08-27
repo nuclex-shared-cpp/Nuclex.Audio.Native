@@ -35,7 +35,7 @@ namespace {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Checks a virtual file to WavPack stream adapter for exceptions</summary>
+  /// <summary>Checks a virtual file / WavPack stream adapter for exceptions</summary>
   /// <remarks>
   ///   <para>
   ///     We can't throw exceptions right through libwavpack's C code (well, we could,
@@ -45,7 +45,7 @@ namespace {
   ///   </para>
   ///   <para>
   ///     This small helper class will check if there are any exceptions recorded in
-  ///     a virtual file adapter and re-throw them. It is used by the LibWavPackApi methods
+  ///     a virtual file adapter and re-throw them. It is used by the WavPackApi methods
   ///     to re-throw the root cause exception rather than the generic libwavpack error
   ///     if the original failure occurred in the virtual file class.
   ///   </para>

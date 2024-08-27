@@ -180,8 +180,8 @@ namespace {
   /// <param name="id">User-defined pointer that holds the stream reader adapter</param>
   /// <returns>The current absolute position of the file cursor in the file</returns>
   std::int64_t wavPackGetCurrentPosition(void *id) {
-    Nuclex::Audio::Storage::WavPack::WritableStreamAdapterState &state = *reinterpret_cast<
-      Nuclex::Audio::Storage::WavPack::WritableStreamAdapterState *
+    Nuclex::Audio::Storage::WavPack::StreamAdapterState &state = *reinterpret_cast<
+      Nuclex::Audio::Storage::WavPack::StreamAdapterState *
     >(id);
 
     return static_cast<std::int64_t>(state.FileCursor);
@@ -339,7 +339,6 @@ namespace {
   template<typename TAdapterState>
   std::int64_t wavPackGetLength(void *id) {
     TAdapterState &state = *reinterpret_cast<TAdapterState *>(id);
-
     return static_cast<std::int64_t>(state.File->GetSize());
   }
 
@@ -379,7 +378,8 @@ namespace {
   /// <returns>Zero on success, EOF in case of an error</returns>
   template<typename TAdapterState>
   int wavPackClose(void *id) {
-    (void)id;
+    TAdapterState &state = *reinterpret_cast<TAdapterState *>(id);
+    state.File.reset();
 
     #if 0 // Perhaps it's better to handle this ourselves.
     TAdapterState *state = reinterpret_cast<TAdapterState *>(id);
