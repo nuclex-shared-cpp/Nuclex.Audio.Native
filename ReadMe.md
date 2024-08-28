@@ -12,17 +12,18 @@ Compiling
 ---------
 
 If you want to compile this, the easiest way is to do a clone
-(with `--recurse-submodules`!). It will set up the directory structure and
-third-party libraries (built from source) needed to compile this library.
+(with `--recurse-submodules`!) of my `framework-package` repository.
+It will set up the directory structure and third-party libraries
+(built from source) needed to compile this library.
 
-    git clone https://github.com/nuclex-shared-cpp/framework-package.git
+    git clone --recurse-submodules https://github.com/nuclex-shared-cpp/framework-package.git
     cd framework-package
     cd Nuclex.Audio.Native
     ./build.sh
 
-The Windows / Visual Studio projects will lag behind and miss newly added
+*The Windows / Visual Studio projects usually lag behind and miss newly added
 source files. They also require you to build all third-party libraries with
-CMake by hand if you intend to compile inside Visual Studio itself.
+CMake by hand if you intend to compile inside Visual Studio itself.*
 
 
 Early Development!
