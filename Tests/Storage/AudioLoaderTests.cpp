@@ -49,13 +49,43 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(AudioLoaderTest, CanLoadWavPackFile) {
+  TEST(AudioLoaderTest, CanGetMetadataFromWavPack) {
     AudioLoader loader;
 
     std::optional<ContainerInfo> info = (
       loader.TryReadInfo(u8"Resources/wavpack-stereo-int16-v416.wv")
     );
+    #if defined(NUCLEX_AUDIO_HAVE_WAVPACK)
     EXPECT_TRUE(info.has_value());
+    #else
+    EXPECT_FALSE(info.has_value());
+    #endif
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(AudioLoaderTest, CanGetMetadataFromWaveform) {
+    AudioLoader loader;
+
+    std::optional<ContainerInfo> info = (
+      loader.TryReadInfo(u8"Resources/waveform-stereo-int16le-pcmwaveformat.wav")
+    );
+    EXPECT_TRUE(info.has_value());
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(AudioLoaderTest, CanGetMetadataFromOpus) {
+    AudioLoader loader;
+
+    std::optional<ContainerInfo> info = (
+      loader.TryReadInfo(u8"Resources/opus-stereo-v152.opus")
+    );
+    #if defined(NUCLEX_AUDIO_HAVE_OPUS)
+    EXPECT_TRUE(info.has_value());
+    #else
+    EXPECT_FALSE(info.has_value());
+    #endif
   }
 
   // ------------------------------------------------------------------------------------------- //

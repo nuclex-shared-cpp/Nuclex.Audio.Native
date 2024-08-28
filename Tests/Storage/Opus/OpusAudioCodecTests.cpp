@@ -33,6 +33,29 @@ limitations under the License.
 namespace {
 
   // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>The *real* length of the test .opus files in the Resources directory</summary>
+  /// <remarks>
+  ///   <para>
+  ///     I created my audio test files with Audacity and checked them via MediaInfo
+  ///     (https://github.com/MediaArea/MediaInfo). Both reported that, after encodign to Opus,
+  ///     the audio files had become slightly longer. Thus, I truncated the audio data before
+  ///     encoding to obtain precise 1 second Opus audio files.
+  ///   </para>
+  ///   <para>
+  ///     As it turns out, Opus needs a few prio and post samples, but these should be skipped
+  ///     by the decoding application. Audacity happily decodes those samples (showing garbage
+  ///     or a small repetition at the end) and MediaInfo includes these in the duration.
+  ///   </para>
+  ///   <para>
+  ///     libopusfile, being written by the OGG and Opus developers themselves, does it
+  ///     it correctly. The end result is that my audio files are actually 0.993 seconds
+  ///     long and Nuclex.Audio.Native reports the correct length, whereas Audacity and
+  ///     MediaInfo incorrectly state that the audio files are exactly 1.0 seconds long...
+  ///   </para>
+  /// </remarks>
+  const std::chrono::microseconds ActualOpusTestFileLength(993'000);
+
   // ------------------------------------------------------------------------------------------- //
 
 } // anonymous namespace
@@ -77,7 +100,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
       info.value().Tracks.at(0).ChannelPlacements,
       ChannelPlacement::FrontLeft | ChannelPlacement::FrontRight
     );
-    EXPECT_TRUE(info.value().Tracks.at(0).Duration == std::chrono::seconds(1));
+    EXPECT_TRUE(info.value().Tracks.at(0).Duration == ActualOpusTestFileLength);
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -104,7 +127,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
         ChannelPlacement::LowFrequencyEffects
       )
     );
-    EXPECT_TRUE(info.value().Tracks.at(0).Duration == std::chrono::seconds(1));
+
+    EXPECT_TRUE(info.value().Tracks.at(0).Duration == ActualOpusTestFileLength);
   }
 
   // ------------------------------------------------------------------------------------------- //

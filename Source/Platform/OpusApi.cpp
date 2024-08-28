@@ -86,6 +86,21 @@ namespace Nuclex { namespace Audio { namespace Platform {
 
   // ------------------------------------------------------------------------------------------- //
 
+  std::uint64_t OpusApi::CountSamples(
+    const std::shared_ptr<::OggOpusFile> &opusFile, int linkIndex /* = -1 */
+  ) {
+    ::ogg_int64_t sampleCountOrErrorCode = ::op_pcm_total(opusFile.get(), linkIndex);
+    if(sampleCountOrErrorCode < 0) {
+      std::string message(u8"Error getting total pcm sample count via libopusfile: ", 54);
+      message.append(::opus_strerror(sampleCountOrErrorCode));
+      throw std::runtime_error(message);
+    }
+
+    return static_cast<std::uint64_t>(sampleCountOrErrorCode);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
 }}} // namespace Nuclex::Audio::Platform
 
 #endif // defined(NUCLEX_AUDIO_HAVE_OPUS)

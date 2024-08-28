@@ -85,6 +85,13 @@ namespace Nuclex { namespace Audio { namespace Platform {
     /// <returns>The number of links on the OGG container</returns>
     public: static std::size_t CountLinks(const std::shared_ptr<::OggOpusFile> &opusFile);
 
+    /// <summary>Counts the number of samples present in the audio file</summary>
+    /// <param name="opusFile">Opened Opus audio file to count the samples in</param>
+    /// <returns>The total number of samples in the Opus audio file</returns>
+    public: static std::uint64_t CountSamples(
+      const std::shared_ptr<::OggOpusFile> &opusFile, int linkIndex = -1
+    );
+
   };
 
   // ------------------------------------------------------------------------------------------- //
