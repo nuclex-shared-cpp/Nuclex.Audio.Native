@@ -125,6 +125,23 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     // Ogg frame: https://www.xiph.org/ogg/doc/framing.html
     // Opus packet: https://wiki.xiph.org/OggOpus#Packet_Organization
     //
+    std::uint64_t encodedSampleCount = (
+      (static_cast<std::uint64_t>(fileHeader[6])) |
+      (static_cast<std::uint64_t>(fileHeader[7]) << 8) |
+      (static_cast<std::uint64_t>(fileHeader[8]) << 16) |
+      (static_cast<std::uint64_t>(fileHeader[9]) << 24) |
+      (static_cast<std::uint64_t>(fileHeader[10]) << 32) |
+      (static_cast<std::uint64_t>(fileHeader[11]) << 40) |
+      (static_cast<std::uint64_t>(fileHeader[12]) << 48) |
+      (static_cast<std::uint64_t>(fileHeader[13]) << 56)
+    );
+    std::uint32_t pageSequenceNumber = (
+      (static_cast<std::uint32_t>(fileHeader[18])) |
+      (static_cast<std::uint32_t>(fileHeader[19]) << 8) |
+      (static_cast<std::uint32_t>(fileHeader[20]) << 16) |
+      (static_cast<std::uint32_t>(fileHeader[21]) << 24)
+    );
+
     return (
       (fileHeader[0] == 0x4f) &&  //  1 O | Oggs (FourCC magic header)
       (fileHeader[1] == 0x67) &&  //  2 g |
@@ -132,12 +149,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
       (fileHeader[3] == 0x53) &&  //  4 s | so the first thing we should see is an OGG FourCC
       (fileHeader[4] == 0x0) &&   //  - stream_structure version (currently 0 - use range?)
       (fileHeader[5] == 0x2) &&   //  - 2 = first page of logical bitstream (= file start intact)
-      (                           //  - uint64, total samples encoded at this point, should be 0
-        (*reinterpret_cast<const std::uint64_t *>(fileHeader + 6) < 0x100000000ULL)
-      ) &&
-      (                           //  - uint32, page sequence number (0 if complete file)
-        (*reinterpret_cast<const std::uint32_t *>(fileHeader + 18) == 0)
-      ) &&
+      (encodedSampleCount < 0x691200000ULL) && // total samples encoded at this point, ideally 0
+      (pageSequenceNumber == 0) &&
       (fileHeader[28] == 0x4f) && //  1 OpusHead (magic header)
       (fileHeader[29] == 0x70) && //  2
       (fileHeader[30] == 0x75) && //  3
