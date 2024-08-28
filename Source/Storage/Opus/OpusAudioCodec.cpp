@@ -207,12 +207,28 @@ namespace {
     //trackInfo.SampleRate = static_cast<std::size_t>(header.input_sample_rate)
     trackInfo.SampleRate = 48000;
 
-    trackInfo.Duration = std::chrono::microseconds(
-      OpusApi::CountSamples(opusFile) * 1'000 / 48
-    );
+    std::uint64_t totalSampleCount = OpusApi::CountSamples(opusFile);
+    trackInfo.Duration = std::chrono::microseconds(totalSampleCount * 1'000 / 48);
 
-    // TODO: Check if Opus always decodes into floating point audio samples.
-    trackInfo.SampleFormat = Nuclex::Audio::AudioSampleFormat::Float_32;
+    {
+      // Completely unfounded, arbitrary value to estimate the precision (which may or may
+      // not even change depending on Opus bitrates) of an Opus file compared to any audio
+      // format that stored signed integer samples.
+      const std::size_t MadeUpOpusPrecisionFromCompressionRatio = 80;
+
+      // Calculate the number of bytes the audio data would decode to
+      std::uint64_t decodedByteCount = totalSampleCount * 2; // bytes
+      decodedByteCount *= trackInfo.ChannelCount;
+
+      trackInfo.BitsPerSample = std::max<std::size_t>(
+        1, // Let's not report less than 1 bit per sample...
+        OpusApi::GetRawContainerSize(opusFile) *
+        MadeUpOpusPrecisionFromCompressionRatio /
+        decodedByteCount
+      );
+    }
+
+    trackInfo.SampleFormat = Nuclex::Audio::AudioSampleFormat::SignedInteger_16;
   }
 
   // ------------------------------------------------------------------------------------------- //

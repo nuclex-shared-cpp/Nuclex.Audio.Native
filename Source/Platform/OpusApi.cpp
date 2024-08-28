@@ -101,6 +101,30 @@ namespace Nuclex { namespace Audio { namespace Platform {
 
   // ------------------------------------------------------------------------------------------- //
 
+  std::uint64_t OpusApi::GetRawContainerSize(
+    const std::shared_ptr<::OggOpusFile> &opusFile, int linkIndex /* = -1 */
+  ) {
+    ::ogg_int64_t containerSizeOrErrorCode = ::op_raw_total(opusFile.get(), linkIndex);
+    if(containerSizeOrErrorCode < 0) {
+      std::string message(u8"Error getting OGG raw total size via libopusfile: ", 54);
+      message.append(::opus_strerror(containerSizeOrErrorCode));
+      throw std::runtime_error(message);
+    }
+
+    return static_cast<std::uint64_t>(containerSizeOrErrorCode);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+#if 0
+  std::uint64_t OpusApi::GetRawStreamSize(
+    const std::shared_ptr<::OggOpusFile> &opusFile, int linkIndex /* = -1 */
+  ) {
+    std::uint64_t totalStreamSize = 0;
+    // Step through all OGG pages and sum up the size of one stream only
+  }
+#endif
+  // ------------------------------------------------------------------------------------------- //
+
 }}} // namespace Nuclex::Audio::Platform
 
 #endif // defined(NUCLEX_AUDIO_HAVE_OPUS)

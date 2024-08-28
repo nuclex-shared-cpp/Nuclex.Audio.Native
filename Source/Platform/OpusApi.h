@@ -67,7 +67,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
     ///   Opened Opus audio file to retrieve header information for
     /// </param>
     /// <param name="linkIndex">
-    ///   Index of the link whose channels to count, -1 for the current link.
+    ///   Index of the link whose header to retrieve, -1 for the current link.
     ///   These are *not* the same as tracks in a Matroska or MP4 container,
     ///   links are used to chain audio streams sequentially, not interleave them.
     /// </param>
@@ -87,10 +87,41 @@ namespace Nuclex { namespace Audio { namespace Platform {
 
     /// <summary>Counts the number of samples present in the audio file</summary>
     /// <param name="opusFile">Opened Opus audio file to count the samples in</param>
+    /// <param name="linkIndex">
+    ///   Index of the link whose samples to count, -1 for the current link.
+    ///   These are *not* the same as tracks in a Matroska or MP4 container,
+    ///   links are used to chain audio streams sequentially, not interleave them.
+    /// </param>
     /// <returns>The total number of samples in the Opus audio file</returns>
     public: static std::uint64_t CountSamples(
       const std::shared_ptr<::OggOpusFile> &opusFile, int linkIndex = -1
     );
+
+    /// <summary>Returns the raw size of the OGG container and its streams</summary>
+    /// <param name="opusFile">Opened Opus audio file to get the raw size of</param>
+    /// <param name="linkIndex">
+    ///   Index of the link whose container size to retrieve, -1 for the current link.
+    ///   These are *not* the same as tracks in a Matroska or MP4 container,
+    ///   links are used to chain audio streams sequentially, not interleave them.
+    /// </param>
+    /// <returns>The raw size of the OGG container and its streams in bytes</returns>
+    public: static std::uint64_t GetRawContainerSize(
+      const std::shared_ptr<::OggOpusFile> &opusFile, int linkIndex = -1
+    );
+
+    #if 0
+    /// <summary>Returns the raw size of the audio stream only</summary>
+    /// <param name="opusFile">Opened Opus audio file to get the stream size from</param>
+    /// <param name="linkIndex">
+    ///   Index of the link whose stream size to retrieve, -1 for the current link.
+    ///   These are *not* the same as tracks in a Matroska or MP4 container,
+    ///   links are used to chain audio streams sequentially, not interleave them.
+    /// </param>
+    /// <returns>The raw size of the audio stream in bytes</returns>
+    public: static std::uint64_t GetRawStreamSize(
+      const std::shared_ptr<::OggOpusFile> &opusFile, int linkIndex = -1
+    );
+    #endif
 
   };
 
