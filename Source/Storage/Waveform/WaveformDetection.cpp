@@ -126,24 +126,24 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
       (fileHeader[0] == 0x52) &&   //  1 R | RIFF (fourcc; chunk descriptor)
       (fileHeader[1] == 0x49) &&   //  2 I |
       (fileHeader[2] == 0x46) &&   //  3 F | This is the standard fourcc for little-endian
-      (fileHeader[2] == 0x46)      //  4 F | Waveform audio files.
+      (fileHeader[3] == 0x46)      //  4 F | Waveform audio files.
     ) || (
       (fileHeader[0] == 0x58) &&   //  1 X | XFIR (fourcc; chunk descriptor)
       (fileHeader[1] == 0x46) &&   //  2 F |
       (fileHeader[2] == 0x49) &&   //  3 I | This would be an opposite-endian RIFX file
-      (fileHeader[2] == 0x52)      //  4 R | written by a confused audio library :)
+      (fileHeader[3] == 0x52)      //  4 R | written by a confused audio library :)
     );
 
     bool isBigEndian = (
       (fileHeader[0] == 0x52) &&   //  1 R | RIFX (fourcc; chunk descriptor)
       (fileHeader[1] == 0x49) &&   //  2 I |
       (fileHeader[2] == 0x46) &&   //  3 F | The official fourcc for big-endian
-      (fileHeader[2] == 0x58)      //  4 X | Waveform audio files
+      (fileHeader[3] == 0x58)      //  4 X | Waveform audio files
     ) || (
       (fileHeader[0] == 0x46) &&   //  1 F | FFIR (fourcc; chunk descriptor)
       (fileHeader[1] == 0x46) &&   //  2 F |
       (fileHeader[2] == 0x49) &&   //  3 I | This would be produced by a endian-unaware
-      (fileHeader[2] == 0x52)      //  4 R | library saving a file on a big-endian system.
+      (fileHeader[3] == 0x52)      //  4 R | library saving a file on a big-endian system.
     );
 
     std::uint32_t blockSize, firstChunkSize;
