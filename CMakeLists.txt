@@ -106,6 +106,12 @@ if(WANT_OPUS)
       ${CMAKE_BINARY_DIR}/nuclex-opusfile
     )
   endif()
+  if(NOT (TARGET OpusEnc))
+    add_subdirectory(
+      ${PROJECT_SOURCE_DIR}/../third-party/nuclex-opusenc
+      ${CMAKE_BINARY_DIR}/nuclex-opusenc
+    )
+  endif()
 endif()
 if(WANT_FLAC)
 	message(STATUS "  ⚫ Support FLAC")
@@ -190,6 +196,7 @@ function(add_third_party_libraries target_name)
   if(WANT_OPUS)
     target_compile_definitions(${target_name} PRIVATE NUCLEX_AUDIO_HAVE_OPUS)
     target_link_libraries(${target_name} PRIVATE OpusFile::Static)
+    target_link_libraries(${target_name} PRIVATE OpusEnc::Static)
     target_link_libraries(${target_name} PRIVATE Opus::Static)
     target_link_libraries(${target_name} PRIVATE Ogg::Static)
   endif()
