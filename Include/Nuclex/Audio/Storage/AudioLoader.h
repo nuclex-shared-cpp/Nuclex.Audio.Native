@@ -40,17 +40,29 @@ limitations under the License.
 // Naming
 // ------
 //
+// AudioLoader
+//   - Maybe.
+//   - Perhaps this is the best choice? The term "loader" says to me that it will
+//     load whole audio files, neutral about whether streamed or not.
+//
+// AudioCodecManager
+//   - Does *using* the codecs by forwarding calls to then count as managing?
+//
+// AudioCodecRepository
+//   - This is relatively neutral
+//   - Somehow, I've got less scruples about forwarding calls to codecs in this
+//     than with 'AudioCodecManager.'
+//
+//
+// Naming - probably not
+// ---------------------
+//
 // AudioAccessor
 //   - Confusing?
 //
 // AudioDeserializer
 //   - Bad. While BitmapSerializer is neat, lossy compression is not serialization
 //     and it doesn't fit into the audio jargon well.
-//
-// AudioLoader
-//   - Maybe.
-//   - Perhaps this is the best choice? The term "loader" says to me that it will
-//     load whole audio files, neutral about whether streamed or not.
 //
 // AudioReader
 //   - Maybe.
