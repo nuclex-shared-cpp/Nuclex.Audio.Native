@@ -26,7 +26,10 @@ limitations under the License.
 
 #include "Nuclex/Audio/Storage/VirtualFile.h"
 
-#include <opus/opusfile.h>
+// This header is in /usr/include/opus/opusfile.h on my Linux system,
+// But directly under libopusfile/include/ in the libopus sources,
+// which we use, so this #include statement may differ from other code examples.
+#include <opusfile.h>
 
 namespace {
 

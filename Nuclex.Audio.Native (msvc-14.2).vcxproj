@@ -202,46 +202,78 @@
     <Text Include="Documents\EventBenchmark.md" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Include\Nuclex\Audio\AudioSampleFormat.h" />
-    <ClInclude Include="Include\Nuclex\Audio\ContainerInfo.h" />
+    <ClInclude Include="Include\Nuclex\Audio\Errors\CorruptedFileError.h" />
+    <ClInclude Include="Include\Nuclex\Audio\Errors\UnsupportedFormatError.h" />
     <ClInclude Include="Include\Nuclex\Audio\Storage\AudioCodec.h" />
     <ClInclude Include="Include\Nuclex\Audio\Storage\AudioLoader.h" />
+    <ClInclude Include="Include\Nuclex\Audio\Storage\AudioTrackDecoder.h" />
     <ClInclude Include="Include\Nuclex\Audio\Storage\VirtualFile.h" />
+    <ClInclude Include="Include\Nuclex\Audio\AudioSampleFormat.h" />
     <ClInclude Include="Include\Nuclex\Audio\Channel.h" />
     <ClInclude Include="Include\Nuclex\Audio\ChannelPlacement.h" />
     <ClInclude Include="Include\Nuclex\Audio\Config.h" />
+    <ClInclude Include="Include\Nuclex\Audio\ContainerInfo.h" />
     <ClInclude Include="Include\Nuclex\Audio\Track.h" />
     <ClInclude Include="Include\Nuclex\Audio\TrackInfo.h" />
-    <ClInclude Include="Source\Platform\WavPackApi.h" />
-    <ClInclude Include="Source\Storage\WavPack\WavPackAudioCodec.h" />
-    <ClInclude Include="Source\Storage\WavPack\WavPackDetection.h" />
-    <ClInclude Include="Source\Storage\WavPack\WavPackVirtualFileAdapter.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\TrackInfo.cpp" />
-    <ClInclude Include="Source\Platform\LinuxFileApi.h" />
-    <ClInclude Include="Source\Platform\PosixApi.h" />
-    <ClInclude Include="Source\Platform\PosixFileApi.h" />
-    <ClInclude Include="Source\Platform\WindowsApi.h" />
-    <ClInclude Include="Source\Platform\WindowsFileApi.h" />
-    <ClCompile Include="Source\AudioSampleFormat.cpp" />
-    <ClCompile Include="Source\ContainerInfo.cpp" />
-    <ClCompile Include="Source\Platform\LinuxFileApi.cpp" />
-    <ClCompile Include="Source\Platform\PosixApi.cpp" />
-    <ClCompile Include="Source\Platform\PosixFileApi.cpp" />
-    <ClCompile Include="Source\Platform\WavPackApi.cpp" />
-    <ClCompile Include="Source\Platform\WindowsApi.cpp" />
-    <ClCompile Include="Source\Platform\WindowsFileApi.cpp" />
+    <ClCompile Include="Source\Errors\CorruptedFileError.cpp" />
+    <ClCompile Include="Source\Errors\UnsupportedFormatError.cpp" />
+    <ClCompile Include="Source\Storage\Flac\FlacAudioCodec.cpp" />
+    <ClInclude Include="Source\Storage\Flac\FlacAudioCodec.h" />
+    <ClCompile Include="Source\Storage\Flac\FlacDetection.cpp" />
+    <ClInclude Include="Source\Storage\Flac\FlacDetection.h" />
+    <ClCompile Include="Source\Storage\Opus\OpusAudioCodec.cpp" />
+    <ClInclude Include="Source\Storage\Opus\OpusAudioCodec.h" />
+    <ClCompile Include="Source\Storage\Opus\OpusDetection.cpp" />
+    <ClInclude Include="Source\Storage\Opus\OpusDetection.h" />
+    <ClCompile Include="Source\Storage\Opus\OpusVirtualFileAdapter.cpp" />
+    <ClInclude Include="Source\Storage\Opus\OpusVirtualFileAdapter.h" />
+    <ClCompile Include="Source\Storage\Waveform\WaveformAudioCodec.cpp" />
+    <ClInclude Include="Source\Storage\Waveform\WaveformAudioCodec.h" />
+    <ClCompile Include="Source\Storage\Waveform\WaveformDetection.cpp" />
+    <ClInclude Include="Source\Storage\Waveform\WaveformDetection.h" />
+    <ClCompile Include="Source\Storage\Waveform\WaveformReader.cpp" />
+    <ClInclude Include="Source\Storage\Waveform\WaveformReader.h" />
+    <ClCompile Include="Source\Storage\WavPack\WavPackAudioCodec.cpp" />
+    <ClInclude Include="Source\Storage\WavPack\WavPackAudioCodec.h" />
+    <ClCompile Include="Source\Storage\WavPack\WavPackDetection.cpp" />
+    <ClInclude Include="Source\Storage\WavPack\WavPackDetection.h" />
+    <ClCompile Include="Source\Storage\WavPack\WavPackVirtualFileAdapter.cpp" />
+    <ClInclude Include="Source\Storage\WavPack\WavPackVirtualFileAdapter.h" />
     <ClCompile Include="Source\Storage\AudioLoader.cpp" />
+    <ClCompile Include="Source\Storage\AudioTrackDecoder.cpp" />
+    <ClCompile Include="Source\Storage\EndianReader.cpp" />
+    <ClInclude Include="Source\Storage\EndianReader.h" />
     <ClCompile Include="Source\Storage\RealFile.cpp" />
     <ClInclude Include="Source\Storage\RealFile.h" />
     <ClCompile Include="Source\Storage\VirtualFile.cpp" />
+    <ClCompile Include="Source\Platform\LinuxFileApi.cpp" />
+    <ClInclude Include="Source\Platform\LinuxFileApi.h" />
+    <ClCompile Include="Source\Platform\OpusApi.cpp" />
+    <ClInclude Include="Source\Platform\OpusApi.h" />
+    <ClCompile Include="Source\Platform\PosixApi.cpp" />
+    <ClInclude Include="Source\Platform\PosixApi.h" />
+    <ClCompile Include="Source\Platform\PosixFileApi.cpp" />
+    <ClInclude Include="Source\Platform\PosixFileApi.h" />
+    <ClCompile Include="Source\Platform\WavPackApi.cpp" />
+    <ClInclude Include="Source\Platform\WavPackApi.h" />
+    <ClCompile Include="Source\Platform\WindowsApi.cpp" />
+    <ClInclude Include="Source\Platform\WindowsApi.h" />
+    <ClCompile Include="Source\Platform\WindowsFileApi.cpp" />
+    <ClInclude Include="Source\Platform\WindowsFileApi.h" />
+    <ClCompile Include="Source\AudioSampleFormat.cpp" />
     <ClCompile Include="Source\ChannelPlacement.cpp" />
-    <ClCompile Include="Source\Storage\WavPack\WavPackAudioCodec.cpp" />
-    <ClCompile Include="Source\Storage\WavPack\WavPackDetection.cpp" />
-    <ClCompile Include="Source\Storage\WavPack\WavPackVirtualFileAdapter.cpp" />
-    <ClCompile Include="Source\Track.cpp" />
     <ClCompile Include="Source\Config.cpp" />
+    <ClCompile Include="Source\ContainerInfo.cpp" />
+    <ClCompile Include="Source\TrackInfo.cpp" />
+    <ClCompile Include="Source\Track.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.md" />
+    <Text Include="Notice.md" />
+    <Text Include="License.md" />
+    <Text Include="Dependencies.md" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Nuclex.Support.Native.ref">
@@ -271,12 +303,6 @@
       <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
       <TreatOutputAsContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</TreatOutputAsContent>
     </CustomBuild>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="ReadMe.md" />
-    <Text Include="Notice.md" />
-    <Text Include="License.md" />
-    <Text Include="Dependencies.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
