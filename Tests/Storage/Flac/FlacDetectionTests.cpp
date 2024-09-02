@@ -123,4 +123,4 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
 }}}} // namespace Nuclex::Audio::Storage::Flac
 
-#endif defined(NUCLEX_AUDIO_HAVE_FLAC)
+#endif // defined(NUCLEX_AUDIO_HAVE_FLAC)

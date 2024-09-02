@@ -31,7 +31,7 @@ limitations under the License.
 //
 // The design is strongly tending towards random access decoding because all
 // audio formats I checked have a concept of individually decodable blocks,
-// granules or chunks.
+// pages or chunks.
 //
 
 namespace Nuclex { namespace Audio { namespace Storage {
@@ -118,7 +118,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     //
     //   The sampleContainer could be an interface, so the caller could either provide
     //   our default implementation of it (which stores samples and perhaps automatically
-    //   adjust indicates so that 0 is the requested sample even if the granule/block
+    //   adjust indicates so that 0 is the requested sample even if the page/block
     //   had to begin earlier).
     //
     //   For optimal performance, the caller could provide their own implementation of
@@ -128,7 +128,10 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
     // Clone()
     //
-    //   Because 
+    //   Because some codec implementations (Opus as an example) support fast and easy
+    //   cloning on the decoder state. But does it make sense? Can blocks/pages be so
+    //   large that you'd want to keep a clone around rather than decode it in one go?
+    //
 
   };
 
