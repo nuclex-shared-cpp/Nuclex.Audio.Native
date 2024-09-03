@@ -54,6 +54,24 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// <summary>Frees all resources owned by the instance</summary>
     public: virtual ~AudioTrackDecoder() = default;
 
+    /// <summary>Creates a clone of the audio track decoder</summary>
+    /// <returns>A clone of the audio track decoder that can be used independently</returns>
+    /// <remarks>
+    ///   <para>
+    ///     The underlying encoders of the audio libraries already have to handle access
+    ///     from multiple threads, but unless the respective audio library explicitly states
+    ///     that simultaneous requests from multiple threads are okay and uses a cursorless
+    ///     design (or supports user-created decoder instances), any audio decoding will
+    ///     happen sequentially.
+    ///   </para>
+    ///   <para>
+    ///     Using this method, the audio file will be &quot;opened&quot; a second time
+    ///     (actually the same <see cref="VirtualFile" /> instance is shared, which is
+    ///     trivially doable because <see cref="VirtualFile" /> is cursorless.
+    ///   </para>
+    /// </remarks>
+    public: virtual std::shared_ptr<AudioTrackDecoder> Clone() const = 0;
+
     /// <summary>Counts the number of audio channels in the track</summary>
     /// <returns>The number of audio channels in the audio track</returns>
     public: virtual std::size_t CountChannels() const = 0;
@@ -80,11 +98,6 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// </remarks>
     public: virtual const std::vector<ChannelPlacement> &GetChannelOrder() const = 0;
 
-    // CountChannels()
-    //
-    // GetChannelOrder()  <--  Important now
-    //
-    // GetChannelsPresent()
 
     // GetBlockSize()
     //
