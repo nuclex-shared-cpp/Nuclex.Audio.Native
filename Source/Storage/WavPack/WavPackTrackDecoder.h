@@ -73,6 +73,9 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     /// <returns>A list of single channels in the order they're interleaved</returns>
     public: const std::vector<ChannelPlacement> &GetChannelOrder() const override;
 
+    /// <summary>Fetches the order of audio channels from the WavPack context</summary>
+    private: void fetchChannelOrder();
+
     /// <summary>
     ///   Stores callbacks through which libwavpack accesses the VirtualFile instance
     /// </summary>

@@ -114,6 +114,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
       // we still want to throw it - an exception in VirtualFile should always surface.
       StreamAdapterState::RethrowPotentialException(*state);
     }
+
+    fetchChannelOrder();
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -137,7 +139,32 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   // ------------------------------------------------------------------------------------------- //
 
   const std::vector<ChannelPlacement> &WavPackTrackDecoder::GetChannelOrder() const {
-    throw std::runtime_error(u8"Not implemented yet");
+    return this->channelOrder;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void WavPackTrackDecoder::fetchChannelOrder() {
+    int wavPackChannelMask = Platform::WavPackApi::GetChannelMask(this->context);
+    int wavPackChannelCount = Platform::WavPackApi::GetNumChannels(this->context);
+
+    // First, add all channels for which a channel flag bit is set. Just like Waveform,
+    // in WavPack the channel order matches the order of the flag bits.
+    for(std::size_t bitIndex = 0; bitIndex < 17; ++bitIndex) {
+      if((static_cast<std::size_t>(wavPackChannelMask) & (1ULL << bitIndex)) != 0) {
+        this->channelOrder.push_back(static_cast<ChannelPlacement>(1ULL << bitIndex));
+        --wavPackChannelCount;
+      }
+    }
+
+    // However, in WAVEFORMATEXTENSIBLE (and therefore in WavPack?) it is valid to set
+    // the channel mask flags to zero and include channels. These are then arbitrary,
+    // non-placeable channels not associated with specific speakers. In such a case,
+    // or ff the channel count exceeds the number of channel mask bits set, we add
+    // the remaining channels as unknown channels.
+    while(wavPackChannelCount >= 1) {
+      this->channelOrder.push_back(ChannelPlacement::Unknown);
+    }
   }
 
   // ------------------------------------------------------------------------------------------- //
