@@ -20,52 +20,47 @@ limitations under the License.
 // If the library is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_AUDIO_SOURCE 1
 
-#include "../../../Source/Storage/Waveform/WaveformDetection.h"
+#include "../../../Source/Storage/WavPack/WavPackTrackDecoder.h"
+
+#if defined(NUCLEX_AUDIO_HAVE_WAVPACK)
 
 #include "../ByteArrayAsFile.h"
+#include "../FailingVirtualFile.h"
 
 #include <gtest/gtest.h>
-
-#include <cstdint> // for std::uint8_t
 
 namespace {
 
   // ------------------------------------------------------------------------------------------- //
-
-  /// <summary>Binary contents of the smallest possible Waveform file</summary>
-  std::uint8_t smallestPossibleWaveFile[48] = {
-    0x52, 0x49, 0x46, 0x46, 0x28, 0x00, 0x00, 0x00, 0x57, 0x41, 0x56, 0x45,
-    0x66, 0x6D, 0x74, 0x20, 0x10, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00,
-    0x44, 0xAC, 0x00, 0x00, 0x88, 0x58, 0x01, 0x00, 0x02, 0x00, 0x10, 0x00,
-    0x64, 0x61, 0x74, 0x61, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-  };
-
   // ------------------------------------------------------------------------------------------- //
 
 } // anonymous namespace
 
-namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
+namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(WaveformDetectionTest, DetectsWaveformFiles) {
-    {
-      std::uint8_t dummyData[32] = {
-        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5,
-        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5
-      };
-      const ByteArrayAsFile dummyFile(dummyData, sizeof(dummyData));
-      EXPECT_FALSE(Detection::CheckIfWaveformHeaderPresent(dummyFile));
-    }
+  TEST(WavPackTrackDecoderTest, ExceptionsFromVirtualFileResurface) {
+    std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
+      u8"Resources/wavpack-stereo-float32-v416.wv"
+    );
+    std::shared_ptr<const VirtualFile> failingFile = std::make_shared<FailingVirtualFile>(
+      file
+    );
 
-    {
-      const ByteArrayAsFile waveFile(
-        smallestPossibleWaveFile, sizeof(smallestPossibleWaveFile)
-      );
-      EXPECT_TRUE(Detection::CheckIfWaveformHeaderPresent(waveFile));
-    }
+    // If the error is forwarded correctly, the domain_error will resurface from the call.
+    // Should a plain runtime_error surface here, then error checking was happening but
+    // the libwavpack error return took precedence over the VirtualFile exception, which is
+    // not what we want because it obscures the root cause of the error.
+    WavPackTrackDecoder decoder;
+    EXPECT_THROW(
+      decoder.Open(failingFile),
+      std::domain_error
+    );
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-}}}} // namespace Nuclex::Audio::Storage::Waveform
+}}}} // namespace Nuclex::Audio::Storage::WavPack
+
+#endif // defined(NUCLEX_AUDIO_HAVE_WAVPACK)

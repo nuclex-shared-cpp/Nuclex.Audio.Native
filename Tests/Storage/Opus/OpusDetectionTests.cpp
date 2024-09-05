@@ -24,7 +24,7 @@ limitations under the License.
 
 #if defined(NUCLEX_AUDIO_HAVE_OPUS)
 
-#include "Nuclex/Audio/Storage/VirtualFile.h"
+#include "../ByteArrayAsFile.h"
 
 #include <gtest/gtest.h>
 
@@ -113,55 +113,6 @@ namespace {
 
   // ------------------------------------------------------------------------------------------- //
     
-  /// <summary>Simple virtual file implementation that accesses an in-memory buffer</summary>
-  class InMemoryFile : public Nuclex::Audio::Storage::VirtualFile {
-
-    /// <summary>Initializes a new memory buffer based file</summary>
-    /// <param name="data">Memory buffer the virtual file will access</param>
-    /// <param name="length">Size of the memory buffer in bytes</param>
-    public: InMemoryFile(const std::uint8_t *data, std::uint64_t length) :
-      data(data),
-      length(length) {}
-
-    /// <summary>Frees all memory used by the instance</summary>
-    public: ~InMemoryFile() override = default;
-
-    /// <summary>Determines the current size of the file in bytes</summary>
-    /// <returns>The size of the file in bytes</returns>
-    public: std::uint64_t GetSize() const override { return this->length; }
-
-    /// <summary>Reads data from the file</summary>
-    /// <param name="start">Offset in the file at which to begin reading</param>
-    /// <param name="byteCount">Number of bytes that will be read</param>
-    /// <parma name="buffer">Buffer into which the data will be read</param>
-    public: void ReadAt(
-      std::uint64_t start, std::size_t byteCount, std::uint8_t *buffer
-    ) const override {
-      std::copy_n(this->data + start, byteCount, buffer);
-    }
-
-    /// <summary>Writes data into the file</summary>
-    /// <param name="start">Offset at which writing will begin in the file</param>
-    /// <param name="byteCount">Number of bytes that should be written</param>
-    /// <param name="buffer">Buffer holding the data that should be written</param>
-    public: void WriteAt(
-      std::uint64_t start, std::size_t byteCount, const std::uint8_t *buffer
-    ) override {
-      (void)start;
-      (void)byteCount;
-      (void)buffer;
-      assert(!u8"Write method of unit test dummy file is never called");
-    }
-
-    /// <summary>Memory buffer the virtual file implementation is serving data from</summary>
-    private: const std::uint8_t *data;
-    /// <summary>Length of the memory buffer in bytes</summary>
-    private: std::uint64_t length;
-
-  };
-
-  // ------------------------------------------------------------------------------------------- //
-
 } // anonymous namespace
 
 namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
@@ -174,12 +125,12 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5,
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5
       };
-      const InMemoryFile dummyFile(dummyData, sizeof(dummyData));
+      const ByteArrayAsFile dummyFile(dummyData, sizeof(dummyData));
       EXPECT_FALSE(Detection::CheckIfOpusHeaderPresentLite(dummyFile));
     }
 
     {
-      const InMemoryFile opusFile(prettySmallOpusFile, sizeof(prettySmallOpusFile));
+      const ByteArrayAsFile opusFile(prettySmallOpusFile, sizeof(prettySmallOpusFile));
       EXPECT_TRUE(Detection::CheckIfOpusHeaderPresentLite(opusFile));
     }
   }
@@ -192,12 +143,12 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5,
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5
       };
-      const InMemoryFile dummyFile(dummyData, sizeof(dummyData));
+      const ByteArrayAsFile dummyFile(dummyData, sizeof(dummyData));
       EXPECT_FALSE(Detection::CheckIfOpusHeaderPresent(dummyFile));
     }
 
     {
-      const InMemoryFile opusFile(prettySmallOpusFile, sizeof(prettySmallOpusFile));
+      const ByteArrayAsFile opusFile(prettySmallOpusFile, sizeof(prettySmallOpusFile));
       EXPECT_TRUE(Detection::CheckIfOpusHeaderPresent(opusFile));
     }
   }
