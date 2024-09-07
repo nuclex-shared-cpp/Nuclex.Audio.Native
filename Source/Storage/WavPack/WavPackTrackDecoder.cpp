@@ -131,6 +131,18 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
+  std::uint64_t WavPackTrackDecoder::CountFrames() const {
+    throw std::runtime_error(u8"Not implemented yet");
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  AudioSampleFormat WavPackTrackDecoder::GetNativeSampleFormat() const {
+    throw std::runtime_error(u8"Not implemented yet");
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   void WavPackTrackDecoder::fetchChannelOrder() {
     int wavPackChannelCount = Platform::WavPackApi::GetNumChannels(this->context);
     int wavPackChannelMask = Platform::WavPackApi::GetChannelMask(this->context);
@@ -151,7 +163,47 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     // the remaining channels as unknown channels.
     while(wavPackChannelCount >= 1) {
       this->channelOrder.push_back(ChannelPlacement::Unknown);
+      --wavPackChannelCount;
     }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void WavPackTrackDecoder::DecodeInterleavedUint8(
+    std::uint8_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
+  ) const {
+    
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void WavPackTrackDecoder::DecodeInterleavedInt16(
+    std::int16_t *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+  ) const {
+    
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void WavPackTrackDecoder::DecodeInterleavedInt32(
+    std::int32_t *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+  ) const {
+    
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void WavPackTrackDecoder::DecodeInterleavedFloat(
+    float *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+  ) const {
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void WavPackTrackDecoder::DecodeInterleavedDouble(
+    double *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+  ) const {
+    
   }
 
   // ------------------------------------------------------------------------------------------- //

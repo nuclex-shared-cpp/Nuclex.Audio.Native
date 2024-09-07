@@ -63,6 +63,57 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     /// <returns>A list of single channels in the order they're interleaved</returns>
     public: const std::vector<ChannelPlacement> &GetChannelOrder() const override;
 
+    /// <summary>Returns the number of frames (sample count in any one channel)</summary>
+    /// <returns>The number of frames the audio file is long</returns>
+    public: std::uint64_t CountFrames() const override;
+
+    /// <summary>Returns the format in which samples are obtained from the codec</summary>
+    /// <returns>The format in which the audio samples are delivered by the codec</returns>
+    public: AudioSampleFormat GetNativeSampleFormat() const override;
+
+    // The public variant of the DecoeInterleaved() method delegates to our implementations
+    public: using AudioTrackDecoder::DecodeInterleaved;
+
+    /// <summary>Decodes audio frames, interleaved, into the target buffer</summary>
+    /// <param name="buffer">Buffer in which the interleaved samples will be stored</param>
+    /// <param name="startFrame">Index of the first frame to decode</param>
+    /// <param name="frameCount">Number of audio frames that will be decoded</param>
+    protected: void DecodeInterleavedUint8(
+      std::uint8_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
+    ) const override;
+
+    /// <summary>Decodes audio frames, interleaved, into the target buffer</summary>
+    /// <param name="buffer">Buffer in which the interleaved samples will be stored</param>
+    /// <param name="startFrame">Index of the first frame to decode</param>
+    /// <param name="frameCount">Number of audio frames that will be decoded</param>
+    protected: void DecodeInterleavedInt16(
+      std::int16_t *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+    ) const override;
+
+    /// <summary>Decodes audio frames, interleaved, into the target buffer</summary>
+    /// <param name="buffer">Buffer in which the interleaved samples will be stored</param>
+    /// <param name="startFrame">Index of the first frame to decode</param>
+    /// <param name="frameCount">Number of audio frames that will be decoded</param>
+    protected: void DecodeInterleavedInt32(
+      std::int32_t *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+    ) const override;
+
+    /// <summary>Decodes audio frames, interleaved, into the target buffer</summary>
+    /// <param name="buffer">Buffer in which the interleaved samples will be stored</param>
+    /// <param name="startFrame">Index of the first frame to decode</param>
+    /// <param name="frameCount">Number of audio frames that will be decoded</param>
+    protected: void DecodeInterleavedFloat(
+      float *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+    ) const override;
+
+    /// <summary>Decodes audio frames, interleaved, into the target buffer</summary>
+    /// <param name="buffer">Buffer in which the interleaved samples will be stored</param>
+    /// <param name="startFrame">Index of the first frame to decode</param>
+    /// <param name="frameCount">Number of audio frames that will be decoded</param>
+    protected: void DecodeInterleavedDouble(
+      double *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+    ) const override;
+
     /// <summary>Fetches the order of audio channels from the WavPack context</summary>
     private: void fetchChannelOrder();
 

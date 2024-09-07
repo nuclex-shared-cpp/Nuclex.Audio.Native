@@ -22,17 +22,11 @@ limitations under the License.
 
 #include "Nuclex/Audio/Config.h"
 #include "Nuclex/Audio/ChannelPlacement.h"
+#include "Nuclex/Audio/AudioSampleFormat.h"
 
 #include <vector> // for std::vector
 #include <memory> // for std::shared_ptr
-
-//
-// This started out as 'AudioStreamDecoder' but is now 'AudioTrackDecoder'.
-//
-// The design is strongly tending towards random access decoding because all
-// audio formats I checked have a concept of individually decodable blocks,
-// pages or chunks.
-//
+#include <cstdint> // for std::uint8_t, std::int16_t, std::int32_t
 
 namespace Nuclex { namespace Audio { namespace Storage {
 
@@ -52,7 +46,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
   class NUCLEX_AUDIO_TYPE AudioTrackDecoder {
 
     /// <summary>Frees all resources owned by the instance</summary>
-    public: virtual ~AudioTrackDecoder() = default;
+    public: NUCLEX_AUDIO_API virtual ~AudioTrackDecoder() = default;
 
     /// <summary>Creates a clone of the audio track decoder</summary>
     /// <returns>A clone of the audio track decoder that can be used independently</returns>
@@ -98,6 +92,54 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// </remarks>
     public: virtual const std::vector<ChannelPlacement> &GetChannelOrder() const = 0;
 
+    /// <summary>Returns the number of frames (sample count in any one channel)</summary>
+    /// <returns>The number of frames the audio file is long</returns>
+    public: virtual std::uint64_t CountFrames() const = 0;
+
+    /// <summary>Returns the format in which samples are obtained from the codec</summary>
+    /// <returns>The format in which the audio samples are delivered by the codec</returns>
+    /// <remarks>
+    ///   Keeping things in the native format for the file usually only makes sense if you
+    ///   want to losslessly transcode it. Lossy formats usually use complex transformations
+    ///   that work on floating point data (or emulate floating point operations, such as
+    ///   when building libopus in integer-only mode), so if you transcode to a lossy format
+    ///   or run filters, the only formats that make sense are float and double, the first
+    ///   thing the lossy encoder will do is convert your samples to float anyway.
+    /// </remarks>
+    public: virtual AudioSampleFormat GetNativeSampleFormat() const = 0;
+
+    /// <summary>Decodes audio frames, interleaved, into the target buffer</summary>
+    /// <typeparam name="TSample">Type of samples to decode into</typeparam>
+    /// <param name="buffer">Buffer in which the interleaved samples will be stored</param>
+    /// <param name="startFrame">Index of the first frame to decode</param>
+    /// <param name="frameCount">Number of audio frames that will be decoded</param>
+    /// <remarks>
+    ///   <para>
+    ///     The term 'frame' refers to a set of one sample for each channel. So if you decode
+    ///     one frame of a 5.1 audio file, you will get 6 samples. The buffer needs to have
+    ///     enough space to fit the number of frames, times the number of channels, times
+    ///     the size of each sample:
+    ///   </para>
+    ///   <para>
+    ///     <code>bufferSize = frameCount x channelCount x sizeof(TSample)</code>
+    ///   </para>
+    ///   <para>
+    ///     It is more efficient to start reading at the closest block and to achieve best
+    ///     performance, decode the file stricly sequentially, by requesting consecutive
+    ///     sample ranges starting and ending at block boundaries.
+    ///   </para>
+    /// </remarks>
+    public: template<typename TSample>
+    NUCLEX_AUDIO_API void DecodeInterleaved(
+      TSample *buffer, const std::uint64_t startFrame, const std::size_t frameCount
+    ) const;
+
+#if defined(PLANNED_FEATURES)
+
+    // GetBlockSize(std::size_t sampleIndex)
+    // GetBlockStart(std::size_t sampleIndex)
+    //
+    //   This is probably the interface that makes the most sense,
 
     // GetBlockSize()
     //
@@ -110,43 +152,116 @@ namespace Nuclex { namespace Audio { namespace Storage {
     //
     //   Waveform would have a block size of 1 sample.
 
-    // PageIn(startSample, sampleCount)  ??  Barf -> statefulness, threading issues...
+#endif // defined(PLANNED_FEATURES)
+
     //
-    //   Would make the specified region available for direct reading. Probably a bad
-    //   idea since it would prevent usage of the stream decoder from multiple threads.
-    //
-    //   However, if decoding any block in a random access fashion is the main or only
-    //   task this class performs, it would be more like a RandomAccessDecoder :)
+    // *** public interface ends here, all methods below are protected or private ***
     //
 
-    // DecodeInto<sampleType>(...)
-    //
-    //   Methods could be templated for automatic conversion to the sample type.
-    //   A bit icky for 24-bit formats.
-    //     - One-off method to decode into 24-bits?
-    //     - Generally expose the concept of 'meaningful bits' and 'padding bits'
-    //       to the user and do 8/16/32-bit int, float and double only?
+    /// <summary>Decodes audio frames, interleaved, into the target buffer</summary>
+    /// <param name="buffer">Buffer in which the interleaved samples will be stored</param>
+    /// <param name="startFrame">Index of the first frame to decode</param>
+    /// <param name="frameCount">Number of audio frames that will be decoded</param>
+    protected: virtual void DecodeInterleavedUint8(
+      std::uint8_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
+    ) const = 0;
 
-    // DecodeInto(sampleContainer, startSample, endSample)
-    //
-    //   The sampleContainer could be an interface, so the caller could either provide
-    //   our default implementation of it (which stores samples and perhaps automatically
-    //   adjust indicates so that 0 is the requested sample even if the page/block
-    //   had to begin earlier).
-    //
-    //   For optimal performance, the caller could provide their own implementation of
-    //   the interface which lets the decoder write the decoded audio data directly into
-    //   any buffer the caller wishes to use.
-    //
+    /// <summary>Decodes audio frames, interleaved, into the target buffer</summary>
+    /// <param name="buffer">Buffer in which the interleaved samples will be stored</param>
+    /// <param name="startFrame">Index of the first frame to decode</param>
+    /// <param name="frameCount">Number of audio frames that will be decoded</param>
+    protected: virtual void DecodeInterleavedInt16(
+      std::int16_t *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+    ) const = 0;
 
-    // Clone()
-    //
-    //   Because some codec implementations (Opus as an example) support fast and easy
-    //   cloning on the decoder state. But does it make sense? Can blocks/pages be so
-    //   large that you'd want to keep a clone around rather than decode it in one go?
-    //
+    /// <summary>Decodes audio frames, interleaved, into the target buffer</summary>
+    /// <param name="buffer">Buffer in which the interleaved samples will be stored</param>
+    /// <param name="startFrame">Index of the first frame to decode</param>
+    /// <param name="frameCount">Number of audio frames that will be decoded</param>
+    protected: virtual void DecodeInterleavedInt32(
+      std::int32_t *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+    ) const = 0;
+
+    /// <summary>Decodes audio frames, interleaved, into the target buffer</summary>
+    /// <param name="buffer">Buffer in which the interleaved samples will be stored</param>
+    /// <param name="startFrame">Index of the first frame to decode</param>
+    /// <param name="frameCount">Number of audio frames that will be decoded</param>
+    protected: virtual void DecodeInterleavedFloat(
+      float *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+    ) const = 0;
+
+    /// <summary>Decodes audio frames, interleaved, into the target buffer</summary>
+    /// <param name="buffer">Buffer in which the interleaved samples will be stored</param>
+    /// <param name="startFrame">Index of the first frame to decode</param>
+    /// <param name="frameCount">Number of audio frames that will be decoded</param>
+    protected: virtual void DecodeInterleavedDouble(
+      double *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+    ) const = 0;
 
   };
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<typename TSample>
+  NUCLEX_AUDIO_API inline void AudioTrackDecoder::DecodeInterleaved(
+    TSample *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+  ) const {
+    static_assert(
+      (
+        std::is_same<TSample, std::uint8_t>::value ||
+        std::is_same<TSample, std::int16_t>::value ||
+        std::is_same<TSample, std::int32_t>::value ||
+        std::is_same<TSample, float>::value ||
+        std::is_same<TSample, double>::value
+      ) &&
+      u8"Only 8 but unsigned, 16/32 bit signed, float or double samples are supported"
+    );
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<>
+  inline void AudioTrackDecoder::DecodeInterleaved(
+    std::uint8_t *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+  ) const {
+    DecodeInterleavedUint8(buffer, startSample, sampleCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<>
+  inline void AudioTrackDecoder::DecodeInterleaved(
+    std::int16_t *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+  ) const {
+    DecodeInterleavedInt16(buffer, startSample, sampleCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<>
+  inline void AudioTrackDecoder::DecodeInterleaved(
+    std::int32_t *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+  ) const {
+    DecodeInterleavedInt32(buffer, startSample, sampleCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<>
+  inline void AudioTrackDecoder::DecodeInterleaved(
+    float *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+  ) const {
+    DecodeInterleavedFloat(buffer, startSample, sampleCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<>
+  inline void AudioTrackDecoder::DecodeInterleaved(
+    double *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+  ) const {
+    DecodeInterleavedDouble(buffer, startSample, sampleCount);
+  }
 
   // ------------------------------------------------------------------------------------------- //
 
