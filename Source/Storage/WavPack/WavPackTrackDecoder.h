@@ -28,6 +28,8 @@ limitations under the License.
 #include "./WavPackVirtualFileAdapter.h"
 #include "../../Platform/WavPackApi.h"
 
+#include <mutex> // for std::mutex
+
 namespace Nuclex { namespace Audio { namespace Storage {
 
   // ------------------------------------------------------------------------------------------- //
@@ -44,6 +46,14 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   /// <summary>Decodes WavPack audio tracks</summary>
   class WavPackTrackDecoder : public AudioTrackDecoder {
+
+    /// <summary>Determines the native sample format from WavPack's parameters</summary>
+    /// <param name="mode">Encoder mode that WavPack file was encoded with</param>
+    /// <param name="bitsPerSample">The number of valid bits in each sample</param>
+    /// <returns>The equivalent sample format enumeration value</returns>
+    public: static AudioSampleFormat SampleFormatFromModeAndBitsPerSample(
+      int mode, int bitsPerSample
+    );
 
     /// <summary>Initializes a new WavPack track decoder on the specified file</summary>
     /// <param name="file">File that will be opened and decoded</param>

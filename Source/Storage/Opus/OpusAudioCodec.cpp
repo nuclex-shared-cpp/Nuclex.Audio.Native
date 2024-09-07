@@ -319,6 +319,22 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
   // ------------------------------------------------------------------------------------------- //
 
+  std::shared_ptr<AudioTrackDecoder> OpusAudioCodec::OpenDecoder(
+    const std::shared_ptr<const VirtualFile> &source,
+    const std::string &extensionHint /* = std::string() */,
+    std::size_t trackIndex /* = 0 */
+  ) const {
+    if(trackIndex != 0) {
+      throw std::runtime_error(
+        u8"Alternate track decoding is not implemented yet, track index must be 0"
+      );
+    }
+
+    throw std::runtime_error(u8"Not implemented yet");
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
 }}}} // namespace Nuclex::Audio::Storage::Opus
 
 #endif // defined(NUCLEX_AUDIO_HAVE_OPUS)

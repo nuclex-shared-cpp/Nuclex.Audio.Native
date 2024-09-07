@@ -68,6 +68,17 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
       const std::string &extensionHint = std::string()
     ) const override;
 
+    /// <summary>Opens a new decoder for the specified audio file</summary>
+    /// <param name="source">Source data that will be opened for audio decoding</param>
+    /// <param name="extensionHint">Optional file extension the loaded data had</param>
+    /// <param name="trackIndex">Index of the audio track to create a decoder for</param>
+    /// <returns>A decoder that can be used to decode the audio track</returns>
+    public: std::shared_ptr<AudioTrackDecoder> OpenDecoder(
+      const std::shared_ptr<const VirtualFile> &source,
+      const std::string &extensionHint = std::string(),
+      std::size_t trackIndex = 0
+    ) const override;
+
   };
 
   // ------------------------------------------------------------------------------------------- //

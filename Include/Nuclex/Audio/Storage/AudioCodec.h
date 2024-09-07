@@ -32,6 +32,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
   // ------------------------------------------------------------------------------------------- //
 
   class VirtualFile;
+  class AudioTrackDecoder;
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -64,15 +65,31 @@ namespace Nuclex { namespace Audio { namespace Storage {
       const std::string &extensionHint = std::string()
     ) const = 0;
 
-    // Probably sensible to use std::shared_ptr<VirtualFile> for these,
-    // so the decoder/streamer/encoder/whatever can hold onto the virtual file.
+    /// <summary>Opens a new decoder for the specified audio file</summary>
+    /// <param name="source">Source data that will be opened for audio decoding</param>
+    /// <param name="extensionHint">Optional file extension the loaded data had</param>
+    /// <param name="trackIndex">Index of the audio track to create a decoder for</param>
+    /// <returns>A decoder that can be used to decode the audio track</returns>
+    public: virtual std::shared_ptr<AudioTrackDecoder> OpenDecoder(
+      const std::shared_ptr<const VirtualFile> &source,
+      const std::string &extensionHint = std::string(),
+      std::size_t trackIndex = 0
+    ) const = 0;
 
-    // CreateDecoder
-    // CreateDecodingContext
-    // CreateStreamer
-    // CreateStreamDecoder
-    // CreateEncoder
-    // CreateEncodingContext
+    // OpenDecoder(ContainerStreamReader)
+    //
+    //   Might add something like this. Unless it is always as "simple" as deinterleaving
+    //   the audio data from a container and treating that as a VirtualFile, but containers
+    //   might not have easy ways to report the ultimate size of an isolated stream.
+    //
+    //   For now, Nuclex.Audio.Native doesn't worry about complex media containers yet
+    //
+
+    // CreateEncoder()
+    // CreateEncodingContext()
+    //
+    //   May add these to allow for encoding audio
+    //
 
   };
 

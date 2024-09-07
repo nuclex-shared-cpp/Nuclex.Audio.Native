@@ -77,6 +77,35 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
+  AudioSampleFormat WavPackTrackDecoder::SampleFormatFromModeAndBitsPerSample(
+     int mode, int bitsPerSample
+  ) {
+
+    // Figure out the data format closest to the data stored by WavPack. Normally it
+    // should be an exact match, but WavPack leaves room to store fewer bits, not only
+    // for 24-bit formats. For the sake of robustness, we'll anticipate those, too.
+    if((mode & MODE_FLOAT) != 0) {
+      if(bitsPerSample >= 33) {
+        return Nuclex::Audio::AudioSampleFormat::Float_64;
+      } else {
+        return Nuclex::Audio::AudioSampleFormat::Float_32;
+      }
+    } else {
+      if(bitsPerSample >= 25) {
+        return Nuclex::Audio::AudioSampleFormat::SignedInteger_32;
+      } else if(bitsPerSample >= 17) {
+        return Nuclex::Audio::AudioSampleFormat::SignedInteger_24;
+      } else if(bitsPerSample >= 9) {
+        return Nuclex::Audio::AudioSampleFormat::SignedInteger_16;
+      } else {
+        return Nuclex::Audio::AudioSampleFormat::UnsignedInteger_8;
+      }
+    }
+
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   WavPackTrackDecoder::WavPackTrackDecoder(const std::shared_ptr<const VirtualFile> &file) :
     streamReader(),
     state(),
