@@ -62,7 +62,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
   // ------------------------------------------------------------------------------------------- //
 
   std::shared_ptr<::WavpackContext> WavPackApi::OpenStreamReaderInput(
-    const Nuclex::Support::Events::Delegate<void()> &throwRootCauseException,
+    const std::exception_ptr &rootCauseException,
     WavpackStreamReader64 &streamReader,
     void *mainFileContext,
     void *correctionFileContext /* = nullptr */,
@@ -77,7 +77,9 @@ namespace Nuclex { namespace Audio { namespace Platform {
       errorMessage.data(), flags, normOffset
     );
     if(context == nullptr) {
-      throwRootCauseException();
+      if(static_cast<bool>(rootCauseException)) {
+        std::rethrow_exception(rootCauseException);
+      }
 
       std::string message(u8"Error opening virtuai file via libwavpack: ", 43);
       message.append(errorMessage.c_str()); // because it's only part filled and zero t'ed.

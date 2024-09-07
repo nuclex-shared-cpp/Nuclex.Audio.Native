@@ -77,19 +77,14 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
-  WavPackTrackDecoder::WavPackTrackDecoder() :
+  WavPackTrackDecoder::WavPackTrackDecoder(const std::shared_ptr<const VirtualFile> &file) :
     streamReader(),
     state(),
     context(),
-    channelOrder() {}
-
-  // ------------------------------------------------------------------------------------------- //
-
-  void WavPackTrackDecoder::Open(const std::shared_ptr<const VirtualFile> &file) {
-    assert(!static_cast<bool>(this->context) && u8"Only one WavPack context per instance");
+    channelOrder() {
 
     // Set up a WavPack stream reader with adapter methods that will perform all reads
-    // on the user-provided virtual file.
+    // on the provided virtual file.
     this->state = std::move(
       StreamAdapterFactory::CreateAdapterForReading(file, this->streamReader)
     );
@@ -102,11 +97,9 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
       ExceptionChecker exceptionChecker(*state);
       this->context = WavPackApi::OpenStreamReaderInput(
-        Nuclex::Support::Events::Delegate<void()>::Create<
-          ExceptionChecker, &ExceptionChecker::Check
-        >(&exceptionChecker),
+        this->state->Error, // exception_ptr that will receive VirtualFile exceptions
         this->streamReader,
-        this->state.get()
+        this->state.get() // passed to all IO callbacks as void pointer
       );
 
       // The OpenStreamReaderInput() method will already have checked for errors,
@@ -121,13 +114,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   // ------------------------------------------------------------------------------------------- //
 
   std::shared_ptr<AudioTrackDecoder> WavPackTrackDecoder::Clone() const {
-    std::shared_ptr<WavPackTrackDecoder> clone = (
-      std::make_shared<WavPackTrackDecoder>()
-    );
-
-    clone->Open(this->state->File);
-
-    return clone;
+    return std::make_shared<WavPackTrackDecoder>(this->state->File);
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -145,8 +132,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   // ------------------------------------------------------------------------------------------- //
 
   void WavPackTrackDecoder::fetchChannelOrder() {
-    int wavPackChannelMask = Platform::WavPackApi::GetChannelMask(this->context);
     int wavPackChannelCount = Platform::WavPackApi::GetNumChannels(this->context);
+    int wavPackChannelMask = Platform::WavPackApi::GetChannelMask(this->context);
 
     // First, add all channels for which a channel flag bit is set. Just like Waveform,
     // in WavPack the channel order matches the order of the flag bits.
@@ -160,7 +147,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     // However, in WAVEFORMATEXTENSIBLE (and therefore in WavPack?) it is valid to set
     // the channel mask flags to zero and include channels. These are then arbitrary,
     // non-placeable channels not associated with specific speakers. In such a case,
-    // or ff the channel count exceeds the number of channel mask bits set, we add
+    // or if the channel count exceeds the number of channel mask bits set, we add
     // the remaining channels as unknown channels.
     while(wavPackChannelCount >= 1) {
       this->channelOrder.push_back(ChannelPlacement::Unknown);

@@ -45,21 +45,11 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   /// <summary>Decodes WavPack audio tracks</summary>
   class WavPackTrackDecoder : public AudioTrackDecoder {
 
-    //public: WavPackTrackDecoder(const )
-
-    /// <summary>Frees all resources owned by the instance</summary>
-    public: WavPackTrackDecoder();
+    /// <summary>Initializes a new WavPack track decoder on the specified file</summary>
+    /// <param name="file">File that will be opened and decoded</param>
+    public: WavPackTrackDecoder(const std::shared_ptr<const VirtualFile> &file);
     /// <summary>Frees all resources owned by the instance</summary>
     public: ~WavPackTrackDecoder() override = default;
-
-    // CHECK: Can Open() be done via the constructor?
-    //   It's slightly ugly to have a class that starts out in an invalid state (or that
-    //   can even be in an invalid state), but it's a fully internal class and I'm worried
-    //   that the acrobatics to ensure proper behavior make things less maintainable.
-
-    /// <summary>Opens a WavPack file for decoding</summary>
-    /// <param name="file">File that will be opened</param>
-    public: void Open(const std::shared_ptr<const VirtualFile> &file);
 
     /// <summary>Creates a clone of the audio track decoder</summary>
     /// <returns>A clone of the audio track decoder that can be used independently</returns>

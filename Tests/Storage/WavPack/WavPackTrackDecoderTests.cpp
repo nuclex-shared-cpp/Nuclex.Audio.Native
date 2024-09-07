@@ -52,31 +52,46 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     // Should a plain runtime_error surface here, then error checking was happening but
     // the libwavpack error return took precedence over the VirtualFile exception, which is
     // not what we want because it obscures the root cause of the error.
-    WavPackTrackDecoder decoder;
     EXPECT_THROW(
-      decoder.Open(failingFile),
+      WavPackTrackDecoder decoder(failingFile),
       std::domain_error
     );
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(WavPackTrackDecoderTest, ReportsChannelOrder) {
+  TEST(WavPackTrackDecoderTest, ReportsChannelOrderForExoticFile) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
       u8"Resources/wavpack-exotic-int16-v416.wv"
     );
 
-    // If the error is forwarded correctly, the domain_error will resurface from the call.
-    // Should a plain runtime_error surface here, then error checking was happening but
-    // the libwavpack error return took precedence over the VirtualFile exception, which is
-    // not what we want because it obscures the root cause of the error.
-    WavPackTrackDecoder decoder;
-    decoder.Open(file);
+    WavPackTrackDecoder decoder(file);
 
     const std::vector<ChannelPlacement> &order = decoder.GetChannelOrder();
     ASSERT_EQ(order.size(), 2U);
     EXPECT_EQ(order[0], ChannelPlacement::BackRight);
     EXPECT_EQ(order[1], ChannelPlacement::SideLeft);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(WavPackTrackDecoderTest, ReportsChannelOrderForEightDotOneFile) {
+    std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
+      u8"Resources/wavpack-7dot1-int16-v416.wv"
+    );
+
+    WavPackTrackDecoder decoder(file);
+
+    const std::vector<ChannelPlacement> &order = decoder.GetChannelOrder();
+    ASSERT_EQ(order.size(), 8U);
+    EXPECT_EQ(order[0], ChannelPlacement::FrontLeft);
+    EXPECT_EQ(order[1], ChannelPlacement::FrontRight);
+    EXPECT_EQ(order[2], ChannelPlacement::FrontCenter);
+    EXPECT_EQ(order[3], ChannelPlacement::LowFrequencyEffects);
+    EXPECT_EQ(order[4], ChannelPlacement::BackLeft);
+    EXPECT_EQ(order[5], ChannelPlacement::BackRight);
+    EXPECT_EQ(order[6], ChannelPlacement::SideLeft);
+    EXPECT_EQ(order[7], ChannelPlacement::SideRight);
   }
 
   // ------------------------------------------------------------------------------------------- //

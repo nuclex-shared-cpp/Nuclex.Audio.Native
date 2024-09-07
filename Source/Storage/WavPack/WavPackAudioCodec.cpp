@@ -187,11 +187,9 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
         ExceptionChecker exceptionChecker(*state);
         context = WavPackApi::OpenStreamReaderInput(
-          Nuclex::Support::Events::Delegate<void()>::Create<
-            ExceptionChecker, &ExceptionChecker::Check
-          >(&exceptionChecker),
+          state->Error, // exception_ptr that will receive VirtualFile exceptions
           streamReader,
-          state.get()
+          state.get() // passed to all IO callbacks as void pointer
         );
 
         // The OpenStreamReaderInput() method will already have checked for errors,

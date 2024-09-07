@@ -66,6 +66,10 @@ namespace Nuclex { namespace Audio { namespace Platform {
     ///   Opens a WavPack audio file for reading accessing the file's contents via
     ///   WavPack's stream reader interface
     /// </summary>
+    /// <param name="rootCauseException">
+    ///   Should receive any exception that happened in the virtual file and will be thrown
+    ///   instead of a generic WavPack error if it becomes filled during the WavPack API call
+    /// </param>
     /// <param name="streamReader">Stream reader through which the file will be accessed</param>
     /// <param name="mainFileContext">
     ///   User-provided pointer that will be passed to all stream reader callbacks when
@@ -92,7 +96,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
     ///   closed again.
     /// </remarks>
     public: static std::shared_ptr<::WavpackContext> OpenStreamReaderInput(
-      const Nuclex::Support::Events::Delegate<void()> &throwRootCauseException,
+      const std::exception_ptr &rootCauseException,
       WavpackStreamReader64 &streamReader,
       void *mainFileContext,
       void *correctionFileContext = nullptr,
