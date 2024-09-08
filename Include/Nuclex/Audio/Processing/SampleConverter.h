@@ -133,8 +133,28 @@ namespace Nuclex { namespace Audio { namespace Processing {
           static_cast<TTargetSample>(source[sampleIndex] * limit) + midpoint
         );
       }
-    } else {
-      throw std::runtime_error(u8"Not implemented yet");
+    } else { // float -> int16 and int32
+      if(targetBitCount < 17) {
+        TFloatSourceSample limit = static_cast<TFloatSourceSample>(
+          ((1 << (targetBitCount - 1)) - 1) << (sizeof(TTargetSample) * 8 - targetBitCount)
+        );
+        for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
+          target[sampleIndex] = (
+            static_cast<TTargetSample>(source[sampleIndex] * limit)
+          );
+        }
+      } else {
+        double limit = static_cast<double>(
+          ((1 << (targetBitCount - 1)) - 1) << (sizeof(TTargetSample) * 8 - targetBitCount)
+        );
+        for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
+          target[sampleIndex] = (
+            static_cast<TTargetSample>(static_cast<double>(source[sampleIndex]) * limit)
+          );
+        }
+      }
+
+      //throw std::runtime_error(u8"Not implemented yet");
     }
   }
 
@@ -180,7 +200,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
             static_cast<TFloatTargetSample>(source[sampleIndex]) / limit
           );
         }
-      } else { // For values longer than 16 bits, we force calculations to use doubles
+      } else { // for values longer than 16 bits, we force calculations to use doubles
         double limit = static_cast<double>(
           ((1 << (sourceBitCount - 1)) - 1) << (sizeof(TSourceSample) * 8 - sourceBitCount)
         );

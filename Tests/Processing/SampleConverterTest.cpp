@@ -140,4 +140,88 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
+  TEST(SampleConverterTest, ConvertsFloatToSigned12Bit) {
+    float inputSamples[4] = { -2048.0f / 2047.0f, -1.0f, 0.0f, 1.0f };
+    std::int16_t outputSamples[4] = { 0, 0, 0, 0 };
+
+    SampleConverter::Quantize(inputSamples, outputSamples, 12, 4);
+
+    EXPECT_EQ(outputSamples[0], -32768);
+    EXPECT_EQ(outputSamples[1], -32752);
+    EXPECT_EQ(outputSamples[2], 0);
+    EXPECT_EQ(outputSamples[3], 32752);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(SampleConverterTest, ConvertsFloatToSigned16Bit) {
+    float inputSamples[4] = { -32768.0f / 32767.0f, -1.0f, 0.0f, 1.0f };
+    std::int16_t outputSamples[4] = { 0, 0, 0, 0 };
+
+    SampleConverter::Quantize(inputSamples, outputSamples, 16, 4);
+
+    EXPECT_EQ(outputSamples[0], -32768);
+    EXPECT_EQ(outputSamples[1], -32767);
+    EXPECT_EQ(outputSamples[2], 0);
+    EXPECT_EQ(outputSamples[3], 32767);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(SampleConverterTest, ConvertsFloatToSigned24Bit) {
+    float inputSamples[4] = { -8388608.0f / 8388607.0f, -1.0f, 0.0f, 1.0f };
+    std::int32_t outputSamples[4] = { 0, 0, 0, 0 };
+
+    SampleConverter::Quantize(inputSamples, outputSamples, 24, 4);
+
+    EXPECT_FLOAT_EQ(outputSamples[0], -2147483648); // float accuracy is too low here
+    EXPECT_EQ(outputSamples[1], -2147483392);
+    EXPECT_EQ(outputSamples[2], 0);
+    EXPECT_EQ(outputSamples[3], 2147483392);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(SampleConverterTest, ConvertsFloatToSigned32Bit) {
+    float inputSamples[4] = { -2147483648.0f / 2147483647.0f, -1.0f, 0.0f, 1.0f };
+    std::int32_t outputSamples[4] = { 0, 0, 0, 0 };
+
+    SampleConverter::Quantize(inputSamples, outputSamples, 32, 4);
+
+    EXPECT_FLOAT_EQ(outputSamples[0], -2147483648); // input value already unrepresentable
+    EXPECT_EQ(outputSamples[1], -2147483647);
+    EXPECT_EQ(outputSamples[2], 0);
+    EXPECT_EQ(outputSamples[3], 2147483647);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(SampleConverterTest, ConvertsDoubleToSigned24Bit) {
+    double inputSamples[4] = { -8388608.0 / 8388607.0, -1.0, 0.0, 1.0 };
+    std::int32_t outputSamples[4] = { 0, 0, 0, 0 };
+
+    SampleConverter::Quantize(inputSamples, outputSamples, 24, 4);
+
+    EXPECT_EQ(outputSamples[0], -2147483648);
+    EXPECT_EQ(outputSamples[1], -2147483392);
+    EXPECT_EQ(outputSamples[2], 0);
+    EXPECT_EQ(outputSamples[3], 2147483392);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(SampleConverterTest, ConvertsDoubleToSigned32Bit) {
+    double inputSamples[4] = { -2147483648.0 / 2147483647.0, -1.0, 0.0, 1.0 };
+    std::int32_t outputSamples[4] = { 0, 0, 0, 0 };
+
+    SampleConverter::Quantize(inputSamples, outputSamples, 32, 4);
+
+    EXPECT_EQ(outputSamples[0], -2147483648);
+    EXPECT_EQ(outputSamples[1], -2147483647);
+    EXPECT_EQ(outputSamples[2], 0);
+    EXPECT_EQ(outputSamples[3], 2147483647);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
 }}} // namespace Nuclex::Audio::Processing
