@@ -13,8 +13,8 @@ At first, Ogg looks like a rather deeply layered container:
 
     Physical Bitstream           The data of one or more audio files concatenated
       Logical Bitstream          A single audio file
-        Pages                    0-255 byte fragments of one audio packet
-          Packets                Individually decodable chunk of audio data
+        Pages                    Start of continuation of decodable audio chunk
+          Packets                0-255 byte fragments of one audio page
 
 The entire "Physical Bitstream" layer can usually be disregarded. It allows multiple
 OGG files to be concatenated (as in `cat song1.ogg song2.ogg > bothsongs.ogg`).
@@ -31,7 +31,7 @@ have no header, so the concept of packets might as well not exist for our purpos
 So it comes down to:
 
     Pages
-      Audio chunks               Each can extend to multiple pages
+      Audio chunks               Each can extend over multiple pages
 
 Audio chunks are split into packets (I don't see the reason, perhaps UDP transmissions?)
 and into pages, but a independentlich decodeable audio chunk can cover multiple packets
@@ -46,9 +46,9 @@ FLAC
 
 FLAC can be encapsulated in OGG, but usually stands alone:
 
-  File
-    Blocks
-      Subblocks
+    File
+      Blocks
+        Subblocks
 
 Audio can be stored in non-interlaved channels, changing per block/subblock, as each
 block can have a different compression algorithm.

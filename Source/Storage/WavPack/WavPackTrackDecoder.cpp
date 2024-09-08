@@ -78,7 +78,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   // ------------------------------------------------------------------------------------------- //
 
   AudioSampleFormat WavPackTrackDecoder::SampleFormatFromModeAndBitsPerSample(
-     int mode, int bitsPerSample
+    int mode, int bitsPerSample
   ) {
 
     // Figure out the data format closest to the data stored by WavPack. Normally it
