@@ -41,6 +41,39 @@ namespace Nuclex { namespace Audio { namespace Processing {
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Converts between different data tyeps used for audio samples</summary>
+  /// <remarks>
+  ///   <para>
+  ///     This is a small utility class that takes care of all the operations needed to
+  ///     convert between different sample data formats. All methods assume batch operations
+  ///     since it's rare that could would want to only convert a single sample (but you
+  ///     can do that to, just grab a pointer to it and specify sample count as 1)
+  ///   </para>
+  ///   <para>
+  ///     Each operation supports an arbitrary number of valid bits for integer samples,
+  ///     specified in a separate parameter. This lets you deal with 12-bit audio stored
+  ///     in 16-bit integers or, more commonly, 24-bit audio stored in 32-bit integers.
+  ///     Any other topology is possible, too, even silly ones, such as 7-bit audio in
+  ///     32-bit integers.
+  ///   </para>
+  ///   <para>
+  ///     Integers assume symmetric quantization: signed integers can go one count deeper
+  ///     into the negative range as the positive range (i.e. -32768 to 32767 for
+  ///     a 16-bit integer). But these methods assume the negative limit is -32767, matching
+  ///     the positive range. Symmetric quantization is how all common audio formats operate.
+  ///   </para>
+  ///   <para>
+  ///     If you specify fewer valid bits than your integer is large, it is assumes that
+  ///     the occupied bits are on the high end of the integer. In pracice that means for
+  ///     a 12-bit audio sample, the range is -32752 to 32752 in steps of 4, rather than
+  ///     -2047 to 2047. This, too, is how common audio libraries usually operate.
+  ///   </para>
+  ///   <para>
+  ///     Finally, the possible conversions are split into 4 categories: quantization and
+  ///     reconstruction to convert from float to integer or integer to float respectively.
+  ///     For float-to-float or integer-to-integer conversions between different sizes,
+  ///     the operations are called truncate and extend and do exactly what they sound like.
+  ///   </para>
+  /// </remarks>
   class NUCLEX_AUDIO_TYPE SampleConverter {
 
     /// <summary>Converts floating point samples into quantized integer samples</summary>
@@ -139,22 +172,18 @@ namespace Nuclex { namespace Audio { namespace Processing {
           ((1 << (targetBitCount - 1)) - 1) << (sizeof(TTargetSample) * 8 - targetBitCount)
         );
         for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
-          target[sampleIndex] = (
-            static_cast<TTargetSample>(source[sampleIndex] * limit)
-          );
+          target[sampleIndex] = static_cast<TTargetSample>(source[sampleIndex] * limit);
         }
-      } else {
+      } else { // for values longer than 16 bits, we force calculations to use doubles
         double limit = static_cast<double>(
           ((1 << (targetBitCount - 1)) - 1) << (sizeof(TTargetSample) * 8 - targetBitCount)
         );
         for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
-          target[sampleIndex] = (
-            static_cast<TTargetSample>(static_cast<double>(source[sampleIndex]) * limit)
+          target[sampleIndex] = static_cast<TTargetSample>(
+            static_cast<double>(source[sampleIndex]) * limit
           );
         }
       }
-
-      //throw std::runtime_error(u8"Not implemented yet");
     }
   }
 
