@@ -139,20 +139,24 @@ namespace Nuclex { namespace Audio { namespace Processing {
     } else {
       if(sourceBitCount < 17) {
         TFloatTargetSample limit = static_cast<TFloatTargetSample>(
-          ((1 << (sourceBitCount - 1)) - 1) 
-          
-          << (sizeof(TSourceSample) * 8 - sourceBitCount)
+          ((1 << (sourceBitCount - 1)) - 1) << (sizeof(TSourceSample) * 8 - sourceBitCount)
         );
         for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
           target[sampleIndex] = (
             static_cast<TFloatTargetSample>(source[sampleIndex]) / limit
           );
         }
-      } else {
-        throw std::runtime_error(u8"Unsigned reconstruction not implemented yet");
+      } else { // For values longer than 16 bits, we force calculations to use doubles
+        double limit = static_cast<double>(
+          ((1 << (sourceBitCount - 1)) - 1) << (sizeof(TSourceSample) * 8 - sourceBitCount)
+        );
+        for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
+          target[sampleIndex] = static_cast<TFloatTargetSample>(
+            static_cast<double>(source[sampleIndex]) / limit
+          );
+        }
       }
     }
-
   }
 
   // ------------------------------------------------------------------------------------------- //

@@ -84,4 +84,32 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
+  TEST(SampleConverterTest, ConvertsSigned32BitToFloat) {
+    std::int32_t inputSamples[] = { -2147483648, -2147483647, 0, 2147483647 };
+    float outputSamples[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+    SampleConverter::Reconstruct(inputSamples, 32, outputSamples, 4);
+
+    EXPECT_EQ(outputSamples[0], -2147483648.0f / 2147483647.0f);
+    EXPECT_EQ(outputSamples[1], -1.0f);
+    EXPECT_EQ(outputSamples[2], 0.0f);
+    EXPECT_EQ(outputSamples[3], 1.0f);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(SampleConverterTest, ConvertsSigned24BitToFloat) {
+    std::int32_t inputSamples[] = { -2147483648, -2147483392, 0, 2147483392 };
+    float outputSamples[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+    SampleConverter::Reconstruct(inputSamples, 24, outputSamples, 4);
+
+    EXPECT_EQ(outputSamples[0], -8388608.0f / 8388607.0f);
+    EXPECT_EQ(outputSamples[1], -1.0f);
+    EXPECT_EQ(outputSamples[2], 0.0f);
+    EXPECT_EQ(outputSamples[3], 1.0f);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
 }}} // namespace Nuclex::Audio::Processing
