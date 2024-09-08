@@ -55,7 +55,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
       const TFloatSourceSample *source,
       TTargetSample *target, std::size_t targetBitCount,
       std::size_t sampleCount
-    ) { throw std::runtime_error(u8"Not implemented yet"); }
+    );
 
     /// <summary>Converts quantized integer samples back into floating point samples</summary>
     /// <typeparam name="TSourceSample">Integer type of the source samples</typeparam>
@@ -105,8 +105,43 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
+  template<typename TFloatSourceSample, typename TTargetSample>
+  inline void SampleConverter::Quantize(
+    const TFloatSourceSample *source,
+    TTargetSample *target, std::size_t targetBitCount,
+    std::size_t sampleCount
+  ) {
+    static_assert(
+      (
+        std::is_same<TFloatSourceSample, float>::value ||
+        std::is_same<TFloatSourceSample, double>::value
+      ) && (
+        std::is_same<TTargetSample, std::uint8_t>::value ||
+        std::is_same<TTargetSample, std::int16_t>::value ||
+        std::is_same<TTargetSample, std::int32_t>::value
+      ) &&
+      u8"This method only converts from float samples to quantized integer samples"
+    );
+    if constexpr(std::is_same<TTargetSample, std::uint8_t>::value) { // float -> uint8
+      std::int16_t midpoint = (1 << targetBitCount) / 2;
+      TFloatSourceSample limit = static_cast<TFloatSourceSample>(
+        (midpoint - 1) << (8 - targetBitCount)
+      );
+      midpoint <<= (8 - targetBitCount);
+      for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
+        target[sampleIndex] = (
+          static_cast<TTargetSample>(source[sampleIndex] * limit) + midpoint
+        );
+      }
+    } else {
+      throw std::runtime_error(u8"Not implemented yet");
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   template<typename TSourceSample, typename TFloatTargetSample>
-  void SampleConverter::Reconstruct(
+  inline void SampleConverter::Reconstruct(
     const TSourceSample *source, std::size_t sourceBitCount,
     TFloatTargetSample *target,
     std::size_t sampleCount
@@ -115,15 +150,14 @@ namespace Nuclex { namespace Audio { namespace Processing {
       (
         std::is_same<TSourceSample, std::uint8_t>::value ||
         std::is_same<TSourceSample, std::int16_t>::value ||
-        std::is_same<TSourceSample, std::int32_t>::value ||
+        std::is_same<TSourceSample, std::int32_t>::value
+      ) && (
         std::is_same<TFloatTargetSample, float>::value ||
         std::is_same<TFloatTargetSample, double>::value
       ) &&
       u8"This method only converts from quantized integer samples to float samples"
     );
-
-    // 8-bit unsigned int to float
-    if constexpr(std::is_same<TSourceSample, std::uint8_t>::value) {
+    if constexpr(std::is_same<TSourceSample, std::uint8_t>::value) { // uint8 -> float
       std::int16_t midpoint = (1 << sourceBitCount) / 2;
       TFloatTargetSample limit = static_cast<TFloatTargetSample>(
         (midpoint - 1) << (8 - sourceBitCount)
@@ -136,7 +170,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
           ) / limit
         );
       }
-    } else {
+    } else { // int16 or int32 -> float
       if(sourceBitCount < 17) {
         TFloatTargetSample limit = static_cast<TFloatTargetSample>(
           ((1 << (sourceBitCount - 1)) - 1) << (sizeof(TSourceSample) * 8 - sourceBitCount)

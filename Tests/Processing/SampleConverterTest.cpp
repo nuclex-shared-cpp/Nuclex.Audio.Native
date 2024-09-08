@@ -28,20 +28,6 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(SampleConverterTest, ConvertsUnsigned8BitToFloat) {
-    std::uint8_t inputSamples[] = { 0, 1, 128, 255 };
-    float outputSamples[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-
-    SampleConverter::Reconstruct(inputSamples, 8, outputSamples, 4);
-
-    EXPECT_EQ(outputSamples[0], -128.0f / 127.0f);
-    EXPECT_EQ(outputSamples[1], -1.0f);
-    EXPECT_EQ(outputSamples[2], 0.0f);
-    EXPECT_EQ(outputSamples[3], 1.0f);
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
   TEST(SampleConverterTest, ConvertsUnsigned6BitToFloat) {
     std::uint8_t inputSamples[] = { 0, 4, 128, 252 }; // the lesser two bits are padded
     float outputSamples[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -56,13 +42,13 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(SampleConverterTest, ConvertsSigned16BitToFloat) {
-    std::int16_t inputSamples[] = { -32768, -32767, 0, 32767 };
+  TEST(SampleConverterTest, ConvertsUnsigned8BitToFloat) {
+    std::uint8_t inputSamples[] = { 0, 1, 128, 255 };
     float outputSamples[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-    SampleConverter::Reconstruct(inputSamples, 16, outputSamples, 4);
+    SampleConverter::Reconstruct(inputSamples, 8, outputSamples, 4);
 
-    EXPECT_EQ(outputSamples[0], -32768.0f / 32767.0f);
+    EXPECT_EQ(outputSamples[0], -128.0f / 127.0f);
     EXPECT_EQ(outputSamples[1], -1.0f);
     EXPECT_EQ(outputSamples[2], 0.0f);
     EXPECT_EQ(outputSamples[3], 1.0f);
@@ -84,13 +70,13 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(SampleConverterTest, ConvertsSigned32BitToFloat) {
-    std::int32_t inputSamples[] = { -2147483648, -2147483647, 0, 2147483647 };
+  TEST(SampleConverterTest, ConvertsSigned16BitToFloat) {
+    std::int16_t inputSamples[] = { -32768, -32767, 0, 32767 };
     float outputSamples[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-    SampleConverter::Reconstruct(inputSamples, 32, outputSamples, 4);
+    SampleConverter::Reconstruct(inputSamples, 16, outputSamples, 4);
 
-    EXPECT_EQ(outputSamples[0], -2147483648.0f / 2147483647.0f);
+    EXPECT_EQ(outputSamples[0], -32768.0f / 32767.0f);
     EXPECT_EQ(outputSamples[1], -1.0f);
     EXPECT_EQ(outputSamples[2], 0.0f);
     EXPECT_EQ(outputSamples[3], 1.0f);
@@ -108,6 +94,48 @@ namespace Nuclex { namespace Audio { namespace Processing {
     EXPECT_EQ(outputSamples[1], -1.0f);
     EXPECT_EQ(outputSamples[2], 0.0f);
     EXPECT_EQ(outputSamples[3], 1.0f);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(SampleConverterTest, ConvertsSigned32BitToFloat) {
+    std::int32_t inputSamples[] = { -2147483648, -2147483647, 0, 2147483647 };
+    float outputSamples[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+    SampleConverter::Reconstruct(inputSamples, 32, outputSamples, 4);
+
+    EXPECT_EQ(outputSamples[0], -2147483648.0f / 2147483647.0f);
+    EXPECT_EQ(outputSamples[1], -1.0f);
+    EXPECT_EQ(outputSamples[2], 0.0f);
+    EXPECT_EQ(outputSamples[3], 1.0f);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(SampleConverterTest, ConvertsFloatToUnsigned6Bit) {
+    float inputSamples[4] = { -32.0f / 31.0f, -1.0f, 0.0f, 1.0f };
+    std::uint8_t outputSamples[4] = { 0, 0, 0, 0 };
+
+    SampleConverter::Quantize(inputSamples, outputSamples, 6, 4);
+
+    EXPECT_EQ(outputSamples[0], 0);
+    EXPECT_EQ(outputSamples[1], 4);
+    EXPECT_EQ(outputSamples[2], 128);
+    EXPECT_EQ(outputSamples[3], 252);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(SampleConverterTest, ConvertsFloatToUnsigned8Bit) {
+    float inputSamples[4] = { -128.0f / 127.0f, -1.0f, 0.0f, 1.0f };
+    std::uint8_t outputSamples[4] = { 0, 0, 0, 0 };
+
+    SampleConverter::Quantize(inputSamples, outputSamples, 8, 4);
+
+    EXPECT_EQ(outputSamples[0], 0);
+    EXPECT_EQ(outputSamples[1], 1);
+    EXPECT_EQ(outputSamples[2], 128);
+    EXPECT_EQ(outputSamples[3], 255);
   }
 
   // ------------------------------------------------------------------------------------------- //
