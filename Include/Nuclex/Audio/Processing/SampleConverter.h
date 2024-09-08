@@ -125,18 +125,32 @@ namespace Nuclex { namespace Audio { namespace Processing {
     // 8-bit unsigned int to float
     if constexpr(std::is_same<TSourceSample, std::uint8_t>::value) {
       std::int16_t midpoint = (1 << sourceBitCount) / 2;
-      TFloatTargetSample limit = static_cast<TFloatTargetSample>(midpoint - 1);
+      TFloatTargetSample limit = static_cast<TFloatTargetSample>(
+        (midpoint - 1) << (8 - sourceBitCount)
+      );
+      midpoint <<= (8 - sourceBitCount);
       for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
         target[sampleIndex] = (
           static_cast<TFloatTargetSample>(
-            static_cast<std::int16_t>(source[sampleIndex]) - midpoint;
+            static_cast<std::int16_t>(source[sampleIndex]) - midpoint
           ) / limit
         );
       }
-    } else if constexpr(std::is_same<TSourceSample, std::int16_t>::value) {
-      throw std::runtime_error(u8"Unsigned reconstruction not implemented yet");
     } else {
-      throw std::runtime_error(u8"Unsigned reconstruction not implemented yet");
+      if(sourceBitCount < 17) {
+        TFloatTargetSample limit = static_cast<TFloatTargetSample>(
+          ((1 << (sourceBitCount - 1)) - 1) 
+          
+          << (sizeof(TSourceSample) * 8 - sourceBitCount)
+        );
+        for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
+          target[sampleIndex] = (
+            static_cast<TFloatTargetSample>(source[sampleIndex]) / limit
+          );
+        }
+      } else {
+        throw std::runtime_error(u8"Unsigned reconstruction not implemented yet");
+      }
     }
 
   }
