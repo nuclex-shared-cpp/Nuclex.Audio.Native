@@ -84,7 +84,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
     /// <param name="targetBitCount">Number of valid bits in the target samples</param>
     /// <param name="sampleCount">Number of samples that will be converted</param>
     public: template<typename TFloatSourceSample, typename TTargetSample>
-    static void Quantize(
+    inline static void Quantize(
       const TFloatSourceSample *source,
       TTargetSample *target, std::size_t targetBitCount,
       std::size_t sampleCount
@@ -98,7 +98,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
     /// <param name="target">Pointer to which the converted samples will be written</param>
     /// <param name="sampleCount">Number of samples that will be converted</param>
     public: template<typename TSourceSample, typename TFloatTargetSample>
-    static void Reconstruct(
+    inline static void Reconstruct(
       const TSourceSample *source, std::size_t sourceBitCount,
       TFloatTargetSample *target,
       std::size_t sampleCount
@@ -113,11 +113,11 @@ namespace Nuclex { namespace Audio { namespace Processing {
     /// <param name="targetBitCount">Number of valid bits in the target samples</param>
     /// <param name="sampleCount">Number of samples that will be converted</param>
     public: template<typename TSourceSample, typename TTargetSample>
-    static void TruncateBits(
+    inline static void TruncateBits(
       const TSourceSample *source, std::size_t sourceBitCount,
       TTargetSample *target, std::size_t targetBitCount,
       std::size_t sampleCount
-    ) { throw std::runtime_error(u8"Not implemented yet"); }
+    );
 
     /// <summary>Extends samples to fill more bits</summary>
     /// <typeparam name="TSourceSample">Type of the source samples</typeparam>
@@ -128,11 +128,11 @@ namespace Nuclex { namespace Audio { namespace Processing {
     /// <param name="targetBitCount">Number of valid bits in the target samples</param>
     /// <param name="sampleCount">Number of samples that will be converted</param>
     public: template<typename TSourceSample, typename TTargetSample>
-    static void ExtendBits(
+    inline static void ExtendBits(
       const TSourceSample *source, std::size_t sourceBitCount,
       TTargetSample *target, std::size_t targetBitCount,
       std::size_t sampleCount
-    ) { throw std::runtime_error(u8"Not implemented yet"); }
+    );
 
   };
 
@@ -239,6 +239,121 @@ namespace Nuclex { namespace Audio { namespace Processing {
           );
         }
       }
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<typename TSourceSample, typename TTargetSample>
+  inline void SampleConverter::TruncateBits(
+    const TSourceSample *source, std::size_t sourceBitCount,
+    TTargetSample *target, std::size_t targetBitCount,
+    std::size_t sampleCount
+  ) {
+    static_assert(
+      (
+        std::is_floating_point<TSourceSample>::value ==
+        std::is_floating_point<TTargetSample>::value
+      ) &&
+      u8"This method only truncates float to float or integer to integer"
+    );
+
+    if constexpr(std::is_floating_point<TSourceSample>::value) {
+      bool isSameOrDoubleToFloat = (
+        ((sourceBitCount == sizeof(double) * 8) && (targetBitCount == sizeof(float) * 8)) ||
+        (sourceBitCount == targetBitCount)
+      );
+      if(!isSameOrDoubleToFloat) {
+        throw std::runtime_error(
+          u8"For floating point samples, truncation is only allowed from double to float"
+        );
+      }
+      for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
+        target[sampleIndex] = static_cast<TTargetSample>(source[sampleIndex]);
+      }
+    } else {
+      static_assert(
+        (
+          std::is_same<TSourceSample, std::uint8_t>::value ||
+          std::is_same<TSourceSample, std::int16_t>::value ||
+          std::is_same<TSourceSample, std::int32_t>::value
+        ) &&
+        (
+          std::is_same<TTargetSample, std::uint8_t>::value ||
+          std::is_same<TTargetSample, std::int16_t>::value ||
+          std::is_same<TTargetSample, std::int32_t>::value
+        ) &&
+        u8"This method only handles 8-bit unsigned and 16-bit/32-bit signed integers"
+      );
+
+      // TODO: This does not handle 8-bit unsigned correctly yet
+      // Oh, and neither does it handle signed :)
+      /*
+      TSourceSample roundingBit = (1 << (sizeof(TSourceSample) * 8 - targetBitCount - 1));
+      TTargetSample targetMask = ((1 << targetBitCount) - 1) << (sizeof(TTargetSample) * 8 - targetBitCount);
+
+      for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
+        TSourceSample sourceSample = source[sampleIndex];
+        target[sampleIndex] = static_cast<TTargetSample>(
+          (sourceSample + (sourceSample & roundingBit)) // rounding
+          >>
+          ((sizeof(TTargetSample) - sizeof(TSourceSample)) * 8) // data type adjustment
+        ) & targetMask; // truncation
+
+        //sourceSample += (sourceSample & roundingBit); // round up at half-point
+        //sourceSample >>= (sizeof(TTargetSample) - sizeof(TSourceSample)) * 8; // to target type
+      }
+      */
+
+      throw std::runtime_error(u8"Not implemented yet");
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<typename TSourceSample, typename TTargetSample>
+  inline void SampleConverter::ExtendBits(
+    const TSourceSample *source, std::size_t sourceBitCount,
+    TTargetSample *target, std::size_t targetBitCount,
+    std::size_t sampleCount
+  ) {
+    static_assert(
+      (
+        std::is_floating_point<TSourceSample>::value ==
+        std::is_floating_point<TTargetSample>::value
+      ) &&
+      u8"This method only extends float to float or integer to integer"
+    );
+
+    if constexpr(std::is_floating_point<TSourceSample>::value) {
+      bool isSameOrDoubleToFloat = (
+        ((sourceBitCount == sizeof(float) * 8) && (targetBitCount == sizeof(double) * 8)) ||
+        (sourceBitCount == targetBitCount)
+      );
+      if(!isSameOrDoubleToFloat) {
+        throw std::runtime_error(
+          u8"For floating point samples, extension is only allowed from float to double"
+        );
+      }
+      for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
+        target[sampleIndex] = static_cast<TTargetSample>(source[sampleIndex]);
+      }
+    } else {
+      static_assert(
+        (
+          std::is_same<TSourceSample, std::uint8_t>::value ||
+          std::is_same<TSourceSample, std::int16_t>::value ||
+          std::is_same<TSourceSample, std::int32_t>::value
+        ) &&
+        (
+          std::is_same<TTargetSample, std::uint8_t>::value ||
+          std::is_same<TTargetSample, std::int16_t>::value ||
+          std::is_same<TTargetSample, std::int32_t>::value
+        ) &&
+        u8"This method only handles 8-bit unsigned and 16-bit/32-bit signed integers"
+      );
+
+      throw std::runtime_error(u8"Not implemented yet");
     }
   }
 

@@ -224,4 +224,52 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
+  TEST(SampleConverterTest, ConvertsDoubleToFloat) {
+    double inputSamples[4] = { -2.0, -1.0, 0.0, 1.0 };
+    float outputSamples[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+    SampleConverter::TruncateBits(
+      inputSamples, sizeof(double) * 8, outputSamples, sizeof(float) * 8, 4
+    );
+
+    EXPECT_EQ(outputSamples[0], -2.0f);
+    EXPECT_EQ(outputSamples[1], -1.0f);
+    EXPECT_EQ(outputSamples[2], 0.0f);
+    EXPECT_EQ(outputSamples[3], 1.0f);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(SampleConverterTest, Converts16BitTo12BitIntegers) {
+    std::int16_t inputSamples[4] = { -32768, -32767, 0, 32767 };
+    std::int16_t outputSamples[4] = { 0, 0, 0, 0 };
+
+    SampleConverter::TruncateBits(
+      inputSamples, 16, outputSamples, 12, 4
+    );
+
+    EXPECT_EQ(outputSamples[0], -32768);
+    EXPECT_EQ(outputSamples[1], -32752);
+    EXPECT_EQ(outputSamples[2], 0);
+    EXPECT_EQ(outputSamples[3], 32752);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(SampleConverterTest, ConvertsFloatToDouble) {
+    float inputSamples[4] = { -2.0f, -1.0f, 0.0f, 1.0f };
+    double outputSamples[4] = { 0.0, 0.0, 0.0, 0.0 };
+
+    SampleConverter::ExtendBits(
+      inputSamples, sizeof(float) * 8, outputSamples, sizeof(double) * 8, 4
+    );
+
+    EXPECT_EQ(outputSamples[0], -2.0);
+    EXPECT_EQ(outputSamples[1], -1.0);
+    EXPECT_EQ(outputSamples[2], 0.0);
+    EXPECT_EQ(outputSamples[3], 1.0);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
 }}} // namespace Nuclex::Audio::Processing
