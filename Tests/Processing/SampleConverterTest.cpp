@@ -241,17 +241,21 @@ namespace Nuclex { namespace Audio { namespace Processing {
   // ------------------------------------------------------------------------------------------- //
 
   TEST(SampleConverterTest, Converts16BitTo12BitIntegers) {
-    std::int16_t inputSamples[4] = { -32768, -32767, 0, 32767 };
-    std::int16_t outputSamples[4] = { 0, 0, 0, 0 };
+    std::int16_t inputSamples[6] = { -32768, -32760, -32752, 0, 32760, 32752 };
+    std::int16_t outputSamples[6] = { 0, 0, 0, 0, 0, 0 };
 
     SampleConverter::TruncateBits(
-      inputSamples, 16, outputSamples, 12, 4
+      inputSamples, 16, outputSamples, 12, 6
     );
 
+    // TODO: This behavior sucks. It should round.
+
     EXPECT_EQ(outputSamples[0], -32768);
-    EXPECT_EQ(outputSamples[1], -32752);
-    EXPECT_EQ(outputSamples[2], 0);
-    EXPECT_EQ(outputSamples[3], 32752);
+    EXPECT_EQ(outputSamples[1], -32768); // truncate = round towards negative, always
+    EXPECT_EQ(outputSamples[2], -32752);
+    EXPECT_EQ(outputSamples[3], 0);
+    EXPECT_EQ(outputSamples[4], 32752); // truncate = round down, not round nearest
+    EXPECT_EQ(outputSamples[5], 32752);
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -260,7 +264,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
     float inputSamples[4] = { -2.0f, -1.0f, 0.0f, 1.0f };
     double outputSamples[4] = { 0.0, 0.0, 0.0, 0.0 };
 
-    SampleConverter::ExtendBits(
+    SampleConverter::Convert(
       inputSamples, sizeof(float) * 8, outputSamples, sizeof(double) * 8, 4
     );
 

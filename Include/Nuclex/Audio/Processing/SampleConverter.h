@@ -76,6 +76,21 @@ namespace Nuclex { namespace Audio { namespace Processing {
   /// </remarks>
   class NUCLEX_AUDIO_TYPE SampleConverter {
 
+    /// <summary>Converts a sample from one data format into another</summary>
+    /// <typeparam name="TSourceSample">Type of the source samples</typeparam>
+    /// <typeparam name="TTargetSample">Type of the target samples</typeparam>
+    /// <param name="source">Pointer to the first source sample</param>
+    /// <param name="sourceBitCount">Number of valid bits in the source samples</param>
+    /// <param name="target">Pointer to which the converted samples will be written</param>
+    /// <param name="targetBitCount">Number of valid bits in the target samples</param>
+    /// <param name="sampleCount">Number of samples that will be converted</param>
+    public: template<typename TSourceSample, typename TTargetSample>
+    inline static void Convert(
+      const TSourceSample *source, std::size_t sourceBitCount,
+      TTargetSample *target, std::size_t targetBitCount,
+      std::size_t sampleCount
+    );
+
     /// <summary>Converts floating point samples into quantized integer samples</summary>
     /// <typeparam name="TFloatSourceSample">Floating point type of the source samples</typeparam>
     /// <typeparam name="TTargetSample">Integer type of the target samples</typeparam>
@@ -135,6 +150,35 @@ namespace Nuclex { namespace Audio { namespace Processing {
     );
 
   };
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<typename TSourceSample, typename TTargetSample>
+  inline void SampleConverter::Convert(
+    const TSourceSample *source, std::size_t sourceBitCount,
+    TTargetSample *target, std::size_t targetBitCount,
+    std::size_t sampleCount
+  ) {
+    if constexpr(std::is_floating_point<TSourceSample>::value) {
+      if constexpr(std::is_floating_point<TTargetSample>::value) {
+        if(targetBitCount >= sourceBitCount) {
+          ExtendBits(source, sourceBitCount, target, targetBitCount, sampleCount);
+        } else {
+          TruncateBits(source, sourceBitCount, target, targetBitCount, sampleCount);
+        }
+      } else {
+        Quantize(source, target, targetBitCount, sampleCount);
+      }
+    } else if constexpr(std::is_floating_point<TTargetSample>::value) {
+      Reconstruct(source, sourceBitCount, target, sampleCount);
+    } else {
+      if(targetBitCount >= sourceBitCount) {
+        ExtendBits(source, sourceBitCount, target, targetBitCount, sampleCount);
+      } else {
+        TruncateBits(source, sourceBitCount, target, targetBitCount, sampleCount);
+      }
+    }
+  }
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -286,26 +330,26 @@ namespace Nuclex { namespace Audio { namespace Processing {
         u8"This method only handles 8-bit unsigned and 16-bit/32-bit signed integers"
       );
 
-      // TODO: This does not handle 8-bit unsigned correctly yet
-      // Oh, and neither does it handle signed :)
-      /*
-      TSourceSample roundingBit = (1 << (sizeof(TSourceSample) * 8 - targetBitCount - 1));
-      TTargetSample targetMask = ((1 << targetBitCount) - 1) << (sizeof(TTargetSample) * 8 - targetBitCount);
+      // TODO: This always rounds toward negative. I'm not happy with that :-/
+      // TODO: This doesn't cover unsigned 8-bit audio samples yes.
 
+      TTargetSample targetMask = (
+        ((1 << targetBitCount) - 1) << (sizeof(TTargetSample) * 8 - targetBitCount)
+      );
+
+      //TSourceSample roundingBit = (
+      //  (1 << (sizeof(TSourceSample) * 8 - targetBitCount - 1))
+      //);
+      // down in the loop
+      //   +(roundingBit * (number already equals maximum truncated number))
+
+      std::size_t shift = ((sizeof(TSourceSample) - sizeof(TTargetSample)) * 8);
       for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
         TSourceSample sourceSample = source[sampleIndex];
         target[sampleIndex] = static_cast<TTargetSample>(
-          (sourceSample + (sourceSample & roundingBit)) // rounding
-          >>
-          ((sizeof(TTargetSample) - sizeof(TSourceSample)) * 8) // data type adjustment
+          source[sampleIndex] >> shift
         ) & targetMask; // truncation
-
-        //sourceSample += (sourceSample & roundingBit); // round up at half-point
-        //sourceSample >>= (sizeof(TTargetSample) - sizeof(TSourceSample)) * 8; // to target type
       }
-      */
-
-      throw std::runtime_error(u8"Not implemented yet");
     }
   }
 
