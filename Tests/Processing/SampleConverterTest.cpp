@@ -241,14 +241,12 @@ namespace Nuclex { namespace Audio { namespace Processing {
   // ------------------------------------------------------------------------------------------- //
 
   TEST(SampleConverterTest, Converts16BitTo12BitIntegers) {
-    std::int16_t inputSamples[6] = { -32768, -32760, -32752, 0, 32760, 32752 };
+    std::int16_t inputSamples[6] = { -32768, -32760, -32752, 0, 32752, 32760 };
     std::int16_t outputSamples[6] = { 0, 0, 0, 0, 0, 0 };
 
     SampleConverter::TruncateBits(
       inputSamples, 16, outputSamples, 12, 6
     );
-
-    // TODO: This behavior sucks. It should round.
 
     EXPECT_EQ(outputSamples[0], -32768);
     EXPECT_EQ(outputSamples[1], -32768); // truncate = round towards negative, always
@@ -256,6 +254,46 @@ namespace Nuclex { namespace Audio { namespace Processing {
     EXPECT_EQ(outputSamples[3], 0);
     EXPECT_EQ(outputSamples[4], 32752); // truncate = round down, not round nearest
     EXPECT_EQ(outputSamples[5], 32752);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(SampleConverterTest, Converts32BitTo12BitIntegers) {
+    std::int32_t inputSamples[6] = {
+      -2147483648, -2146959360, -2146435072, 0, 2146435072, 2146959360
+    };
+    std::int16_t outputSamples[6] = { 0, 0, 0, 0, 0, 0 };
+
+    SampleConverter::TruncateBits(
+      inputSamples, 32, outputSamples, 12, 6
+    );
+
+    EXPECT_EQ(outputSamples[0], -32768);
+    EXPECT_EQ(outputSamples[1], -32768); // truncate = round towards negative, always
+    EXPECT_EQ(outputSamples[2], -32752);
+    EXPECT_EQ(outputSamples[3], 0);
+    EXPECT_EQ(outputSamples[4], 32752); // truncate = round down, not round nearest
+    EXPECT_EQ(outputSamples[5], 32752);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(SampleConverterTest, Converts32BitTo24BitIntegers) {
+    std::int32_t inputSamples[6] = {
+      -2147483648, -2147483520, -2147483392, 0, 2147483392, 2147483520
+    };
+    std::int32_t outputSamples[6] = { 0, 0, 0, 0, 0, 0 };
+
+    SampleConverter::TruncateBits(
+      inputSamples, 32, outputSamples, 24, 6
+    );
+
+    EXPECT_EQ(outputSamples[0], -2147483648);
+    EXPECT_EQ(outputSamples[1], -2147483648); // truncate = round towards negative, always
+    EXPECT_EQ(outputSamples[2], -2147483392);
+    EXPECT_EQ(outputSamples[3], 0);
+    EXPECT_EQ(outputSamples[4], 2147483392); // truncate = round down, not round nearest
+    EXPECT_EQ(outputSamples[5], 2147483392);
   }
 
   // ------------------------------------------------------------------------------------------- //
