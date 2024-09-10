@@ -48,7 +48,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
     WavpackContext *context = ::WavpackOpenFileInput(
       path.c_str(), errorMessage.data(), flags, normOffset
     );
-    if(context == nullptr) {
+    if(unlikely(context == nullptr)) {
       std::string message(u8"Error opening '", 15);
       message.append(path);
       message.append(u8"': ", 3);
@@ -76,8 +76,8 @@ namespace Nuclex { namespace Audio { namespace Platform {
       &streamReader, mainFileContext, correctionFileContext,
       errorMessage.data(), flags, normOffset
     );
-    if(context == nullptr) {
-      if(static_cast<bool>(rootCauseException)) {
+    if(unlikely(context == nullptr)) {
+      if(likely(static_cast<bool>(rootCauseException))) {
         std::rethrow_exception(rootCauseException);
       }
 
@@ -137,8 +137,8 @@ namespace Nuclex { namespace Audio { namespace Platform {
     const std::shared_ptr<::WavpackContext> &context
   ) {
     std::int64_t sampleCount = ::WavpackGetNumSamples64(context.get());
-    if(sampleCount == -1) {
-      throw std::runtime_error(u8"Unable to determine sample rate of WavPack audio file");
+    if(unlikely(sampleCount == -1)) {
+      throw std::runtime_error(u8"Unable to get sample count of WavPack audio file");
     }
 
     return sampleCount;
@@ -147,6 +147,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
   // ------------------------------------------------------------------------------------------- //
 
   std::uint32_t WavPackApi::UnpackSamples(
+    const std::exception_ptr &rootCauseException,
     const std::shared_ptr<::WavpackContext> &context,
     std::int32_t *buffer,
     std::uint32_t sampleCount
@@ -155,14 +156,20 @@ namespace Nuclex { namespace Audio { namespace Platform {
       context.get(), buffer, sampleCount
     );
 
+    // If something happened reading from the virtual file, that is the root cause
+    // exception and will be reported above whatever consequences it had inside libwavpack.
+    if(unlikely(static_cast<bool>(rootCauseException))) {
+      std::rethrow_exception(rootCauseException);
+    }
+
     // I can't really find any solid documentation on how errors during unpacking are
     // supposed to surface, but there are several places inside libwavpack where it
     // checks the first character of the context's error_message, so we'll do the same.
     // This might mean that after one failure, the context will appear to be in
     // a permanent error state, unless the context's error_message is cleared somewhere.
     const char *errorMessage = ::WavpackGetErrorMessage(context.get());
-    if(errorMessage != nullptr) {
-      if(errorMessage[0] != 0) {
+    if(unlikely(errorMessage != nullptr)) {
+      if(unlikely(errorMessage[0] != 0)) {
         std::string message(u8"Error unpacking samples from WavPack audio file: ", 49);
         message.append(errorMessage);
         throw std::runtime_error(message);
@@ -170,6 +177,34 @@ namespace Nuclex { namespace Audio { namespace Platform {
     }
 
     return unpackedSampleCount;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void WavPackApi::SeekSample(
+    const std::exception_ptr &rootCauseException,
+    const std::shared_ptr<::WavpackContext> &context,
+    std::int64_t sampleIndex
+  ) {
+    int result = ::WavpackSeekSample64(context.get(), sampleIndex);
+    if(unlikely(result == 0)) { // wavpack_local.h defines FALSE as 0
+      if(likely(static_cast<bool>(rootCauseException))) {
+        std::rethrow_exception(rootCauseException);
+      }
+
+      const char *errorMessage = ::WavpackGetErrorMessage(context.get());
+      if(unlikely(errorMessage != nullptr)) {
+        if(unlikely(errorMessage[0] != 0)) {
+          std::string message(
+            u8"Error seeking to sample position in WavPack audio file: ", 56
+          );
+          message.append(errorMessage);
+          throw std::runtime_error(message);
+        }
+      } else {
+        throw std::runtime_error(u8"Error seeking to sample position in WavPack audio file");
+      }
+    }
   }
 
   // ------------------------------------------------------------------------------------------- //

@@ -196,7 +196,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
         std::is_same<TTargetSample, std::uint8_t>::value ||
         std::is_same<TTargetSample, std::int16_t>::value ||
         std::is_same<TTargetSample, std::int32_t>::value
-      ) &&
+      ),
       u8"This method only converts from float samples to quantized integer samples"
     );
     if constexpr(std::is_same<TTargetSample, std::uint8_t>::value) { // float -> uint8
@@ -247,7 +247,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
       ) && (
         std::is_same<TFloatTargetSample, float>::value ||
         std::is_same<TFloatTargetSample, double>::value
-      ) &&
+      ),
       u8"This method only converts from quantized integer samples to float samples"
     );
     if constexpr(std::is_same<TSourceSample, std::uint8_t>::value) { // uint8 -> float
@@ -295,10 +295,8 @@ namespace Nuclex { namespace Audio { namespace Processing {
     std::size_t sampleCount
   ) {
     static_assert(
-      (
-        std::is_floating_point<TSourceSample>::value ==
-        std::is_floating_point<TTargetSample>::value
-      ) &&
+      std::is_floating_point<TSourceSample>::value ==
+      std::is_floating_point<TTargetSample>::value,
       u8"This method only truncates float to float or integer to integer"
     );
 
@@ -326,7 +324,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
           std::is_same<TTargetSample, std::uint8_t>::value ||
           std::is_same<TTargetSample, std::int16_t>::value ||
           std::is_same<TTargetSample, std::int32_t>::value
-        ) &&
+        ),
         u8"This method only handles 8-bit unsigned and 16-bit/32-bit signed integers"
       );
 
@@ -362,10 +360,8 @@ namespace Nuclex { namespace Audio { namespace Processing {
     std::size_t sampleCount
   ) {
     static_assert(
-      (
-        std::is_floating_point<TSourceSample>::value ==
-        std::is_floating_point<TTargetSample>::value
-      ) &&
+      std::is_floating_point<TSourceSample>::value ==
+      std::is_floating_point<TTargetSample>::value,
       u8"This method only extends float to float or integer to integer"
     );
 
@@ -393,7 +389,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
           std::is_same<TTargetSample, std::uint8_t>::value ||
           std::is_same<TTargetSample, std::int16_t>::value ||
           std::is_same<TTargetSample, std::int32_t>::value
-        ) &&
+        ),
         u8"This method only handles 8-bit unsigned and 16-bit/32-bit signed integers"
       );
 

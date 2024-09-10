@@ -96,6 +96,21 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
+  TEST(WavPackTrackDecoderTest, DecodesToFloatingPoint) {
+    std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
+      u8"Resources/wavpack-stereo-float32-v416.wv"
+    );
+
+    WavPackTrackDecoder decoder(file);
+
+    std::vector<float> samples(1000);
+    decoder.DecodeInterleaved(samples.data(), 0, 500);
+
+    // TODO: Check that this is a sine wave as present in the example audio files
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
 }}}} // namespace Nuclex::Audio::Storage::WavPack
 
 #endif // defined(NUCLEX_AUDIO_HAVE_WAVPACK)

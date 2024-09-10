@@ -150,6 +150,21 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     private: std::shared_ptr<::WavpackContext> context;
     /// <summary>Order in which audio channels appear</summary>
     private: std::vector<ChannelPlacement> channelOrder;
+    /// <summary>Total number of samples in the WavPack file</summary>
+    /// <remarks>
+    ///   This can be unknown if the WavPack file is being streamed, was truncated and
+    ///   perhaps some other cases, but this library is designed for usage with plain
+    ///   and complete WavPack files, at most wrapped in a media container or archive.
+    /// </remarks>
+    private: std::uint64_t totalSampleCount;
+    /// <summary>Format in which the samples are deliverd by libwavpack</summary>
+    private: AudioSampleFormat sampleFormat;
+    /// <summary>Number of valid bits in the audio sample from the WavPack file</summary>
+    private: std::size_t bitsPerSample;
+    /// <summary>Known position of libwavpacks cursor within the audio data</summary>
+    private: mutable std::uint64_t sampleCursor;
+    /// <summary>Must be held while decoding</summary>
+    private: mutable std::mutex decodingMutex;
 
   };
 

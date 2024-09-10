@@ -161,6 +161,10 @@ namespace Nuclex { namespace Audio { namespace Platform {
     );
 
     /// <summary>Unpacks samples from the WavPack file</summary>
+    /// <param name="rootCauseException">
+    ///   Should receive any exception that happened in the virtual file and will be thrown
+    ///   instead of a generic WavPack error if it becomes filled during the WavPack API call
+    /// </param>
     /// <param name="context">Context of the opened WavPack file</param>
     /// <param name="buffer">Buffer in which the unpacked samples will be placed</param>
     /// <param name="sampleCount">
@@ -196,9 +200,23 @@ namespace Nuclex { namespace Audio { namespace Platform {
     ///   </list>
     /// </remarks>
     public: static std::uint32_t UnpackSamples(
+      const std::exception_ptr &rootCauseException,
       const std::shared_ptr<::WavpackContext> &context,
       std::int32_t *buffer,
       std::uint32_t sampleCount
+    );
+
+    /// <summary>Moves the file cursor within the WavpackContext</summary>
+    /// <param name="rootCauseException">
+    ///   Should receive any exception that happened in the virtual file and will be thrown
+    ///   instead of a generic WavPack error if it becomes filled during the WavPack API call
+    /// </param>
+    /// <param name="context">Context of the opened WavPack file</param>
+    /// <param name="sampleIndex">Absolute position to which to seek</param>
+    public: static void SeekSample(
+      const std::exception_ptr &rootCauseException,
+      const std::shared_ptr<::WavpackContext> &context,
+      std::int64_t sampleIndex
     );
 
   };

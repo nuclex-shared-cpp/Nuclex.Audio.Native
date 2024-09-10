@@ -207,13 +207,11 @@ namespace Nuclex { namespace Audio { namespace Storage {
     TSample *buffer, const std::uint64_t startSample, const std::size_t sampleCount
   ) const {
     static_assert(
-      (
-        std::is_same<TSample, std::uint8_t>::value ||
-        std::is_same<TSample, std::int16_t>::value ||
-        std::is_same<TSample, std::int32_t>::value ||
-        std::is_same<TSample, float>::value ||
-        std::is_same<TSample, double>::value
-      ) &&
+      std::is_same<TSample, std::uint8_t>::value ||
+      std::is_same<TSample, std::int16_t>::value ||
+      std::is_same<TSample, std::int32_t>::value ||
+      std::is_same<TSample, float>::value ||
+      std::is_same<TSample, double>::value,
       u8"Only 8 but unsigned, 16/32 bit signed, float or double samples are supported"
     );
   }
