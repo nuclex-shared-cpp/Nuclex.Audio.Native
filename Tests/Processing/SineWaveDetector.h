@@ -54,6 +54,19 @@ namespace Nuclex { namespace Audio { namespace Processing {
     /// <param name="sample">Sample that will be processed</param>
     public: void AddSample(float sample);
 
+    /// <summary>Returns the assumed or detected amplitude of the signal</summary>
+    /// <returns>The assumed or detected amplitude of the signal</returns>
+    public: float GetAmplitude() const;
+
+    /// <summary>Calculates the deviation from a pure sine wave per sample</summary>
+    /// <returns>The deviation from a pure sine wave per sample</returns>
+    public: float GetError() const;
+
+    /// <summary>Returns the frequency of the signal in samples per second</summary>
+    /// <param name="sampleRate">Sample rate of the signal</param>
+    /// <returns>The frequency of the signal</returns>
+    public: float GetFrequency(float sampleRate) const;
+
     /// <summary>Assumed amplitude of the signal</summary>
     private: float amplitude;
     /// <summary>Number of samples that have been processed so far</summary>
@@ -71,10 +84,11 @@ namespace Nuclex { namespace Audio { namespace Processing {
     /// <summary>Determined angle of the previous sample</summary>
     private: double previousAngle;
 
-/*
+    /// <summary>Accumulated mismatch from a pure sine wave</summary>
     private: double accumulatedError;
-    private: double startingRadians;
-*/
+    /// <summary>How many times the curve has crossed the zero line</summary>
+    private: std::size_t zeroCrossingCount;
+
   };
 
   // ------------------------------------------------------------------------------------------- //

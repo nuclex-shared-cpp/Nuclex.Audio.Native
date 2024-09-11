@@ -47,7 +47,7 @@ namespace {
   /// <param name="angle">Angle that will be normalized</param>
   /// <returns>The normalized angle</returns>
   double getNormalizedAngle(double angle) {
-    return std::fmod(angle - pi, tau) + pi;
+    return std::fmod(std::fmod(angle + pi, tau) + tau, tau) - pi;
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -60,7 +60,16 @@ namespace {
   ///   match the angle <paramref ref="angle2" />
   /// </returns>
   double getForwardDeltaAngle(double angle1, double angle2) {
-    return std::fmod(angle2 - angle1, tau);
+    return std::fmod(std::fmod(angle2 - angle1, tau) + tau, tau);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Clamps a value to the -1.0 .. +1.0 range</summary>
+  /// <param name="value">Value that will be clamped</param>
+  /// <returns>The value in the -1.0 .. +1.0 range</returns>
+  double clampToPlusMinusOne(double value) {
+    return std::min(std::max(value, -1.0), 1.0);
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -78,7 +87,9 @@ namespace Nuclex { namespace Audio { namespace Processing {
     startSampleIndex(std::size_t(-1)),
     startAngle(0.0),
     accumulatedAngle(0.0),
-    previousWasFalling(false) {}
+    previousWasFalling(false),
+    accumulatedError(0.0),
+    zeroCrossingCount(0) {}
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -198,9 +209,9 @@ namespace Nuclex { namespace Audio { namespace Processing {
       }
 
       if(isInsideFallingHalf.has_value()) {
-        double halfWaveAngle = std::asin(std::min<double>(sample / this->amplitude, 1.0));
+        double halfWaveAngle = std::asin(clampToPlusMinusOne(sample / this->amplitude));
         if(isInsideFallingHalf.value()) {
-          this->startAngle = this->previousAngle = piOver2 - halfWaveAngle;
+          this->startAngle = this->previousAngle = pi - halfWaveAngle;
         } else {
           this->startAngle = this->previousAngle = halfWaveAngle;
         }
@@ -210,26 +221,91 @@ namespace Nuclex { namespace Audio { namespace Processing {
       return; // return even when setting the start sample index
     }
 
-    // Stage 3: Verify that the signal is advancing on a sine curve at constant speed
+    double angle;
     {
-      double angle;
-      {
-        double halfWaveAngle = std::asin(std::min<double>(sample / this->amplitude, 1.0));
-        double forwardDelta = getForwardDeltaAngle(this->previousAngle, halfWaveAngle);
+      double halfWaveAngle = std::asin(clampToPlusMinusOne(sample / this->amplitude));
+      double forwardDelta = getForwardDeltaAngle(this->previousAngle, halfWaveAngle);
 
-        double inverseAngle = piOver2 - halfWaveAngle;
-        double inverseForwardDelta = getForwardDeltaAngle(this->previousAngle, inverseAngle);
+      double inverseAngle = pi - halfWaveAngle;
+      double inverseForwardDelta = getForwardDeltaAngle(this->previousAngle, inverseAngle);
 
-        if(inverseForwardDelta < forwardDelta) {
-          angle = inverseAngle;
-        } else {
-          angle = halfWaveAngle;
-        }
-        this->previousAngle = angle;
+      if(inverseForwardDelta < forwardDelta) {
+        angle = getNormalizedAngle(inverseAngle);
+      } else {
+        angle = getNormalizedAngle(halfWaveAngle);
       }
-      
-      printf("%f\n", angle * 180.0 / pi);
     }
+
+    // Stage 3: count the number of zero crossing for the frequency
+    {
+      if((this->previousAngle < 0.0) && (angle >= 0.0)) {
+        ++this->zeroCrossingCount;
+      }
+      if((this->previousAngle >= 0.0) && (angle < 0.0)) {
+        ++this->zeroCrossingCount;
+      }
+    }
+
+    // Stage 4: Verify that the signal is advancing on a sine curve at constant speed
+    {
+      double expectedAngle;
+      {
+        std::size_t averagedSampleCount = this->sampleCount - this->startSampleIndex - 1;
+        if(averagedSampleCount == 0) {
+          expectedAngle = angle; // with only 1 sample, the average is clear :-)
+        } else {
+          double averageStep = this->accumulatedAngle / averagedSampleCount;
+          expectedAngle = this->startAngle + this->accumulatedAngle + averageStep;
+        }
+      }
+
+      this->accumulatedAngle += getForwardDeltaAngle(this->previousAngle, angle);
+      this->previousAngle = angle;
+
+      float expectedSample = std::sin(expectedAngle) * this->amplitude;
+      this->accumulatedError += std::fabs(expectedSample - sample);
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  float SineWaveDetector::GetAmplitude() const {
+    return this->amplitude;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  float SineWaveDetector::GetError() const {
+    if(this->startSampleIndex == std::size_t(-1)) {
+      return 0.0;
+    }
+
+    std::size_t averagedSampleCount = this->sampleCount - this->startSampleIndex - 1;
+    if(averagedSampleCount == 0) {
+      return 0.0;
+    }
+
+    return static_cast<float>(
+      (this->accumulatedError / averagedSampleCount) * this->amplitude
+    );
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  float SineWaveDetector::GetFrequency(float sampleRate) const {
+    if(this->startSampleIndex == std::size_t(-1)) {
+      return 0.0;
+    }
+
+    std::size_t accumulatedSampleCount = this->sampleCount - this->startSampleIndex - 1;
+    if(accumulatedSampleCount == 0) {
+      return 0.0;
+    }
+
+    double zeroCrossings = (this->accumulatedAngle / pi);
+    double signalLength = static_cast<double>(accumulatedSampleCount) / sampleRate;
+
+    return static_cast<float>(zeroCrossings / signalLength / 2.0); // frequency is full waves
   }
 
   // ------------------------------------------------------------------------------------------- //
