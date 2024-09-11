@@ -39,9 +39,6 @@ namespace {
   /// <summary>Equivalent to 2xPI, one full turn in radian</summary>
   constexpr double tau = 6.28318530717958647692528676655900576839433879875021164194988918461563281;
 
-  /// <summary>As the name says, a constant that is half of PI</summary>
-  constexpr double piOver2 = 1.5707963267948966192313216916397514420985846996875529104874722961539;
-
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Normalizes an angle into the -180 to +180 range</summary>
@@ -89,8 +86,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
     startAngle(0.0),
     accumulatedAngle(0.0),
     previousWasFalling(false),
-    accumulatedError(0.0),
-    zeroCrossingCount(0) {}
+    accumulatedError(0.0) {}
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -243,17 +239,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
       }
     }
 
-    // Stage 3: count the number of zero crossing for the frequency
-    {
-      if((this->previousAngle < 0.0) && (angle >= 0.0)) {
-        ++this->zeroCrossingCount;
-      }
-      if((this->previousAngle >= 0.0) && (angle < 0.0)) {
-        ++this->zeroCrossingCount;
-      }
-    }
-
-    // Stage 4: Verify that the signal is advancing on a sine curve at constant speed
+    // Stage 3: Verify that the signal is advancing on a sine curve at constant speed
     {
       double expectedAngle;
       {

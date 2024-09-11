@@ -30,6 +30,22 @@ namespace Nuclex { namespace Audio { namespace Processing {
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Checks if a signal matches a sine wave</summary>
+  /// <remarks>
+  ///   <para>
+  ///     The test audio files for Nuclex.Audio.Native all contain simple sine wave signals
+  ///     of different properties (which thus conveniently lets us identify channels
+  ///     by phase and frequency). This class isolates those properties of the channels.
+  ///   </para>
+  ///   <para>
+  ///     This is a very simple, non-buffering sine wave checker. It simply ingests
+  ///     samples and once it believes to have found the correct phase, it simply checks
+  ///     whether added samples fall within the predicted next position (in terms of
+  ///     advancement on the sine curve and amplitude).
+  ///   </para>
+  ///   <para>
+  ///     
+  ///   </para>
+  /// </remarks>
   class SineWaveDetector {
 
     /// <summary>Initialies a new sine wave detector</summary>
@@ -97,11 +113,8 @@ namespace Nuclex { namespace Audio { namespace Processing {
     private: bool previousWasFalling;
     /// <summary>Determined angle of the previous sample</summary>
     private: double previousAngle;
-
     /// <summary>Accumulated mismatch from a pure sine wave</summary>
     private: double accumulatedError;
-    /// <summary>How many times the curve has crossed the zero line</summary>
-    private: std::size_t zeroCrossingCount;
 
   };
 
