@@ -27,6 +27,7 @@ License along with this library
 #include <optional> // for std::optional
 #include <vector> // for std::vector
 #include <stdexcept> // for std::runtime_error
+#include <algorithm> // for std::max_element()
 
 namespace {
 
@@ -93,7 +94,9 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void SineWaveDetector::DetectAmplitude(const float *samples, std::size_t sampleCount) {
+  void SineWaveDetector::DetectAmplitude(
+    const float *samples, std::size_t sampleCount, std::size_t channelCount /* = 1 */
+  ) {
     std::vector<float> upperPeaks, lowerPeaks;
 
     std::size_t indexOfLastDoubleClimb = std::size_t(-1);
@@ -104,16 +107,17 @@ namespace Nuclex { namespace Audio { namespace Processing {
     // but - to counteract dither and/or compression jitter - it will only consider
     // peaks frames by two successive climbing samples and two successive falling samples.
     float previous = samples[0];
-    for(std::size_t index = 1; index < sampleCount; ++index) {
+    for(std::size_t index = channelCount; index < sampleCount; index += channelCount) {
       float current = samples[index];
       if(previous < current) {
         if(previousWasRising) {
           indexOfLastDoubleClimb = index;
           if(indexOfLastDoubleFall != std::size_t(-1)) {
-            lowerPeaks.insert(
-              lowerPeaks.end(),
-              samples + indexOfLastDoubleFall,
-              samples + indexOfLastDoubleClimb - 1
+            lowerPeaks.push_back(
+              *std::min_element(
+                samples + indexOfLastDoubleFall,
+                samples + indexOfLastDoubleClimb
+              )
             );
             indexOfLastDoubleClimb = std::size_t(-1);
             indexOfLastDoubleFall = std::size_t(-1);
@@ -125,10 +129,11 @@ namespace Nuclex { namespace Audio { namespace Processing {
         if(previousWasFalling) {
           indexOfLastDoubleFall = index;
           if(indexOfLastDoubleClimb != std::size_t(-1)) {
-            upperPeaks.insert(
-              upperPeaks.end(),
-              samples + indexOfLastDoubleClimb,
-              samples + indexOfLastDoubleFall - 1
+            upperPeaks.push_back(
+              *std::max_element(
+                samples + indexOfLastDoubleClimb,
+                samples + indexOfLastDoubleFall
+              )
             );
             indexOfLastDoubleFall = std::size_t(-1);
             indexOfLastDoubleClimb = std::size_t(-1);
@@ -171,8 +176,10 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void SineWaveDetector::AddSamples(const float *samples, std::size_t sampleCount) {
-    for(std::size_t index = 0; index < sampleCount; ++index) {
+  void SineWaveDetector::AddSamples(
+    const float *samples, std::size_t sampleCount, std::size_t channelCount /* = 1 */
+  ) {
+    for(std::size_t index = 0; index < sampleCount; index += channelCount) {
       AddSample(samples[index]);
     }
   }
@@ -306,6 +313,28 @@ namespace Nuclex { namespace Audio { namespace Processing {
     double signalLength = static_cast<double>(accumulatedSampleCount) / sampleRate;
 
     return static_cast<float>(zeroCrossings / signalLength / 2.0); // frequency is full waves
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  float SineWaveDetector::GetPhase() const {
+    std::size_t averagedSampleCount = this->sampleCount - this->startSampleIndex - 1;
+    double averageStep = this->accumulatedAngle / averagedSampleCount;
+
+    return static_cast<float>(
+      this->startAngle - (this->startSampleIndex * averageStep)
+    );
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  float SineWaveDetector::GetPhase360() const {
+    std::size_t averagedSampleCount = this->sampleCount - this->startSampleIndex - 1;
+    double averageStep = this->accumulatedAngle / averagedSampleCount;
+
+    return static_cast<float>(
+      (this->startAngle - (this->startSampleIndex * averageStep)) * 180.0 / pi
+    );
   }
 
   // ------------------------------------------------------------------------------------------- //

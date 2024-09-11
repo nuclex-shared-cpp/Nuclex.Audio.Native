@@ -38,17 +38,23 @@ namespace Nuclex { namespace Audio { namespace Processing {
     /// <summary>Tries to figure out the amplitude of the signal</summary>
     /// <param name="samples">Samples from which the amplitude will be detected</param>
     /// <param name="sampleCount">Number of samples that have been provided</param>
+    /// <param name="channelCount">Number of channels that are interleaved</param>
     /// <remarks>
     ///   This merely looks at the signal's peaks in either direction. If this wasn't 
     ///   a small helper class for unit tests, there are fourier-based methods or you
     ///   could do a curve fit on the sine wave.
     /// </remarks>
-    public: void DetectAmplitude(const float *samples, std::size_t sampleCount);
+    public: void DetectAmplitude(
+      const float *samples, std::size_t sampleCount, std::size_t channelCount = 1
+    );
 
     /// <summary>Adds samples to be processed by the sine wave detector</summary>
     /// <param name="samples">Samples that will be processed by the detector</param>
     /// <param name="sampleCount">Number of samples that should be processed</param>
-    public: void AddSamples(const float *samples, std::size_t sampleCount);
+    /// <param name="channelCount">Number of channels that are interleaved</param>
+    public: void AddSamples(
+      const float *samples, std::size_t sampleCount, std::size_t channelCount = 1
+    );
 
     /// <summary>Processes a single sample</summary?
     /// <param name="sample">Sample that will be processed</param>
@@ -66,6 +72,14 @@ namespace Nuclex { namespace Audio { namespace Processing {
     /// <param name="sampleRate">Sample rate of the signal</param>
     /// <returns>The frequency of the signal</returns>
     public: float GetFrequency(float sampleRate) const;
+
+    /// <summary>Returns the phase with which the sine wave begins</summary>
+    /// <returns>The phase of the sine wave</returns>
+    public: float GetPhase() const;
+
+    /// <summary>Returns the phase with which the sine wave begins in degrees</summary>
+    /// <returns>The phase of the sine wave in a 360 degree range</returns>
+    public: float GetPhase360() const;
 
     /// <summary>Assumed amplitude of the signal</summary>
     private: float amplitude;
