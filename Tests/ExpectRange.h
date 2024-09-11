@@ -26,9 +26,9 @@ limitations under the License.
 
 // --------------------------------------------------------------------------------------------- //
 
-// Checks is in the range from lower (inclusive) to upper (exclusive)
+// Checks if a value is in the range from lower (inclusive) to upper (exclusive)
 //
-// This is a little nonstandard GoogleTest macro because such checks appear quite often
+// This is a little custom GoogleTest macro because such checks appear quite often
 // where audio signals are analyzed in the unit tests
 #define EXPECT_RANGE(value, lower, upper) \
   EXPECT_PRED_FORMAT3(AssertInRange, value, lower, upper)

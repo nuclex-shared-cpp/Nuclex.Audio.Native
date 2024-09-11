@@ -43,7 +43,10 @@ namespace Nuclex { namespace Audio { namespace Processing {
   ///     advancement on the sine curve and amplitude).
   ///   </para>
   ///   <para>
-  ///     
+  ///     Relying on counters only and voiding any complex curve fitting is absolutely
+  ///     fine to verify there are no sudden jumps, completely misinterpreted data or
+  ///     channels mix-ups in the unit tests, but for proper signal analysis, this class
+  ///     probably wouldn't cut it ;-)
   ///   </para>
   /// </remarks>
   class SineWaveDetector {
