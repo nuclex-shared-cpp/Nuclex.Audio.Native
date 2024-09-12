@@ -43,10 +43,10 @@ namespace Nuclex { namespace Audio { namespace Processing {
   /// <summary>Converts between different data tyeps used for audio samples</summary>
   /// <remarks>
   ///   <para>
-  ///     This is a small utility class that takes care of all the operations needed to
-  ///     convert between different sample data formats. All methods assume batch operations
-  ///     since it's rare that could would want to only convert a single sample (but you
-  ///     can do that to, just grab a pointer to it and specify sample count as 1)
+  ///     This is a utility class that takes care of the operations needed to convert between
+  ///     different sample data formats. All methods assume batch operations since it's rare
+  ///     that could would want to only convert a single sample (but you can do that, too,
+  ///     just grab a pointer to it and specify sample count as 1)
   ///   </para>
   ///   <para>
   ///     Each operation supports an arbitrary number of valid bits for integer samples,
@@ -56,16 +56,17 @@ namespace Nuclex { namespace Audio { namespace Processing {
   ///     32-bit integers.
   ///   </para>
   ///   <para>
-  ///     Integers assume symmetric quantization: signed integers can go one count deeper
-  ///     into the negative range as the positive range (i.e. -32768 to 32767 for
-  ///     a 16-bit integer). But these methods assume the negative limit is -32767, matching
-  ///     the positive range. Symmetric quantization is how all common audio formats operate.
+  ///     The occupied bits are always the most significand ones. If you have aforementioned
+  ///     silly 24-bit sample in a 32-bit integer, on a big endian system, you get this:
+  ///     <code>65 43 21 ..</code> (each digit meant to be one nibble, aka 4 bits).
+  ///     On a little endian system, however, you get this: <code>.. 21 43 65</code>.
   ///   </para>
   ///   <para>
-  ///     If you specify fewer valid bits than your integer is large, it is assumes that
-  ///     the occupied bits are on the high end of the integer. In pracice that means for
-  ///     a 12-bit audio sample, the range is -32752 to 32752 in steps of 4, rather than
-  ///     -2047 to 2047. This, too, is how common audio libraries usually operate.
+  ///     Integers assume symmetric quantization: while signed integers are able to go
+  ///     one count deeper into the negative range as they can in the positive range
+  ///     (i.e. -32768 to 32767 for a 16-bit integer), these methods assume the negative
+  ///     limit is -32767, matching the positive range. Symmetric quantization is how all
+  ///     common audio formats and DSPs operate.
   ///   </para>
   ///   <para>
   ///     Finally, the possible conversions are split into 4 categories: quantization and
