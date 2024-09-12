@@ -236,6 +236,13 @@ namespace {
       Nuclex::Audio::Storage::Flac::FileAdapterState *
     >(stateAsVoid);
 
+    // Currently, the ProcessMetadata() method is declared 'noexcept'. We could catch
+    // exceptions here, set the 'Error' exception_ptr, then fail on the next processSamples()
+    // callback and finally re-throw the exception when the decode call fails.
+    //
+    // ...but why go to these lengths? libflac obviously doesn't expect this method to fail
+    // (it returns void) and the metadata recipient is always this library, not user-provided
+    // code, so we can guarantee to abide by the 'noexcept' requirement.
     state.DecodeProcessor->ProcessMetadata(metadata);
   }
 
