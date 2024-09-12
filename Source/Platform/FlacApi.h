@@ -40,12 +40,12 @@ namespace Nuclex { namespace Audio { namespace Platform {
 
     /// <summary>Creates a new FLAC stream decoder</summary>
     /// <returns>The new FLAC stream decoder</returns>
-    std::shared_ptr<::FLAC__StreamDecoder> NewStreamDecoder();
+    public: static std::shared_ptr<::FLAC__StreamDecoder> NewStreamDecoder();
 
     /// <summary>Enables or disables MD5 checking for decoded audio data</summary>
     /// <param name="decoder">Decoder on which MD5 checking will be enabled or disabled</param>
     /// <param name="enable">True to enable MD5 checking, false to disable it</param>
-    void EnableMd5Checking(
+    public: static void EnableMd5Checking(
       const std::shared_ptr<::FLAC__StreamDecoder> &decoder, bool enable = true
     );
 
@@ -56,7 +56,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
     /// <param name="metadataCallback">Callback that receives the embedded metadata</param>
     /// <param name="errorCallback">Callback that will be invoked on decoding errors</param>
     /// <param name="clientData">Pointer that will be passed unchaged to callbacks</param>
-    void OpenFile(
+    public: static void OpenFile(
       const std::shared_ptr<::FLAC__StreamDecoder> &decoder,
       const char *path,
       ::FLAC__StreamDecoderWriteCallback writeCallback,
@@ -80,7 +80,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
     /// <param name="metadataCallback">Callback that receives the embedded metadata</param>
     /// <param name="errorCallback">Callback that will be invoked on decoding errors</param>
     /// <param name="clientData">Pointer that will be passed unchaged to callbacks</param>
-    void OpenStream(
+    public: static void OpenStream(
       const std::exception_ptr &rootCauseException,
       const std::shared_ptr<::FLAC__StreamDecoder> &decoder,
       ::FLAC__StreamDecoderReadCallback readCallback,

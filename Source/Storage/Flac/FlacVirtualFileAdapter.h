@@ -64,13 +64,13 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     /// <param name="metadata">Metadata the FLAC stream decoder has encountered</param>
     public: virtual void ProcessMetadata(
       const ::FLAC__StreamMetadata *metadata
-    ) = 0;
+    ) noexcept = 0;
 
     /// <summary>Called to provide a detailed status when a decoding error occurs</summary>
     /// <param name="status">Error status of the stream decoder</param>
     public: virtual void HandleError(
       ::FLAC__StreamDecoderErrorStatus status
-    ) = 0;
+    ) noexcept = 0;
 
   };
 

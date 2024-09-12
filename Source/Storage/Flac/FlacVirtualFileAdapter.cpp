@@ -32,6 +32,8 @@ limitations under the License.
 
 #include "Nuclex/Audio/Storage/VirtualFile.h" // for VitualFile
 
+#include "../../Platform/FlacApi.h"
+
 namespace {
 
   // ------------------------------------------------------------------------------------------- //
@@ -51,6 +53,7 @@ namespace {
     ::FLAC__byte buffer[], size_t *bytes,
     void *stateAsVoid
   ) {
+    (void)decoder;
     TAdapterState &state = *reinterpret_cast<TAdapterState *>(stateAsVoid);
 
     // Limit the read to the length of the virtual file (because our interface does
@@ -101,6 +104,7 @@ namespace {
     ::FLAC__uint64 newPosition,
     void *stateAsVoid
   ) {
+    (void)decoder;
     TAdapterState &state = *reinterpret_cast<TAdapterState *>(stateAsVoid);
 
     std::uint64_t fileLength = state.File->GetSize();
@@ -128,6 +132,7 @@ namespace {
     ::FLAC__uint64 *currentPosition,
     void *stateAsVoid
   ) {
+    (void)decoder;
     Nuclex::Audio::Storage::Flac::FileAdapterState &state = *reinterpret_cast<
       Nuclex::Audio::Storage::Flac::FileAdapterState *
     >(stateAsVoid);
@@ -139,9 +144,9 @@ namespace {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Retrieved the length of the virtual file</summary>
+  /// <summary>Retrieves the length of the virtual file</summary>
   /// <typeparam name="TAdapterState">
-  ///   Type of state the close is done on (because we don't want to const_cast here)
+  ///   Type of state the length is queried from (because we don't want to const_cast here)
   /// </typeparam>
   /// <param name="decoder">FLAC stream decoder that is requesting the file position</param>
   /// <param name="streamLength">Receives the length of the virtual file</param>
@@ -153,11 +158,104 @@ namespace {
     ::FLAC__uint64 *streamLength,
     void *stateAsVoid
   ) {
+    (void)decoder;
     TAdapterState &state = *reinterpret_cast<TAdapterState *>(stateAsVoid);
 
-    *streamLength = state.File->GetLength();
+    *streamLength = state.File->GetSize();
 
     return FLAC__STREAM_DECODER_LENGTH_STATUS_OK;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Checks whether the file cursor is at the end of the virtual file</summary>
+  /// <typeparam name="TAdapterState">
+  ///   Type of state the eof check is done on (because we don't want to const_cast here)
+  /// </typeparam>
+  /// <param name="decoder">FLAC stream decoder that is requesting the eof state</param>
+  /// <param name="stateAsVoid">State of the virtual file adapter class</param>
+  /// <returns>True if the file cursor is at the end of the virtual file</returns>
+  template<typename TAdapterState>
+  ::FLAC__bool flacEof(
+    const ::FLAC__StreamDecoder *decoder,
+    void *stateAsVoid
+  ) {
+    (void)decoder;
+    TAdapterState &state = *reinterpret_cast<TAdapterState *>(stateAsVoid);
+    return (state.FileCursor >= state.File->GetSize()) ? 1 : 0;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Forwards the sample processing callback to the decode processor</summary>
+  /// <param name="decoder">FLAC stream decoder that has decoded audio samples</param>
+  /// <param name="frame">Informations about the decoded audio frame</param>
+  /// <param name="buffer">Set of buffers that hold the decoded audio samples</param>
+  /// <param name="stateAsVoid">State of the virtual file adapter class</param>
+  /// <returns>Whether the decoding should continue or be aborted</returns>
+  ::FLAC__StreamDecoderWriteStatus flacProcessSamples(
+    const ::FLAC__StreamDecoder *decoder,
+    const ::FLAC__Frame *frame,
+    const ::FLAC__int32 *const buffer[],
+    void *stateAsVoid
+  ) {
+    (void)decoder;
+    Nuclex::Audio::Storage::Flac::FileAdapterState &state = *reinterpret_cast<
+      Nuclex::Audio::Storage::Flac::FileAdapterState *
+    >(stateAsVoid);
+
+    bool shouldContinue;
+    try {
+      shouldContinue = state.DecodeProcessor->ProcessAudioFrame(frame, buffer);
+    }
+    catch(const std::exception &error) {
+      state.Error = std::current_exception();
+      shouldContinue = false;
+    }
+
+    if(shouldContinue) {
+      return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
+    } else {
+      return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Forwards the metadata reporting callback to the decode processor</summary>
+  /// <param name="decoder">FLAC stream decoder that is has encountered metadata</param>
+  /// <param name="metadata">Metadata that has been encountered by the decoder</param>
+  /// <param name="stateAsVoid">State of the virtual file adapter class</param>
+  void flacProcessMetadata(
+    const ::FLAC__StreamDecoder *decoder,
+    const ::FLAC__StreamMetadata *metadata,
+    void *stateAsVoid
+  ) {
+    (void)decoder;
+    Nuclex::Audio::Storage::Flac::FileAdapterState &state = *reinterpret_cast<
+      Nuclex::Audio::Storage::Flac::FileAdapterState *
+    >(stateAsVoid);
+
+    state.DecodeProcessor->ProcessMetadata(metadata);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Forwards the error reporting callback to the decode processor</summary>
+  /// <param name="decoder">FLAC stream decoder that is has encountered an error</param>
+  /// <param name="status">Error status of the FLAC decoder</param>
+  /// <param name="stateAsVoid">State of the virtual file adapter class</param>
+  void flacHandleError(
+    const ::FLAC__StreamDecoder *decoder,
+    ::FLAC__StreamDecoderErrorStatus status,
+    void *stateAsVoid
+  ) {
+    (void)decoder;
+    Nuclex::Audio::Storage::Flac::FileAdapterState &state = *reinterpret_cast<
+      Nuclex::Audio::Storage::Flac::FileAdapterState *
+    >(stateAsVoid);
+
+    state.DecodeProcessor->HandleError(status);
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -182,21 +280,21 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     adapter->DecodeProcessor = decodeProcessor;
     adapter->Error = std::exception_ptr();
     adapter->File = readOnlyFile;
-/*
+
     Platform::FlacApi::OpenStream(
       adapter->Error,
       decoder,
-      &flacRead<TReadOnlyFileAdapterState>,
-      flacSeek,
-      flacTell,
-      flacLength,
-      flacEof,
-      flacProcessSamples,
-      flacProcessMetadata,
-      flacHandleError,
+      &flacRead<ReadOnlyFileAdapterState>,
+      &flacSeek<ReadOnlyFileAdapterState>,
+      &flacTell,
+      &flacLength<ReadOnlyFileAdapterState>,
+      &flacEof<ReadOnlyFileAdapterState>,
+      &flacProcessSamples,
+      &flacProcessMetadata,
+      &flacHandleError,
       adapter.get()
     );
-*/
+
     return adapter;
   }
 
