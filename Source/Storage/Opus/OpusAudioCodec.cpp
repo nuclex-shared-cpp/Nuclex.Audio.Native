@@ -201,7 +201,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   // ------------------------------------------------------------------------------------------- //
 
   const std::string &OpusAudioCodec::GetName() const {
-    const static std::string codecName(u8"Opus", 18);
+    const static std::string codecName(u8"Opus", 4);
     return codecName;
   }
 
