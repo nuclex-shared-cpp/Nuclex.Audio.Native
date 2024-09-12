@@ -62,7 +62,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
       ::FLAC__StreamDecoderWriteCallback writeCallback,
       ::FLAC__StreamDecoderMetadataCallback metadataCallback,
       ::FLAC__StreamDecoderErrorCallback errorCallback,
-	    void *clientData
+      void *clientData
     );
 
     /// <summary>Opens a stream accessed via callbacks as a FLAC audio file</summary>
@@ -91,7 +91,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
       ::FLAC__StreamDecoderWriteCallback writeCallback,
       ::FLAC__StreamDecoderMetadataCallback metadataCallback,
       ::FLAC__StreamDecoderErrorCallback errorCallback,
-	    void *clientData
+      void *clientData
     );
 
   };

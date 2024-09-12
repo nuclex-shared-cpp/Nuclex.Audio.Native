@@ -1,0 +1,228 @@
+#pragma region Apache License 2.0
+/*
+Nuclex Native Framework
+Copyright (C) 2002-2024 Markus Ewald / Nuclex Development Labs
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+#pragma endregion // Apache License 2.0
+
+// If the library is compiled as a DLL, this ensures symbols are exported
+#define NUCLEX_AUDIO_SOURCE 1
+
+#include "./FlacVirtualFileAdapter.h"
+
+#if defined(NUCLEX_AUDIO_HAVE_FLAC)
+
+#include <stdexcept> // for std::runtime_error
+#include <cassert> // for assert()
+#include <algorithm> // for std::copy_n()
+
+#include <Nuclex/Support/ScopeGuard.h> // for ScopeGuard
+
+#include "Nuclex/Audio/Storage/VirtualFile.h" // for VitualFile
+
+namespace {
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Reads up to <see cref="bytes" /> of data from a virtual file</summary>
+  /// <typeparam name="TAdapterState">
+  ///   Type of state the read is done on (because we don't want to const_cast here)
+  /// </typeparam>
+  /// <param name="decoder">FLAC stream decoder that is requesting the bytes</param>
+  /// <param name="buffer">Buffer to store the data</param>
+  /// <param name="bytes">Maximum number of bytes to read, receives actual bytes read</param>
+  /// <param name="stateAsVoid">State of the virtual file adapter class</param>
+  /// <returns>Whether the bytes were read successfully, failed or data ran out</returns>
+  template<typename TAdapterState>
+  ::FLAC__StreamDecoderReadStatus flacRead(
+    const ::FLAC__StreamDecoder *decoder,
+    ::FLAC__byte buffer[], size_t *bytes,
+    void *stateAsVoid
+  ) {
+    TAdapterState &state = *reinterpret_cast<TAdapterState *>(stateAsVoid);
+
+    // Limit the read to the length of the virtual file (because our interface does
+    // not allow leisurely reading past the end of the file and having the virtual file
+    // 'clip' the read call by itself).
+    std::size_t byteCount = *bytes;
+    {
+      std::uint64_t fileLength = state.File->GetSize();
+      if(state.FileCursor >= fileLength) {
+        return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
+      } else {
+        fileLength -= state.FileCursor;
+        if(fileLength < static_cast<std::uint64_t>(byteCount)) {
+          *bytes = byteCount = static_cast<std::size_t>(fileLength);
+        }
+      }
+    }
+    if(byteCount == 0) {
+      return FLAC__STREAM_DECODER_READ_STATUS_ABORT;
+    }
+
+    try {
+      state.File->ReadAt(state.FileCursor, byteCount, buffer);
+    }
+    catch(const std::exception &) {
+      state.Error = std::current_exception();
+      return FLAC__STREAM_DECODER_READ_STATUS_ABORT;
+    }
+
+    state.FileCursor += byteCount;
+
+    return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Moves the file cursor to a different position within the virtual file</summary>
+  /// <typeparam name="TAdapterState">
+  ///   Type of state the seek is done on (because we don't want to const_cast here)
+  /// </typeparam>
+  /// <param name="decoder">FLAC stream decoder that is requesting the seek</param>
+  /// <param name="newPosition">Absolute file offset to seek to</param>
+  /// <param name="stateAsVoid">State of the virtual file adapter class</param>
+  /// <returns>Whether the seek was performed or failed</returns>
+  template<typename TAdapterState>
+  ::FLAC__StreamDecoderSeekStatus flacSeek(
+    const ::FLAC__StreamDecoder *decoder,
+    ::FLAC__uint64 newPosition,
+    void *stateAsVoid
+  ) {
+    TAdapterState &state = *reinterpret_cast<TAdapterState *>(stateAsVoid);
+
+    std::uint64_t fileLength = state.File->GetSize();
+    if(fileLength < newPosition) {
+      assert(
+        (fileLength < newPosition) && u8"Seek keeps file cursor within file boundaries"
+      );
+      return FLAC__STREAM_DECODER_SEEK_STATUS_ERROR;
+    }
+
+    state.FileCursor = newPosition;
+
+    return FLAC__STREAM_DECODER_SEEK_STATUS_OK;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Returns the current position of the file cursor in the virtual file</summary>
+  /// <param name="decoder">FLAC stream decoder that is requesting the file position</param>
+  /// <param name="currentPosition">Receives the current position of the file cursor</param>
+  /// <param name="stateAsVoid">State of the virtual file adapter class</param>
+  /// <returns>Whether the file cursor was retrieved successfully</returns>
+  ::FLAC__StreamDecoderTellStatus flacTell(
+    const ::FLAC__StreamDecoder *decoder,
+    ::FLAC__uint64 *currentPosition,
+    void *stateAsVoid
+  ) {
+    Nuclex::Audio::Storage::Flac::FileAdapterState &state = *reinterpret_cast<
+      Nuclex::Audio::Storage::Flac::FileAdapterState *
+    >(stateAsVoid);
+
+    *currentPosition = state.FileCursor;
+
+    return FLAC__STREAM_DECODER_TELL_STATUS_OK;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Retrieved the length of the virtual file</summary>
+  /// <typeparam name="TAdapterState">
+  ///   Type of state the close is done on (because we don't want to const_cast here)
+  /// </typeparam>
+  /// <param name="decoder">FLAC stream decoder that is requesting the file position</param>
+  /// <param name="streamLength">Receives the length of the virtual file</param>
+  /// <param name="stateAsVoid">State of the virtual file adapter class</param>
+  /// <returns>Whether the length was successfully retrieved</returns>
+  template<typename TAdapterState>
+  ::FLAC__StreamDecoderLengthStatus flacLength(
+    const ::FLAC__StreamDecoder *decoder,
+    ::FLAC__uint64 *streamLength,
+    void *stateAsVoid
+  ) {
+    TAdapterState &state = *reinterpret_cast<TAdapterState *>(stateAsVoid);
+
+    *streamLength = state.File->GetLength();
+
+    return FLAC__STREAM_DECODER_LENGTH_STATUS_OK;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+} // anonymous namespace
+
+namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::unique_ptr<ReadOnlyFileAdapterState> FileAdapterFactory::InitStreamDecoderForReading(
+    const std::shared_ptr<const VirtualFile> &readOnlyFile,
+    const std::shared_ptr<::FLAC__StreamDecoder> &decoder,
+    FlacDecodeProcessor *decodeProcessor
+  ) {
+    std::unique_ptr<ReadOnlyFileAdapterState> adapter = (
+      std::make_unique<ReadOnlyFileAdapterState>()
+    );
+
+    adapter->IsReadOnly = true;
+    adapter->FileCursor = 0;
+    adapter->DecodeProcessor = decodeProcessor;
+    adapter->Error = std::exception_ptr();
+    adapter->File = readOnlyFile;
+/*
+    Platform::FlacApi::OpenStream(
+      adapter->Error,
+      decoder,
+      &flacRead<TReadOnlyFileAdapterState>,
+      flacSeek,
+      flacTell,
+      flacLength,
+      flacEof,
+      flacProcessSamples,
+      flacProcessMetadata,
+      flacHandleError,
+      adapter.get()
+    );
+*/
+    return adapter;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::unique_ptr<WritableFileAdapterState> FileAdapterFactory::InitStreamDecoderForWriting(
+    const std::shared_ptr<VirtualFile> &writableFile,
+    const std::shared_ptr<::FLAC__StreamDecoder> &decoder,
+    FlacDecodeProcessor *decodeProcessor
+  ) {
+
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void FileAdapterState::RethrowPotentialException(FileAdapterState &fileAdapterState) {
+    if(static_cast<bool>(fileAdapterState.Error)) {
+      ON_SCOPE_EXIT {
+        fileAdapterState.Error = nullptr;
+      };
+      std::rethrow_exception(fileAdapterState.Error);
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+}}}} // namespace Nuclex::Audio::Storage::Opus
+
+#endif // defined(NUCLEX_AUDIO_HAVE_OPUS)
