@@ -21,6 +21,7 @@ limitations under the License.
 #define NUCLEX_AUDIO_SOURCE 1
 
 #include "./SineWaveDetector.h"
+#include "../ExpectRange.h"
 
 #include <gtest/gtest.h>
 #include <cmath>
@@ -86,14 +87,33 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(SineWaveDetectorTest, CanDeterminePeaks) {
+  TEST(SineWaveDetectorTest, CanDetermineAmplitudeFromPeaks) {
     SineWaveDetector detector;
 
     std::vector<float> samples = generateSineWave(2.5f);
     detector.DetectAmplitude(samples.data(), samples.size());
 
-    EXPECT_GE(detector.GetAmplitude(), 2.4f);
-    EXPECT_LT(detector.GetAmplitude(), 2.6f);
+    EXPECT_RANGE(detector.GetAmplitude(), 2.4f, 2.6f);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(SineWaveDetectorTest, CanEstimatePhase) {
+    std::vector<float> samples = generateSineWave(2.5f);
+
+    {
+      SineWaveDetector detector;
+      detector.DetectAmplitude(samples.data(), samples.size());
+      detector.AddSamples(samples.data(), samples.size());
+      EXPECT_RANGE(detector.GetPhase360(), -0.5f, 0.5f);
+    }
+
+    {
+      SineWaveDetector detector;
+      detector.DetectAmplitude(samples.data() + 24, samples.size() - 24);
+      detector.AddSamples(samples.data() + 24, samples.size() - 24);
+      EXPECT_RANGE(detector.GetPhase360(), 89.5f, 90.5f);
+    }
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -117,8 +137,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
     detector.DetectAmplitude(samples.data(), samples.size());
     detector.AddSamples(samples.data(), samples.size());
 
-    EXPECT_GE(detector.GetFrequency(48000.0f), 499.0f);
-    EXPECT_LT(detector.GetFrequency(48000.0f), 501.0f);
+    EXPECT_RANGE(detector.GetFrequency(48000.0f), 499.0f, 501.0f);
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -131,9 +150,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
     detector.AddSamples(samples.data(), samples.size());
 
     EXPECT_GE(detector.GetError(), 1.0f);
-
     EXPECT_GE(detector.GetFrequency(48000.0f), 500.0f);
-
   }
 
   // ------------------------------------------------------------------------------------------- //

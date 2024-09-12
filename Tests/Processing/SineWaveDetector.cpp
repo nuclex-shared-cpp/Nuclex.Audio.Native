@@ -304,22 +304,22 @@ namespace Nuclex { namespace Audio { namespace Processing {
   // ------------------------------------------------------------------------------------------- //
 
   float SineWaveDetector::GetPhase() const {
-    std::size_t averagedSampleCount = this->sampleCount - this->startSampleIndex - 1;
+    std::size_t averagedSampleCount = this->sampleCount - this->startSampleIndex;
     double averageStep = this->accumulatedAngle / averagedSampleCount;
 
     return static_cast<float>(
-      this->startAngle - (this->startSampleIndex * averageStep)
+      this->startAngle - ((this->startSampleIndex - 1) * averageStep)
     );
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   float SineWaveDetector::GetPhase360() const {
-    std::size_t averagedSampleCount = this->sampleCount - this->startSampleIndex - 1;
+    std::size_t averagedSampleCount = this->sampleCount - this->startSampleIndex;
     double averageStep = this->accumulatedAngle / averagedSampleCount;
 
     return static_cast<float>(
-      (this->startAngle - (this->startSampleIndex * averageStep)) * 180.0 / pi
+      (this->startAngle - ((this->startSampleIndex - 1) * averageStep)) * 180.0 / pi
     );
   }
 
