@@ -24,8 +24,6 @@ limitations under the License.
 
 #if defined(NUCLEX_AUDIO_HAVE_OPUS)
 
-#include <Nuclex/Support/Events/Delegate.h> // for Delegate
-
 #include <string> // for std::string
 #include <memory> // for std::shared_ptr
 #include <vector> // for std::vector
@@ -55,7 +53,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
     ///   closed again.
     /// </remarks>
     public: static std::shared_ptr<::OggOpusFile> OpenFromCallbacks(
-      const Nuclex::Support::Events::Delegate<void()> &throwRootCauseException,
+      const std::exception_ptr &rootCauseException,
       void *state,
       const ::OpusFileCallbacks *callbacks,
       const std::uint8_t *initialBytes = nullptr,

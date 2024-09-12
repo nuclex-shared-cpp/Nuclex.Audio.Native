@@ -40,7 +40,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
   // ------------------------------------------------------------------------------------------- //
 
   std::shared_ptr<::OggOpusFile> OpusApi::OpenFromCallbacks(
-    const Nuclex::Support::Events::Delegate<void()> &throwRootCauseException,
+    const std::exception_ptr &rootCauseException,
     void *state,
     const ::OpusFileCallbacks *callbacks,
     const std::uint8_t *initialBytes /* = nullptr */,
@@ -51,11 +51,17 @@ namespace Nuclex { namespace Audio { namespace Platform {
       state, callbacks, initialBytes, initialByteCount, &errorCode
     );
     if(opusFile == nullptr) {
-      throwRootCauseException();
+
+      // If something happened reading from the virtual file, that is the root cause
+      // exception and will be reported above whatever consequences it had inside libwavpack.
+      if(unlikely(static_cast<bool>(rootCauseException))) {
+        std::rethrow_exception(rootCauseException);
+      }
 
       std::string message(u8"Error opening virtual file via libopusfile: ", 44);
       message.append(::opus_strerror(errorCode));
       throw std::runtime_error(message);
+
     }
 
     return std::shared_ptr<::OggOpusFile>(opusFile, &::op_free);
