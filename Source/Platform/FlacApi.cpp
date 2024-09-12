@@ -60,7 +60,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void FlacApi::OpenFile(
+  void FlacApi::InitFile(
     const std::shared_ptr<::FLAC__StreamDecoder> &decoder,
     const char *path,
     ::FLAC__StreamDecoderWriteCallback writeCallback,
@@ -85,7 +85,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void FlacApi::OpenStream(
+  void FlacApi::InitStream(
     const std::exception_ptr &rootCauseException,
     const std::shared_ptr<::FLAC__StreamDecoder> &decoder,
     ::FLAC__StreamDecoderReadCallback readCallback,

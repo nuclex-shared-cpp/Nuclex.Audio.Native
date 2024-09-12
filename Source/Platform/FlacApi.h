@@ -56,7 +56,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
     /// <param name="metadataCallback">Callback that receives the embedded metadata</param>
     /// <param name="errorCallback">Callback that will be invoked on decoding errors</param>
     /// <param name="clientData">Pointer that will be passed unchaged to callbacks</param>
-    public: static void OpenFile(
+    public: static void InitFile(
       const std::shared_ptr<::FLAC__StreamDecoder> &decoder,
       const char *path,
       ::FLAC__StreamDecoderWriteCallback writeCallback,
@@ -80,7 +80,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
     /// <param name="metadataCallback">Callback that receives the embedded metadata</param>
     /// <param name="errorCallback">Callback that will be invoked on decoding errors</param>
     /// <param name="clientData">Pointer that will be passed unchaged to callbacks</param>
-    public: static void OpenStream(
+    public: static void InitStream(
       const std::exception_ptr &rootCauseException,
       const std::shared_ptr<::FLAC__StreamDecoder> &decoder,
       ::FLAC__StreamDecoderReadCallback readCallback,

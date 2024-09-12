@@ -281,7 +281,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     adapter->Error = std::exception_ptr();
     adapter->File = readOnlyFile;
 
-    Platform::FlacApi::OpenStream(
+    Platform::FlacApi::InitStream(
       adapter->Error,
       decoder,
       &flacRead<ReadOnlyFileAdapterState>,
@@ -305,7 +305,39 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     const std::shared_ptr<::FLAC__StreamDecoder> &decoder,
     FlacDecodeProcessor *decodeProcessor
   ) {
+    std::unique_ptr<WritableFileAdapterState> adapter = (
+      std::make_unique<WritableFileAdapterState>()
+    );
 
+    // This method doesn't make much sense as it is.
+    //
+    // For consistency and easy-of-understand, I'm implementing it to follow the other
+    // codec implementations. Howver, for FLAC, the decoder and encoder are split into
+    // two unrealted classes (and the decoder has, in fact, no write callbacks it could
+    // invoke), so once I implement encoding, this will need several other callbacks and
+    // a FLAC__StreamEncoder or similar to open a stream on.
+
+    adapter->IsReadOnly = true;
+    adapter->FileCursor = 0;
+    adapter->DecodeProcessor = decodeProcessor;
+    adapter->Error = std::exception_ptr();
+    adapter->File = writableFile;
+
+    Platform::FlacApi::InitStream(
+      adapter->Error,
+      decoder,
+      &flacRead<WritableFileAdapterState>,
+      &flacSeek<WritableFileAdapterState>,
+      &flacTell,
+      &flacLength<WritableFileAdapterState>,
+      &flacEof<WritableFileAdapterState>,
+      &flacProcessSamples,
+      &flacProcessMetadata,
+      &flacHandleError,
+      adapter.get()
+    );
+
+    return adapter;
   }
 
   // ------------------------------------------------------------------------------------------- //
