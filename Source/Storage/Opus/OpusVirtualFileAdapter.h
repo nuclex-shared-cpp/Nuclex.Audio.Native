@@ -94,7 +94,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     ///   Opus file callback set that will be set up to use the adapter
     /// </param>
     /// <returns>
-    ///   A state that needs to be passed as the 'stae' parameter though libopusfile
+    ///   A state that needs to be passed as the 'state' parameter though libopusfile
     /// </returns>
     public: static std::unique_ptr<ReadOnlyFileAdapterState> CreateAdapterForReading(
       const std::shared_ptr<const VirtualFile> &readOnlyFile,
@@ -107,7 +107,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     ///   Opus file callback set that will be set up to use the adapter
     /// </param>
     /// <returns>
-    ///   A state that needs to be passed as the 'stae' parameter though libopusfile
+    ///   A state that needs to be passed as the 'state' parameter though libopusfile
     /// </returns>
     public: static std::unique_ptr<WritableFileAdapterState> CreateAdapterForWriting(
       const std::shared_ptr<VirtualFile> &writableFile,

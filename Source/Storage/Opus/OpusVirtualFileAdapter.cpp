@@ -52,7 +52,7 @@ namespace {
   int opusReadBytes(void *stateAsVoid, std::uint8_t *data, int byteCount) {
     TAdapterState &state = *reinterpret_cast<TAdapterState *>(stateAsVoid);
 
-    // Limit the read to the length fo the virtuak file (because our interface does
+    // Limit the read to the length of the virtual file (because our interface does
     // not allow leisurely reading past the end of the file and having the virtual file
     // 'clip' the read call by itself).
     {
