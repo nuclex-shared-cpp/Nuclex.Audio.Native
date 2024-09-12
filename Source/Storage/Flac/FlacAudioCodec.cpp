@@ -38,7 +38,10 @@ namespace {
   class StreamInfoProcessor : public Nuclex::Audio::Storage::Flac::FlacDecodeProcessor {
 
     /// <summary>Initializes a new StreamInfo capture decode processor</summary>
-    public: StreamInfoProcessor() = default;
+    public: StreamInfoProcessor() :
+      GotTrackInfo(false),
+      TrackInfo() {}
+
     /// <summary>Frees all memory used by the processor</summary>
     public: virtual ~StreamInfoProcessor() = default;
 
@@ -50,20 +53,50 @@ namespace {
       const ::FLAC__Frame *frame,
       const ::FLAC__int32 *const buffer[]
     ) {
-      return false;
+      return !this->GotTrackInfo; // We're not actually interested in the audio samples
     }
 
     /// <summary>Called to process any metadata encountered in the FLAC file</summary>
     /// <param name="metadata">Metadata the FLAC stream decoder has encountered</param>
     public: virtual void ProcessMetadata(
       const ::FLAC__StreamMetadata *metadata
-    ) noexcept {}
+    ) noexcept {
+      if(metadata->type != FLAC__METADATA_TYPE_STREAMINFO) {
+        return;
+      }
+
+      const ::FLAC__StreamMetadata_StreamInfo &streamInfo = metadata->data.stream_info;
+
+      this->TrackInfo.ChannelCount = static_cast<std::size_t>(streamInfo.channels);
+      this->TrackInfo.ChannelPlacements = Nuclex::Audio::ChannelPlacement::Unknown; // TODO
+
+      const std::uint64_t MicrosecondsPerSecond = 1'000'000;
+      TrackInfo.Duration = std::chrono::microseconds(
+        streamInfo.total_samples * MicrosecondsPerSecond / streamInfo.sample_rate
+      );
+
+      this->TrackInfo.SampleRate = static_cast<std::size_t>(streamInfo.sample_rate);
+      this->TrackInfo.BitsPerSample = static_cast<std::size_t>(streamInfo.bits_per_sample);
+
+      if(this->TrackInfo.BitsPerSample >= 25) {
+        this->TrackInfo.SampleFormat = Nuclex::Audio::AudioSampleFormat::SignedInteger_32;
+      } else if(this->TrackInfo.BitsPerSample >= 17) {
+        this->TrackInfo.SampleFormat = Nuclex::Audio::AudioSampleFormat::SignedInteger_24;
+      } else {
+        this->TrackInfo.SampleFormat = Nuclex::Audio::AudioSampleFormat::SignedInteger_16;
+      }
+
+      this->GotTrackInfo = true;
+    }
 
     /// <summary>Called to provide a detailed status when a decoding error occurs</summary>
     /// <param name="status">Error status of the stream decoder</param>
     public: virtual void HandleError(
       ::FLAC__StreamDecoderErrorStatus status
     ) noexcept {}
+
+    public: bool GotTrackInfo;
+    public: Nuclex::Audio::TrackInfo TrackInfo;
 
   };
 
@@ -134,18 +167,20 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
       // the file when told to decode it.
       FileAdapterState::RethrowPotentialException(*state);
 
-      // FLAC file is now opened, extract the informations the caller requested.
+    } // streamDecoder closing scope (so it's destroyed earlier than the virtual file adapter)
+
+    if(processor.GotTrackInfo) {
       ContainerInfo containerInfo;
       containerInfo.DefaultTrackIndex = 0;
 
       // Standalone .flac files only have a single track, always.
-      TrackInfo &trackInfo = containerInfo.Tracks.emplace_back();
-      trackInfo.CodecName = GetName();
-      //extractTrackInfo(streamDecoder, trackInfo);
+      processor.TrackInfo.CodecName = GetName();
+      containerInfo.Tracks.push_back(processor.TrackInfo);
 
       return containerInfo;
-
-    } // streamDecoder closing scope (so it's destroyed earlier than the virtual file adapter)
+    } else {
+      throw std::runtime_error(u8"Could not find stream info block in FLAC stream");
+    }
   }
 
   // ------------------------------------------------------------------------------------------- //
