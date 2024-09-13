@@ -82,6 +82,26 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
   // ------------------------------------------------------------------------------------------- //
 
+  TEST(FlacAudioCodecTest, CanReadInfoWithExoticChannelPlacements) {
+    std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
+      u8"Resources/flac-exotic-int16-v143.flac"
+    );
+
+    FlacAudioCodec codec;
+    std::optional<ContainerInfo> info = codec.TryReadInfo(file);
+
+    ASSERT_TRUE(info.has_value());
+
+    EXPECT_EQ(info.value().Tracks.at(0).ChannelCount, 2U);
+    EXPECT_EQ(
+      info.value().Tracks.at(0).ChannelPlacements,
+      ChannelPlacement::SideLeft | ChannelPlacement::BackRight
+    );
+    EXPECT_TRUE(info.value().Tracks.at(0).Duration == std::chrono::seconds(1));
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
 }}}} // namespace Nuclex::Audio::Storage::Flac
 
 #endif // defined(NUCLEX_AUDIO_HAVE_FLAC)

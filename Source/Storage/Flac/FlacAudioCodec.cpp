@@ -73,13 +73,17 @@ namespace {
     public: virtual void ProcessMetadata(
       const ::FLAC__StreamMetadata *metadata
     ) noexcept {
-      using Nuclex::Audio::Storage::Flac::FlacTrackDecoder;
-
-      if(metadata->type != FLAC__METADATA_TYPE_STREAMINFO) {
-        return;
+      if(metadata->type == FLAC__METADATA_TYPE_STREAMINFO) {
+        processStreamInfo(metadata->data.stream_info);
+      } else if(metadata->type == FLAC__METADATA_TYPE_VORBIS_COMMENT) {
+        processVorbisComment(metadata->data.vorbis_comment);
       }
+    }
 
-      const ::FLAC__StreamMetadata_StreamInfo &streamInfo = metadata->data.stream_info;
+    /// <summary>Processes a StreamInfo block encountered in the FLAC file</summary>
+    /// <param name="streamInfo">StreamInfo block describing the file's properties</param>
+    private: void processStreamInfo(const ::FLAC__StreamMetadata_StreamInfo &streamInfo) {
+      using Nuclex::Audio::Storage::Flac::FlacTrackDecoder;
 
       this->TrackInfo.ChannelCount = static_cast<std::size_t>(streamInfo.channels);
       this->TrackInfo.ChannelPlacements = (
@@ -106,6 +110,23 @@ namespace {
       }
 
       this->GotTrackInfo = true;
+    }
+
+    /// <summary>Processes a Vorbis comment block encountered in the FLAC file</summary>
+    /// <param name="vorbisComment">Vorbis comment block containing individual entries</param>
+    private: void processVorbisComment(
+      const ::FLAC__StreamMetadata_VorbisComment &vorbisComment
+    ) {
+      for(std::size_t index = 0; index < vorbisComment.num_comments; ++index) {
+        std::string_view comment(
+          reinterpret_cast<char *>(vorbisComment.comments[index].entry),
+          vorbisComment.comments[index].length
+        );
+        std::string_view::size_type assignmentIndex = comment.find(u8'=');
+        if(assignmentIndex != std::string_view::npos) {
+          std::string_view propertyName = comment.substr(0, assignmentIndex);
+        }
+      }
     }
 
     /// <summary>Called to provide a detailed status when a decoding error occurs</summary>
