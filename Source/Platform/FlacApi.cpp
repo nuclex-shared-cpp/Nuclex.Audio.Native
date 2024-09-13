@@ -127,6 +127,22 @@ namespace Nuclex { namespace Audio { namespace Platform {
 
   // ------------------------------------------------------------------------------------------- //
 
+  void FlacApi::SetRespondMetadata(
+    const std::shared_ptr<::FLAC__StreamDecoder> &decoder,
+    ::FLAC__MetadataType metadataType
+  ) {
+    ::FLAC__bool result = (
+      ::FLAC__stream_decoder_set_metadata_respond(decoder.get(), metadataType)
+    );
+    if(result == 0) {
+      throw std::logic_error(
+        u8"Unable to set up metadata forwarding in libflac, decoder already initialized?"
+      );
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
 }}} // namespace Nuclex::Audio::Platform
 
 #endif // defined(NUCLEX_AUDIO_HAVE_FLAC)

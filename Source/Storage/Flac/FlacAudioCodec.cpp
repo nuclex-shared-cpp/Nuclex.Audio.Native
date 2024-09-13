@@ -28,6 +28,7 @@ limitations under the License.
 
 #include "./FlacVirtualFileAdapter.h"
 #include "./FlacDetection.h"
+#include "./FlacTrackDecoder.h"
 #include "../../Platform/FlacApi.h"
 
 namespace {
@@ -40,6 +41,7 @@ namespace {
     /// <summary>Initializes a new StreamInfo capture decode processor</summary>
     public: StreamInfoProcessor() :
       GotTrackInfo(false),
+      ChannelAssignment(FLAC__CHANNEL_ASSIGNMENT_INDEPENDENT),
       TrackInfo() {}
 
     /// <summary>Frees all memory used by the processor</summary>
@@ -53,6 +55,16 @@ namespace {
       const ::FLAC__Frame *frame,
       const ::FLAC__int32 *const buffer[]
     ) {
+      using Nuclex::Audio::Storage::Flac::FlacTrackDecoder;
+
+      this->ChannelAssignment = frame->header.channel_assignment;
+      this->TrackInfo.ChannelPlacements = (
+        FlacTrackDecoder::ChannelPlacementFromChannelCountAndAssignment(
+          this->TrackInfo.ChannelCount,
+          this->ChannelAssignment
+        )
+      );
+
       return !this->GotTrackInfo; // We're not actually interested in the audio samples
     }
 
@@ -61,6 +73,8 @@ namespace {
     public: virtual void ProcessMetadata(
       const ::FLAC__StreamMetadata *metadata
     ) noexcept {
+      using Nuclex::Audio::Storage::Flac::FlacTrackDecoder;
+
       if(metadata->type != FLAC__METADATA_TYPE_STREAMINFO) {
         return;
       }
@@ -68,7 +82,12 @@ namespace {
       const ::FLAC__StreamMetadata_StreamInfo &streamInfo = metadata->data.stream_info;
 
       this->TrackInfo.ChannelCount = static_cast<std::size_t>(streamInfo.channels);
-      this->TrackInfo.ChannelPlacements = Nuclex::Audio::ChannelPlacement::Unknown; // TODO
+      this->TrackInfo.ChannelPlacements = (
+        FlacTrackDecoder::ChannelPlacementFromChannelCountAndAssignment(
+          static_cast<std::size_t>(streamInfo.channels),
+          this->ChannelAssignment // may be filled, may still be defaulted, that's okay
+        )
+      );
 
       const std::uint64_t MicrosecondsPerSecond = 1'000'000;
       TrackInfo.Duration = std::chrono::microseconds(
@@ -95,7 +114,11 @@ namespace {
       ::FLAC__StreamDecoderErrorStatus status
     ) noexcept {}
 
+    /// <summary>Whether the TrackInfo field was filled with data</summary>
     public: bool GotTrackInfo;
+    /// <summary>Channel assignment set that is used by the FLAC file</summary>
+    public: ::FLAC__ChannelAssignment ChannelAssignment;
+    /// <summary>TrackInfo instance that receives the audio file informations</summary>
     public: Nuclex::Audio::TrackInfo TrackInfo;
 
   };
@@ -145,6 +168,12 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     {
       std::shared_ptr<::FLAC__StreamDecoder> streamDecoder = (
         Platform::FlacApi::NewStreamDecoder()
+      );
+
+      // We want the VorbisComment block as well because non-standard audio channel
+      // sets in FLAC are stored as a WAVEFORMATEXTENSIBLE_CHANNELMAP=0x tag.
+      Platform::FlacApi::SetRespondMetadata(
+        streamDecoder, FLAC__METADATA_TYPE_VORBIS_COMMENT
       );
 
       // Open the FLAC file. The stream decoder is created as a blank objects and

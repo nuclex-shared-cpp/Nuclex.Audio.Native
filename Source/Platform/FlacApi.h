@@ -94,6 +94,11 @@ namespace Nuclex { namespace Audio { namespace Platform {
       void *clientData
     );
 
+    public: static void SetRespondMetadata(
+      const std::shared_ptr<::FLAC__StreamDecoder> &decoder,
+      ::FLAC__MetadataType metadataType
+    );
+
   };
 
   // ------------------------------------------------------------------------------------------- //
