@@ -94,9 +94,34 @@ namespace Nuclex { namespace Audio { namespace Platform {
       void *clientData
     );
 
+    /// <summary>Enables the metadata callback for the specified metadata block type</summary>
+    /// <param name="deocder">Decoder for which a metadata callback will be enabled</param>
+    /// <param name="metadataType">Metadata block type for which to enable the callback</param>
     public: static void SetRespondMetadata(
       const std::shared_ptr<::FLAC__StreamDecoder> &decoder,
       ::FLAC__MetadataType metadataType
+    );
+
+    /// <summary>Processes a single block from the opened FLAC audio file</summary>
+    /// <param name="decoder">Decoder that will process a single block</param>
+    /// <returns>The callback return value or true if everything was processed</returns>
+    public: static bool ProcessSingle(
+      const std::shared_ptr<::FLAC__StreamDecoder> &decoder
+    );
+
+    /// <summary>Processes all blocks from the opened FLAC audio file</summary>
+    /// <param name="decoder">Decoder that will process all of the file's blocks</param>
+    /// <returns>True if the end was reached, false if a callback returned false</returns>
+    public: static bool ProcessUntilEndOfStream(
+      const std::shared_ptr<::FLAC__StreamDecoder> &decoder
+    );
+
+    /// <summary>Seeks to the specified frame</summary>
+    /// <param name="decoder">Decoder that will seek to the specified frame</param>
+    /// <param name="frameIndex">Index of the frame the decoder will seek to</param>
+    public: static void SeekAbsolute(
+      const std::shared_ptr<::FLAC__StreamDecoder> &decoder,
+      std::uint64_t frameIndex
     );
 
   };

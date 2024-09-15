@@ -143,6 +143,37 @@ namespace Nuclex { namespace Audio { namespace Platform {
 
   // ------------------------------------------------------------------------------------------- //
 
+  bool FlacApi::ProcessSingle(
+    const std::shared_ptr<::FLAC__StreamDecoder> &decoder
+  ) {
+    FLAC__bool result = ::FLAC__stream_decoder_process_single(decoder.get());
+    return (result != 0);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  bool FlacApi::ProcessUntilEndOfStream(
+    const std::shared_ptr<::FLAC__StreamDecoder> &decoder
+  ) {
+    FLAC__bool result = ::FLAC__stream_decoder_process_until_end_of_stream(decoder.get());
+    return (result != 0);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void FlacApi::SeekAbsolute(
+    const std::shared_ptr<::FLAC__StreamDecoder> &decoder,
+    std::uint64_t frameIndex
+  ) {
+    FLAC__bool result = ::FLAC__stream_decoder_seek_absolute(decoder.get(), frameIndex);
+    if(unlikely(result == 0)) {
+      // TODO: Can we get a better error message here?
+      throw std::runtime_error(u8"FLAC stream decoder failed to seek in virtual file");
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
 }}} // namespace Nuclex::Audio::Platform
 
 #endif // defined(NUCLEX_AUDIO_HAVE_FLAC)
