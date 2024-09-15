@@ -26,6 +26,9 @@ limitations under the License.
 
 #include <stdexcept>
 
+#include <Nuclex/Support/Text/UnicodeHelper.h>
+#include <Nuclex/Support/Text/StringHelper.h>
+
 #include "./FlacVirtualFileAdapter.h"
 #include "./FlacDetection.h"
 #include "./FlacTrackDecoder.h"
@@ -40,6 +43,7 @@ namespace {
 
     /// <summary>Initializes a new StreamInfo capture decode processor</summary>
     public: StreamInfoProcessor() :
+      GotChannelMask(false),
       GotTrackInfo(false),
       ChannelAssignment(FLAC__CHANNEL_ASSIGNMENT_INDEPENDENT),
       TrackInfo() {}
@@ -58,12 +62,14 @@ namespace {
       using Nuclex::Audio::Storage::Flac::FlacTrackDecoder;
 
       this->ChannelAssignment = frame->header.channel_assignment;
-      this->TrackInfo.ChannelPlacements = (
-        FlacTrackDecoder::ChannelPlacementFromChannelCountAndAssignment(
-          this->TrackInfo.ChannelCount,
-          this->ChannelAssignment
-        )
-      );
+      if(!this->GotChannelMask) {
+        this->TrackInfo.ChannelPlacements = (
+          FlacTrackDecoder::ChannelPlacementFromChannelCountAndAssignment(
+            this->TrackInfo.ChannelCount,
+            this->ChannelAssignment
+          )
+        );
+      }
 
       return !this->GotTrackInfo; // We're not actually interested in the audio samples
     }
@@ -86,12 +92,14 @@ namespace {
       using Nuclex::Audio::Storage::Flac::FlacTrackDecoder;
 
       this->TrackInfo.ChannelCount = static_cast<std::size_t>(streamInfo.channels);
-      this->TrackInfo.ChannelPlacements = (
-        FlacTrackDecoder::ChannelPlacementFromChannelCountAndAssignment(
-          static_cast<std::size_t>(streamInfo.channels),
-          this->ChannelAssignment // may be filled, may still be defaulted, that's okay
-        )
-      );
+      if(!this->GotChannelMask) {
+        this->TrackInfo.ChannelPlacements = (
+          FlacTrackDecoder::ChannelPlacementFromChannelCountAndAssignment(
+            static_cast<std::size_t>(streamInfo.channels),
+            this->ChannelAssignment // may be filled, may still be defaulted, that's okay
+          )
+        );
+      }
 
       const std::uint64_t MicrosecondsPerSecond = 1'000'000;
       TrackInfo.Duration = std::chrono::microseconds(
@@ -117,6 +125,8 @@ namespace {
     private: void processVorbisComment(
       const ::FLAC__StreamMetadata_VorbisComment &vorbisComment
     ) {
+      using Nuclex::Support::Text::StringHelper;
+
       for(std::size_t index = 0; index < vorbisComment.num_comments; ++index) {
         std::string_view comment(
           reinterpret_cast<char *>(vorbisComment.comments[index].entry),
@@ -124,9 +134,44 @@ namespace {
         );
         std::string_view::size_type assignmentIndex = comment.find(u8'=');
         if(assignmentIndex != std::string_view::npos) {
-          std::string_view propertyName = comment.substr(0, assignmentIndex);
+          std::string_view name = StringHelper::GetTrimmed(comment.substr(0, assignmentIndex));
+          if(name == std::string_view(u8"WAVEFORMATEXTENSIBLE_CHANNEL_MASK")) {
+            processChannelMask(StringHelper::GetTrimmed(comment.substr(assignmentIndex + 1)));
+          }
         }
       }
+    }
+
+    private: void processChannelMask(const std::string_view &channelMaskValue) {
+      if(channelMaskValue.length() >= 3) {
+        bool isHexadecimal = (
+          (channelMaskValue[0] == u8'0') &&
+          (
+            (channelMaskValue[1] == u8'x') ||
+            (channelMaskValue[1] == u8'X')
+          )
+        );
+        if(isHexadecimal) {
+          this->TrackInfo.ChannelPlacements = static_cast<Nuclex::Audio::ChannelPlacement>(
+            std::stoul(
+              std::string(channelMaskValue.data() + 2, channelMaskValue.length() - 2),
+              nullptr,
+              16
+            )
+          );
+          this->GotChannelMask = true;
+          return;
+        }
+      }
+
+      this->TrackInfo.ChannelPlacements = static_cast<Nuclex::Audio::ChannelPlacement>(
+        std::stoul(
+          std::string(channelMaskValue.data(), channelMaskValue.length()),
+          nullptr,
+          10
+        )
+      );
+      this->GotChannelMask = true;
     }
 
     /// <summary>Called to provide a detailed status when a decoding error occurs</summary>
@@ -135,6 +180,8 @@ namespace {
       ::FLAC__StreamDecoderErrorStatus status
     ) noexcept {}
 
+    /// <summary>Whether a WaveFormatExtensible channel mask was encountered</summary>
+    public: bool GotChannelMask;
     /// <summary>Whether the TrackInfo field was filled with data</summary>
     public: bool GotTrackInfo;
     /// <summary>Channel assignment set that is used by the FLAC file</summary>
