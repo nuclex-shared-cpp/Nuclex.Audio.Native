@@ -31,12 +31,6 @@ limitations under the License.
 namespace {
 
   // ------------------------------------------------------------------------------------------- //
-
-  /// <summary>
-  ///   Special value found in the bitsPerSample attribute when using floating point samples
-  /// </summary>
-  constexpr std::size_t FloatBitsPerSample(-32);
-
   // ------------------------------------------------------------------------------------------- //
 
 } // anonymous namespace
@@ -44,113 +38,6 @@ namespace {
 namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
   // ------------------------------------------------------------------------------------------- //
-
-  AudioSampleFormat FlacTrackDecoder::SampleFormatFromBitsPerSample(int bitsPerSample) {
-
-    // I'm not entirely sure if FLAC files even can have bits per sample that are
-    // not a multiple of 8, but in the sense of defensive programming, we do range checks:
-    if(bitsPerSample >= 25) {
-      return Nuclex::Audio::AudioSampleFormat::SignedInteger_32;
-    } else if(bitsPerSample >= 17) {
-      return Nuclex::Audio::AudioSampleFormat::SignedInteger_24;
-    } else if(bitsPerSample >= 9) {
-      return Nuclex::Audio::AudioSampleFormat::SignedInteger_16;
-    } else {
-      return Nuclex::Audio::AudioSampleFormat::UnsignedInteger_8;
-    }
-
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  ChannelPlacement FlacTrackDecoder::ChannelPlacementFromChannelCountAndAssignment(
-    std::size_t channelCount, ::FLAC__ChannelAssignment channelAssignments
-  ) {
-    switch(channelAssignments) {
-      case FLAC__CHANNEL_ASSIGNMENT_INDEPENDENT: {
-        switch(channelCount) {
-          case 1: {
-            return (
-              ChannelPlacement::FrontCenter
-            );
-          }
-          case 2: {
-            return (
-              ChannelPlacement::FrontLeft |
-              ChannelPlacement::FrontRight
-            );
-          }
-          case 3: {
-            return (
-              ChannelPlacement::FrontLeft |
-              ChannelPlacement::FrontRight |
-              ChannelPlacement::FrontCenter
-            );
-          }
-          case 4: {
-            return (
-              ChannelPlacement::FrontLeft |
-              ChannelPlacement::FrontRight |
-              ChannelPlacement::BackLeft |
-              ChannelPlacement::BackRight
-            );
-          }
-          case 5: {
-            return (
-              ChannelPlacement::FrontLeft |
-              ChannelPlacement::FrontCenter |
-              ChannelPlacement::FrontRight |
-              ChannelPlacement::BackLeft |
-              ChannelPlacement::BackRight
-            );
-          }
-          case 6: {
-            return (
-              ChannelPlacement::FrontLeft |
-              ChannelPlacement::FrontCenter |
-              ChannelPlacement::FrontRight |
-              ChannelPlacement::BackLeft |
-              ChannelPlacement::BackRight |
-              ChannelPlacement::LowFrequencyEffects
-            );
-          }
-          case 7: {
-            return (
-              ChannelPlacement::FrontLeft |
-              ChannelPlacement::FrontCenter |
-              ChannelPlacement::FrontRight |
-              ChannelPlacement::SideLeft |
-              ChannelPlacement::SideRight |
-              ChannelPlacement::BackCenter |
-              ChannelPlacement::LowFrequencyEffects
-            );
-          }
-          case 8: {
-            return (
-              ChannelPlacement::FrontLeft |
-              ChannelPlacement::FrontCenter |
-              ChannelPlacement::FrontRight |
-              ChannelPlacement::SideLeft |
-              ChannelPlacement::SideRight |
-              ChannelPlacement::BackLeft |
-              ChannelPlacement::BackRight |
-              ChannelPlacement::LowFrequencyEffects
-            );
-          }
-          default: { return ChannelPlacement::Unknown; }
-        }
-      }
-      case FLAC__CHANNEL_ASSIGNMENT_LEFT_SIDE:
-      case FLAC__CHANNEL_ASSIGNMENT_RIGHT_SIDE:
-      case FLAC__CHANNEL_ASSIGNMENT_MID_SIDE: {
-        return ChannelPlacement::FrontLeft | ChannelPlacement::FrontRight;
-      }
-      default: {
-        return ChannelPlacement::Unknown;
-      }
-    }
-  }
-
   // ------------------------------------------------------------------------------------------- //
 
 }}}} // namespace Nuclex::Audio::Storage::Wave

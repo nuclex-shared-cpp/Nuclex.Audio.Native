@@ -47,21 +47,6 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
   /// <summary>Decodes Flac audio tracks</summary>
   class FlacTrackDecoder : public AudioTrackDecoder {
 
-    /// <summary>Determines the native sample format from Flac's parameters</summary>
-    /// <param name="bitsPerSample">The number of valid bits in each sample</param>
-    /// <returns>The equivalent sample format enumeration value</returns>
-    public: static AudioSampleFormat SampleFormatFromBitsPerSample(int bitsPerSample);
-
-    /// <summary>
-    ///   Determines the channel placement from the channel count and assignment
-    /// </summary>
-    /// <param name="channelCount">Number of audio channels in the FLAC file</param>
-    /// <param name="channelAssignments">Channel assignment set that is used</param>
-    /// <returns>The equivalent ChannelPlacement flag combination</returns>
-    public: static ChannelPlacement ChannelPlacementFromChannelCountAndAssignment(
-      std::size_t channelCount, ::FLAC__ChannelAssignment channelAssignments
-    );
-
     /// <summary>Initializes a new Flac track decoder on the specified file</summary>
     /// <param name="file">File that will be opened and decoded</param>
     public: FlacTrackDecoder(const std::shared_ptr<const VirtualFile> &file);

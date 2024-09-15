@@ -32,6 +32,7 @@ limitations under the License.
 #include "./FlacVirtualFileAdapter.h"
 #include "./FlacDetection.h"
 #include "./FlacTrackDecoder.h"
+#include "./FlacReader.h"
 #include "../../Platform/FlacApi.h"
 
 namespace {
@@ -59,12 +60,12 @@ namespace {
       const ::FLAC__Frame *frame,
       const ::FLAC__int32 *const buffer[]
     ) {
-      using Nuclex::Audio::Storage::Flac::FlacTrackDecoder;
+      using Nuclex::Audio::Storage::Flac::FlacReader;
 
       this->ChannelAssignment = frame->header.channel_assignment;
       if(!this->GotChannelMask) {
         this->TrackInfo.ChannelPlacements = (
-          FlacTrackDecoder::ChannelPlacementFromChannelCountAndAssignment(
+          FlacReader::ChannelPlacementFromChannelCountAndAssignment(
             this->TrackInfo.ChannelCount,
             this->ChannelAssignment
           )
@@ -89,12 +90,12 @@ namespace {
     /// <summary>Processes a StreamInfo block encountered in the FLAC file</summary>
     /// <param name="streamInfo">StreamInfo block describing the file's properties</param>
     private: void processStreamInfo(const ::FLAC__StreamMetadata_StreamInfo &streamInfo) {
-      using Nuclex::Audio::Storage::Flac::FlacTrackDecoder;
+      using Nuclex::Audio::Storage::Flac::FlacReader;
 
       this->TrackInfo.ChannelCount = static_cast<std::size_t>(streamInfo.channels);
       if(!this->GotChannelMask) {
         this->TrackInfo.ChannelPlacements = (
-          FlacTrackDecoder::ChannelPlacementFromChannelCountAndAssignment(
+          FlacReader::ChannelPlacementFromChannelCountAndAssignment(
             static_cast<std::size_t>(streamInfo.channels),
             this->ChannelAssignment // may be filled, may still be defaulted, that's okay
           )
@@ -126,6 +127,7 @@ namespace {
       const ::FLAC__StreamMetadata_VorbisComment &vorbisComment
     ) {
       using Nuclex::Support::Text::StringHelper;
+      using Nuclex::Audio::Storage::Flac::FlacReader;
 
       for(std::size_t index = 0; index < vorbisComment.num_comments; ++index) {
         std::string_view comment(
@@ -136,42 +138,18 @@ namespace {
         if(assignmentIndex != std::string_view::npos) {
           std::string_view name = StringHelper::GetTrimmed(comment.substr(0, assignmentIndex));
           if(name == std::string_view(u8"WAVEFORMATEXTENSIBLE_CHANNEL_MASK")) {
-            processChannelMask(StringHelper::GetTrimmed(comment.substr(assignmentIndex + 1)));
+            Nuclex::Audio::ChannelPlacement channelPlacements = (
+              FlacReader::ChannelPlacementFromWaveFormatExtensibleTag(
+                StringHelper::GetTrimmed(comment.substr(assignmentIndex + 1))
+              )
+            );
+            if(channelPlacements != Nuclex::Audio::ChannelPlacement::Unknown) {
+              this->TrackInfo.ChannelPlacements = channelPlacements;
+              this->GotChannelMask = true;
+            }
           }
         }
       }
-    }
-
-    private: void processChannelMask(const std::string_view &channelMaskValue) {
-      if(channelMaskValue.length() >= 3) {
-        bool isHexadecimal = (
-          (channelMaskValue[0] == u8'0') &&
-          (
-            (channelMaskValue[1] == u8'x') ||
-            (channelMaskValue[1] == u8'X')
-          )
-        );
-        if(isHexadecimal) {
-          this->TrackInfo.ChannelPlacements = static_cast<Nuclex::Audio::ChannelPlacement>(
-            std::stoul(
-              std::string(channelMaskValue.data() + 2, channelMaskValue.length() - 2),
-              nullptr,
-              16
-            )
-          );
-          this->GotChannelMask = true;
-          return;
-        }
-      }
-
-      this->TrackInfo.ChannelPlacements = static_cast<Nuclex::Audio::ChannelPlacement>(
-        std::stoul(
-          std::string(channelMaskValue.data(), channelMaskValue.length()),
-          nullptr,
-          10
-        )
-      );
-      this->GotChannelMask = true;
     }
 
     /// <summary>Called to provide a detailed status when a decoding error occurs</summary>
