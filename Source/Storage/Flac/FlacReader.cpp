@@ -24,6 +24,8 @@ limitations under the License.
 
 #if defined(NUCLEX_AUDIO_HAVE_FLAC)
 
+#include <Nuclex/Support/Text/StringHelper.h>
+
 #include "Nuclex/Audio/TrackInfo.h"
 #include "Nuclex/Audio/Errors/CorruptedFileError.h"
 
@@ -194,10 +196,12 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     streamDecoder(Platform::FlacApi::NewStreamDecoder()),
     error(),
     trackInfo(nullptr),
-    channelAssignment(),
     obtainedMetadata(false),
     obtainedChannelMask(false),
-    isReadingMetadata(true) {
+    isReadingMetadata(true),
+    channelAssignment(),
+    totalFrameCount(std::uint64_t(-1)),
+    frameCursor(0) {
 
     // We want the VorbisComment block as well because non-standard audio channel
     // sets in FLAC are stored as a WAVEFORMATEXTENSIBLE_CHANNELMAP=0x tag,
@@ -223,6 +227,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
   void FlacReader::ReadMetadata(TrackInfo &target) {
     this->isReadingMetadata = true;
+
     this->trackInfo = &target;
     Platform::FlacApi::ProcessUntilEndOfStream(this->streamDecoder);
     this->trackInfo = nullptr;
@@ -269,15 +274,14 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     const ::FLAC__int32 *const buffer[]
   ) {
     this->channelAssignment = frame.header.channel_assignment;
+
     if((this->trackInfo != nullptr) && (!this->obtainedChannelMask)) {
-      /*
-      this->trackInfo.ChannelPlacements = (
+      this->trackInfo->ChannelPlacements = (
         ChannelPlacementFromChannelCountAndAssignment(
-          this->trackInfo.ChannelCount,
-          this->channelAssignment
+          this->trackInfo->ChannelCount,
+          frame.header.channel_assignment
         )
       );
-      */
     }
 
     return !this->isReadingMetadata;
@@ -288,7 +292,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
   void FlacReader::HandleError(
     ::FLAC__StreamDecoderErrorStatus status
   ) noexcept {
-    
+
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -296,35 +300,37 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
   void FlacReader::processStreamInfo(
     const ::FLAC__StreamMetadata_StreamInfo &streamInfo
   ) noexcept {
-/*
-    this->TrackInfo.ChannelCount = static_cast<std::size_t>(streamInfo.channels);
-    if(!this->GotChannelMask) {
-      this->TrackInfo.ChannelPlacements = (
-        FlacReader::ChannelPlacementFromChannelCountAndAssignment(
-          static_cast<std::size_t>(streamInfo.channels),
-          this->ChannelAssignment // may be filled, may still be defaulted, that's okay
-        )
+    if(this->trackInfo != nullptr) {
+
+      // Fetch the channel count and use it to determine the layout,
+      // unless we already encountered a Vorbis comment with a channel mask in it.
+      this->trackInfo->ChannelCount = static_cast<std::size_t>(streamInfo.channels);
+      if(!this->obtainedChannelMask) {
+        this->trackInfo->ChannelPlacements = (
+          ChannelPlacementFromChannelCountAndAssignment(
+            this->trackInfo->ChannelCount,
+            this->channelAssignment.value_or(FLAC__CHANNEL_ASSIGNMENT_INDEPENDENT)
+          )
+        );
+      }
+
+      // Other useful properties regarding audio resolution and sample rate
+      this->trackInfo->SampleRate = static_cast<std::size_t>(streamInfo.sample_rate);
+      this->trackInfo->BitsPerSample = static_cast<std::size_t>(streamInfo.bits_per_sample);
+      this->trackInfo->SampleFormat = SampleFormatFromBitsPerSample(
+        this->trackInfo->BitsPerSample
+      );
+
+      // Given the sample rate and total sample count, we can calculate the total
+      // playback duration of the entire audio file
+      const std::uint64_t MicrosecondsPerSecond = 1'000'000;
+      this->trackInfo->Duration = std::chrono::microseconds(
+        streamInfo.total_samples * MicrosecondsPerSecond / streamInfo.sample_rate
       );
     }
 
-    const std::uint64_t MicrosecondsPerSecond = 1'000'000;
-    TrackInfo.Duration = std::chrono::microseconds(
-      streamInfo.total_samples * MicrosecondsPerSecond / streamInfo.sample_rate
-    );
-
-    this->TrackInfo.SampleRate = static_cast<std::size_t>(streamInfo.sample_rate);
-    this->TrackInfo.BitsPerSample = static_cast<std::size_t>(streamInfo.bits_per_sample);
-
-    if(this->TrackInfo.BitsPerSample >= 25) {
-      this->TrackInfo.SampleFormat = Nuclex::Audio::AudioSampleFormat::SignedInteger_32;
-    } else if(this->TrackInfo.BitsPerSample >= 17) {
-      this->TrackInfo.SampleFormat = Nuclex::Audio::AudioSampleFormat::SignedInteger_24;
-    } else {
-      this->TrackInfo.SampleFormat = Nuclex::Audio::AudioSampleFormat::SignedInteger_16;
-    }
-
-    this->GotTrackInfo = true;
-*/
+    this->totalFrameCount = streamInfo.total_samples;
+    this->obtainedMetadata = true;
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -332,29 +338,33 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
   void FlacReader::processVorbisComment(
     const ::FLAC__StreamMetadata_VorbisComment &vorbisComment
   ) noexcept {
-/*
-      for(std::size_t index = 0; index < vorbisComment.num_comments; ++index) {
-        std::string_view comment(
-          reinterpret_cast<char *>(vorbisComment.comments[index].entry),
-          vorbisComment.comments[index].length
-        );
-        std::string_view::size_type assignmentIndex = comment.find(u8'=');
-        if(assignmentIndex != std::string_view::npos) {
-          std::string_view name = StringHelper::GetTrimmed(comment.substr(0, assignmentIndex));
-          if(name == std::string_view(u8"WAVEFORMATEXTENSIBLE_CHANNEL_MASK")) {
-            Nuclex::Audio::ChannelPlacement channelPlacements = (
-              FlacReader::ChannelPlacementFromWaveFormatExtensibleTag(
-                StringHelper::GetTrimmed(comment.substr(assignmentIndex + 1))
-              )
-            );
-            if(channelPlacements != Nuclex::Audio::ChannelPlacement::Unknown) {
-              this->TrackInfo.ChannelPlacements = channelPlacements;
-              this->GotChannelMask = true;
-            }
+    using Nuclex::Support::Text::StringHelper;
+
+    if(this->trackInfo == nullptr) {
+      return;
+    }
+
+    for(std::size_t index = 0; index < vorbisComment.num_comments; ++index) {
+      std::string_view comment(
+        reinterpret_cast<char *>(vorbisComment.comments[index].entry),
+        vorbisComment.comments[index].length
+      );
+      std::string_view::size_type assignmentIndex = comment.find(u8'=');
+      if(assignmentIndex != std::string_view::npos) {
+        std::string_view name = StringHelper::GetTrimmed(comment.substr(0, assignmentIndex));
+        if(name == std::string_view(u8"WAVEFORMATEXTENSIBLE_CHANNEL_MASK")) {
+          Nuclex::Audio::ChannelPlacement channelPlacements = (
+            FlacReader::ChannelPlacementFromWaveFormatExtensibleTag(
+              StringHelper::GetTrimmed(comment.substr(assignmentIndex + 1))
+            )
+          );
+          if(channelPlacements != Nuclex::Audio::ChannelPlacement::Unknown) {
+            this->trackInfo->ChannelPlacements = channelPlacements;
+            this->obtainedChannelMask = true;
           }
         }
       }
-*/
+    }
   }
 
   // ------------------------------------------------------------------------------------------- //

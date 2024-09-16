@@ -167,8 +167,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
     /// <summary>Target track information container for meta data</summary>
     private: Nuclex::Audio::TrackInfo *trackInfo;
-    /// <summary>Channel assignment in the most recently decoded frame</summary>
-    private: std::optional<::FLAC__ChannelAssignment> channelAssignment;
+
     /// <summary>Whether the metadata block was delivered</summary>
     private: bool obtainedMetadata;
     /// <summary>Whether a Vorbis comment block with a channel mask was delivered</summary>
@@ -176,12 +175,13 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
     /// <summary>If true, the reader is just looking to obtain the file's metadata</summary>
     private: bool isReadingMetadata;
-/*
+    /// <summary>Channel assignment in the most recently decoded frame</summary>
+    private: std::optional<::FLAC__ChannelAssignment> channelAssignment;
+    /// <summary>Total number of frames (= samples in each channel) in the file</summary>
+    private: std::uint64_t totalFrameCount;
     /// <summary>Current assumed position of the stream decoder's cursor</summary>
     private: std::uint64_t frameCursor;
-    /// <summary>Order in which channels a returned by the decoder</summary>
-    private: std::vector<ChannelPlacement> channelOrder;
-*/
+
   };
 
   // ------------------------------------------------------------------------------------------- //
