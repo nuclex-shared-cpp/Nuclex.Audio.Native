@@ -249,14 +249,17 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
   // ------------------------------------------------------------------------------------------- //
 
   void FlacReader::Seek(std::uint64_t frameIndex) {
-
+    Platform::FlacApi::SeekAbsolute(this->streamDecoder, frameIndex);
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-  void FlacReader::Decode(std::uint32_t *buffer, std::size_t frameCount) {
-
-
+  void FlacReader::Decode(
+    void *userPointer,
+    ProcessDecodedSamplesFunction processDecodedSamples,
+    std::size_t frameCount
+  ) {
+    //processDecodedSamples(userPointer, nullptr, 12345);
   }
 
   // ------------------------------------------------------------------------------------------- //

@@ -81,6 +81,10 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     /// <returns>The format in which the audio samples are delivered by the codec</returns>
     public: AudioSampleFormat GetNativeSampleFormat() const override;
 
+    /// <summary>Whether the audio codec directly decodes to interleaved channels</summary>
+    /// <returns>True if the codec decodes straight to interleaved channels</summary>
+    public: bool IsNativelyInterleaved() const override;
+
     // The public variant of the DecoeInterleaved() method delegates to our implementations
     public: using AudioTrackDecoder::DecodeInterleaved;
 

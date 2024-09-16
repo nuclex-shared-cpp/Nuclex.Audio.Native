@@ -99,6 +99,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
       );
     }
 
+    //return std::make_shared<FlacTrackDecoder>(source);
     throw std::runtime_error(u8"Not implemented yet");
   }
 

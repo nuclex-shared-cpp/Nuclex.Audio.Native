@@ -102,14 +102,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
     /// <summary>Frees all resources owned by the instance</summary>
     public: ~FlacReader() = default;
-/*
-    /// <summary>Attempts to read the meta data of the FLAC file</summary>
-    /// <param name="target">Track informatio container that will receive the metadata</param>
-    /// <returns>
-    ///   True if the metadata was read, false only if the file was not a FLAC file
-    /// </returns>
-    public: bool TryReadMetadata(TrackInfo &target);
-*/
+
     /// <summary>Reads the FLAC file's metadata</summary>
     /// <param name="target">Track informatio container that will receive the metadata</param>
     public: void ReadMetadata(TrackInfo &target);
@@ -118,10 +111,18 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     /// <param name="frameIndex">Index of the frame (= sample index on all channels)</param>
     public: void Seek(std::uint64_t frameIndex);
 
+    public: typedef void ProcessDecodedSamplesFunction(
+      void *userPointer, std::uint32_t *buffers[], std::size_t frameCount
+    );
+
     /// <summary>Decodes the requested number of samples</summary>
-    /// <param name="buffer">Buffer into which the samples will be decoded</param>
+    /// <param name="buffers">Buffers into which the samples will be decoded</param>
     /// <param name="frameCount">Number of frames (= sampeles on all channels) to decode</param>
-    public: void Decode(std::uint32_t *buffer, std::size_t frameCount);
+    public: void Decode(
+      void *userPointer,
+      ProcessDecodedSamplesFunction processDecodedSamples,
+      std::size_t frameCount
+    );
 
     /// <summary>Called to process any metadata encountered in the FLAC file</summary>
     /// <param name="metadata">Metadata the FLAC stream decoder has encountered</param>

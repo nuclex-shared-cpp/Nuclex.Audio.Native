@@ -108,6 +108,30 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// </remarks>
     public: virtual AudioSampleFormat GetNativeSampleFormat() const = 0;
 
+    /// <summary>Whether the audio codec directly decodes to interleaved channels</summary>
+    /// <returns>True if the codec decodes straight to interleaved channels</summary>
+    /// <remarks>
+    ///   <para>
+    ///     For better compression, codecs may separate the audio channels (consider
+    ///     joint stereo, where there's a combined channel and a channel containing only
+    ///     the different between right and left speaker), meaning that
+    ///     <see cref="DecodeSeparated" /> will be faster. FLAC is such a codec.
+    ///   </para>
+    ///   <para>
+    ///     Other codecs instead either store their audio channels interleaved (this is
+    ///     the case for Microsoft Waveform audio files) or decided to only expose their
+    ///     decoded audio data in an interleaved format to reduce confusion. In such cases,
+    ///     using <see cref="DecodeInterleaved" /> will be faster.
+    ///   </para>
+    ///   <para>
+    ///     This method can tell you which of the two decoding methods will perform better
+    ///     for a given audio file. Use it if you're hunting for performance or ignore it
+    ///     and just choose the most convenient format for your use case, Nuclex.Audio.Native
+    ///     is very streamlined when it comes to sample format and topology conversions.
+    ///   </para>
+    /// </remarks>
+    public: virtual bool IsNativelyInterleaved() const = 0;
+
     /// <summary>Decodes audio frames, interleaved, into the target buffer</summary>
     /// <typeparam name="TSample">Type of samples to decode into</typeparam>
     /// <param name="buffer">Buffer in which the interleaved samples will be stored</param>

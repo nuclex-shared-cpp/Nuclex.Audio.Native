@@ -24,6 +24,8 @@ limitations under the License.
 
 #if defined(NUCLEX_AUDIO_HAVE_WAVPACK)
 
+#include "Nuclex/Audio/Processing/SampleConverter.h"
+
 #include <cassert> // for assert()
 
 namespace {
@@ -149,6 +151,12 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
+  bool WavPackTrackDecoder::IsNativelyInterleaved() const {
+    return true;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   void WavPackTrackDecoder::fetchChannelOrder() {
     int wavPackChannelCount = Platform::WavPackApi::GetNumChannels(this->context);
     int wavPackChannelMask = Platform::WavPackApi::GetChannelMask(this->context);
@@ -232,6 +240,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
         this->sampleCursor = startSample;
       }
 
+      // If the audio data is already using floating point, pick the fast path
       if(this->sampleFormat == AudioSampleFormat::Float_32) {
         std::uint32_t unpackedSampleCount = Platform::WavPackApi::UnpackSamples(
           this->state->Error, // exception_ptr that will receive VirtualFile exceptions
@@ -241,10 +250,29 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
         if(unpackedSampleCount != sampleCount) {
           throw std::runtime_error(
-            u8"libwavpack unpacked a different number than samples than was requested. "
+            u8"libwavpack unpacked a different number of samples than was requested. "
             u8"Truncated file?"
           );
         }
+      } else if(this->sampleFormat == AudioSampleFormat::SignedInteger_24) {
+        std::vector<std::int32_t> samples24(sampleCount * this->channelOrder.size());
+        std::uint32_t unpackedSampleCount = Platform::WavPackApi::UnpackSamples(
+          this->state->Error, // exception_ptr that will receive VirtualFile exceptions
+          this->context, samples24.data(), sampleCount
+        );
+        this->sampleCursor += unpackedSampleCount;
+
+        if(unpackedSampleCount != sampleCount) {
+          throw std::runtime_error(
+            u8"libwavpack unpacked a different number of samples than was requested. "
+            u8"Truncated file?"
+          );
+        }
+
+        Processing::SampleConverter::Reconstruct(
+          samples24.data(), 24, buffer, sampleCount * this->channelOrder.size()
+        );
+
       } else {
         throw std::runtime_error(u8"Formats other than float not implemented yet");
       }

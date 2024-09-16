@@ -73,6 +73,10 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     /// <returns>The format in which the audio samples are delivered by the codec</returns>
     public: AudioSampleFormat GetNativeSampleFormat() const override;
 
+    /// <summary>Whether the audio codec directly decodes to interleaved channels</summary>
+    /// <returns>True if the codec decodes straight to interleaved channels</summary>
+    public: bool IsNativelyInterleaved() const override;
+
     // The public variant of the DecoeInterleaved() method delegates to our implementations
     public: using AudioTrackDecoder::DecodeInterleaved;
 
@@ -132,7 +136,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     private: AudioSampleFormat sampleFormat;
     /// <summary>Number of valid bits in the audio sample from the Flac file</summary>
     private: std::size_t bitsPerSample;
-    /// <summary>Known position of libwavpacks cursor within the audio data</summary>
+    /// <summary>Known position of the stream decoder's cursor in the audio data</summary>
     private: mutable std::uint64_t sampleCursor;
     /// <summary>Must be held while decoding</summary>
     private: mutable std::mutex decodingMutex;

@@ -161,7 +161,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
       (buffer[0] == 0x66) &&  //  1 f | "fact" (extra metadata chunk)
       (buffer[1] == 0x61) &&  //  2 a |
       (buffer[2] == 0x63) &&  //  3 c | Chunk that must appear in second generation
-      (buffer[3] == 0x74)     //  4 t | Waveform audio files, storing their length..
+      (buffer[3] == 0x74)     //  4 t | Waveform audio files, storing their length.
     );
   }
 
