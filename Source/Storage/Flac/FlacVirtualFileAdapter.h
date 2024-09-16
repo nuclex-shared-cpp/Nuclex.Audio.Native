@@ -45,7 +45,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Processes the output of the FLAC stream decodeR</summary>
+  /// <summary>Processes the output of the FLAC stream decoder</summary>
   class FlacDecodeProcessor {
 
     /// <summary>Frees all memory used by the processor</summary>
@@ -56,14 +56,14 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     /// <param name="buffer">Stores the decoded audio samples</param>
     /// <returns>True to continue decoding, false to stop at this point</returns>
     public: virtual bool ProcessAudioFrame(
-      const ::FLAC__Frame *frame,
+      const ::FLAC__Frame &frame,
       const ::FLAC__int32 *const buffer[]
     ) = 0;
 
     /// <summary>Called to process any metadata encountered in the FLAC file</summary>
     /// <param name="metadata">Metadata the FLAC stream decoder has encountered</param>
     public: virtual void ProcessMetadata(
-      const ::FLAC__StreamMetadata *metadata
+      const ::FLAC__StreamMetadata &metadata
     ) noexcept = 0;
 
     /// <summary>Called to provide a detailed status when a decoding error occurs</summary>

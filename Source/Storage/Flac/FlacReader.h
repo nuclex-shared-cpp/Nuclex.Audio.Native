@@ -24,25 +24,40 @@ limitations under the License.
 
 #if defined(NUCLEX_AUDIO_HAVE_FLAC)
 
-#include "Nuclex/Audio/TrackInfo.h"
+#include "Nuclex/Audio/AudioSampleFormat.h"
+#include "Nuclex/Audio/ChannelPlacement.h"
+
+#include "./FlacVirtualFileAdapter.h"
 #include "../../Platform/FlacApi.h"
 
-namespace Nuclex { namespace Audio { namespace Storage {
+#include <optional>
+
+namespace Nuclex { namespace Audio {
 
   // ------------------------------------------------------------------------------------------- //
 
-  class VirtualFile;
+  class TrackInfo;
 
   // ------------------------------------------------------------------------------------------- //
 
-}}} // namespace Nuclex::Audio::Storage
+}} // namespace Nuclex::Audio
+
+namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
+
+  // ------------------------------------------------------------------------------------------- //
+
+  class ReadOnlyFileAdapterState;
+
+  // ------------------------------------------------------------------------------------------- //
+
+}}}} // namespace Nuclex::Audio::Storage::Flac
 
 namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Utility class with intermediate methods used to decode FLAC files</summary>
-  class FlacReader {
+  class FlacReader : protected FlacDecodeProcessor {
 
     /// <summary>Determines the native sample format from Flac's parameters</summary>
     /// <param name="bitsPerSample">The number of valid bits in each sample</param>
@@ -81,6 +96,92 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
       const std::string_view &channelMaskValue
     );
 
+    /// <summary>Initializes a new Flac reader accessing the specified file</summary>
+    /// <param name="file">File that will be opened by the reader</param>
+    public: FlacReader(const std::shared_ptr<const VirtualFile> &file);
+
+    /// <summary>Frees all resources owned by the instance</summary>
+    public: ~FlacReader() = default;
+/*
+    /// <summary>Attempts to read the meta data of the FLAC file</summary>
+    /// <param name="target">Track informatio container that will receive the metadata</param>
+    /// <returns>
+    ///   True if the metadata was read, false only if the file was not a FLAC file
+    /// </returns>
+    public: bool TryReadMetadata(TrackInfo &target);
+*/
+    /// <summary>Reads the FLAC file's metadata</summary>
+    /// <param name="target">Track informatio container that will receive the metadata</param>
+    public: void ReadMetadata(TrackInfo &target);
+
+    /// <summary>Seeks to the specified frame</summary>
+    /// <param name="frameIndex">Index of the frame (= sample index on all channels)</param>
+    public: void Seek(std::uint64_t frameIndex);
+
+    /// <summary>Decodes the requested number of samples</summary>
+    /// <param name="buffer">Buffer into which the samples will be decoded</param>
+    /// <param name="frameCount">Number of frames (= sampeles on all channels) to decode</param>
+    public: void Decode(std::uint32_t *buffer, std::size_t frameCount);
+
+    /// <summary>Called to process any metadata encountered in the FLAC file</summary>
+    /// <param name="metadata">Metadata the FLAC stream decoder has encountered</param>
+    protected: void ProcessMetadata(
+      const ::FLAC__StreamMetadata &metadata
+    ) noexcept override;
+
+    /// <summary>Called to process an audio frame after it has been decoded</summary>
+    /// <param name="frame">Informations about the decoded audio frame</param>
+    /// <param name="buffer">Stores the decoded audio samples</param>
+    /// <returns>True to continue decoding, false to stop at this point</returns>
+    protected: bool ProcessAudioFrame(
+      const ::FLAC__Frame &frame,
+      const ::FLAC__int32 *const buffer[]
+    ) override;
+
+    /// <summary>Called to provide a detailed status when a decoding error occurs</summary>
+    /// <param name="status">Error status of the stream decoder</param>
+    protected: void HandleError(
+      ::FLAC__StreamDecoderErrorStatus status
+    ) noexcept override;
+
+    /// <summary>Processes a StreamInfo block encountered in the FLAC file</summary>
+    /// <param name="streamInfo">StreamInfo block describing the file's properties</param>
+    private: void processStreamInfo(
+      const ::FLAC__StreamMetadata_StreamInfo &streamInfo
+    ) noexcept;
+
+    /// <summary>Processes a Vorbis comment block encountered in the FLAC file</summary>
+    /// <param name="vorbisComment">Vorbis comment block containing individual entries</param>
+    private: void processVorbisComment(
+      const ::FLAC__StreamMetadata_VorbisComment &vorbisComment
+    ) noexcept;
+
+    /// <summary>File the reader is accessing</summary>
+    private: std::shared_ptr<const VirtualFile> file;
+    /// <summary>State (emulated file cursor, errors) or the virtual file adapter</summary>
+    private: std::unique_ptr<ReadOnlyFileAdapterState> state;
+    /// <summary>Stream decoder from libflac that does the actual decoding work</summary>
+    private: std::shared_ptr<::FLAC__StreamDecoder> streamDecoder;
+    /// <summary>Potnetial Error reported through libflac's error callback</summary>
+    private: std::exception_ptr error;
+
+    /// <summary>Target track information container for meta data</summary>
+    private: Nuclex::Audio::TrackInfo *trackInfo;
+    /// <summary>Channel assignment in the most recently decoded frame</summary>
+    private: std::optional<::FLAC__ChannelAssignment> channelAssignment;
+    /// <summary>Whether the metadata block was delivered</summary>
+    private: bool obtainedMetadata;
+    /// <summary>Whether a Vorbis comment block with a channel mask was delivered</summary>
+    private: bool obtainedChannelMask;
+
+    /// <summary>If true, the reader is just looking to obtain the file's metadata</summary>
+    private: bool isReadingMetadata;
+/*
+    /// <summary>Current assumed position of the stream decoder's cursor</summary>
+    private: std::uint64_t frameCursor;
+    /// <summary>Order in which channels a returned by the decoder</summary>
+    private: std::vector<ChannelPlacement> channelOrder;
+*/
   };
 
   // ------------------------------------------------------------------------------------------- //

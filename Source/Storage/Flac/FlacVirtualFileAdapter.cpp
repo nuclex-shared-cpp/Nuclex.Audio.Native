@@ -206,7 +206,7 @@ namespace {
 
     bool shouldContinue;
     try {
-      shouldContinue = state.DecodeProcessor->ProcessAudioFrame(frame, buffer);
+      shouldContinue = state.DecodeProcessor->ProcessAudioFrame(*frame, buffer);
     }
     catch(const std::exception &error) {
       state.Error = std::current_exception();
@@ -243,7 +243,7 @@ namespace {
     // ...but why go to these lengths? libflac obviously doesn't expect this method to fail
     // (it returns void) and the metadata recipient is always this library, not user-provided
     // code, so we can guarantee to abide by the 'noexcept' requirement.
-    state.DecodeProcessor->ProcessMetadata(metadata);
+    state.DecodeProcessor->ProcessMetadata(*metadata);
   }
 
   // ------------------------------------------------------------------------------------------- //
