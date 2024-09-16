@@ -228,6 +228,10 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
   void FlacReader::ReadMetadata(TrackInfo &target) {
     this->isReadingMetadata = true;
 
+    // Let the stream decoder process FLAC data blocks. They will be delivered via
+    // the callbacks set up together with the virtual file I/O callbacks (libflac's design
+    // is like that), and with the 'isReadingMetadata' property set, the callbacks will
+    // trigger an early stop right after the first audio frame has been decoded.
     this->trackInfo = &target;
     Platform::FlacApi::ProcessUntilEndOfStream(this->streamDecoder);
     this->trackInfo = nullptr;
@@ -292,7 +296,11 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
   void FlacReader::HandleError(
     ::FLAC__StreamDecoderErrorStatus status
   ) noexcept {
-
+    if(!static_cast<bool>(this->error)) {
+      std::string message(u8"Error decoding FLAC audio file: ", 32);
+      message.append(FLAC__StreamDecoderErrorStatusString[status]);
+      this->error = std::make_exception_ptr(Errors::CorruptedFileError(message));
+    }
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -340,18 +348,28 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
   ) noexcept {
     using Nuclex::Support::Text::StringHelper;
 
+    // If nobody is interested in this information, we might as well not collect it :)
     if(this->trackInfo == nullptr) {
       return;
     }
 
+    // Iterate over all Vorbis comment tags. These generally are just a string each,
+    // but by convention that string is in the format 'key=value' for named properties,
+    // such as the file's title or the all-important custom channel mask.
     for(std::size_t index = 0; index < vorbisComment.num_comments; ++index) {
       std::string_view comment(
         reinterpret_cast<char *>(vorbisComment.comments[index].entry),
         vorbisComment.comments[index].length
       );
+
+      // Does this comment look like a 'key=value' assignment?
       std::string_view::size_type assignmentIndex = comment.find(u8'=');
       if(assignmentIndex != std::string_view::npos) {
         std::string_view name = StringHelper::GetTrimmed(comment.substr(0, assignmentIndex));
+
+        // For non-standard channel layouts, FLAC files can contain a channel mask
+        // matching the one in Microsoft's Waveform audio file format as a Vorbis comment
+        // tag. If this is such a tag, parse the channel layout from it.
         if(name == std::string_view(u8"WAVEFORMATEXTENSIBLE_CHANNEL_MASK")) {
           Nuclex::Audio::ChannelPlacement channelPlacements = (
             FlacReader::ChannelPlacementFromWaveFormatExtensibleTag(
