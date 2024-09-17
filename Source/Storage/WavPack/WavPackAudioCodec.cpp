@@ -29,6 +29,7 @@ limitations under the License.
 #include "./WavPackDetection.h"
 #include "./WavPackVirtualFileAdapter.h"
 #include "./WavPackTrackDecoder.h"
+#include "./WavPackReader.h"
 
 #include "../../Platform/WavPackApi.h" // for WavPackApi
 
@@ -43,7 +44,7 @@ namespace {
     std::shared_ptr<::WavpackContext> context, Nuclex::Audio::TrackInfo &trackInfo
   ) {
     using Nuclex::Audio::Platform::WavPackApi;
-    using Nuclex::Audio::Storage::WavPack::WavPackTrackDecoder;
+    using Nuclex::Audio::Storage::WavPack::WavPackReader;
 
     trackInfo.ChannelCount = static_cast<std::size_t>(WavPackApi::GetNumChannels(context));
 
@@ -69,7 +70,7 @@ namespace {
       frameCount * MicrosecondsPerSecond / sampleRate
     );
 
-    trackInfo.SampleFormat = WavPackTrackDecoder::SampleFormatFromModeAndBitsPerSample(
+    trackInfo.SampleFormat = WavPackReader::SampleFormatFromModeAndBitsPerSample(
       WavPackApi::GetMode(context), WavPackApi::GetBitsPerSample(context)
     );
   }
@@ -157,6 +158,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     const std::string &extensionHint /* = std::string() */,
     std::size_t trackIndex /* = 0 */
   ) const {
+    (void)extensionHint;
+
     if(trackIndex != 0) {
       throw std::runtime_error(
         u8"Alternate track decoding is not implemented yet, track index must be 0"
@@ -169,6 +172,6 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
-}}}} // namespace Nuclex::Audio::Storage::Wave
+}}}} // namespace Nuclex::Audio::Storage::WavPack
 
 #endif // defined(NUCLEX_AUDIO_HAVE_WAVPACK)

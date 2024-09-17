@@ -109,6 +109,6 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
-}}}} // namespace Nuclex::Audio::Storage::Wave
+}}}} // namespace Nuclex::Audio::Storage::WavPack
 
 #endif // defined(NUCLEX_AUDIO_HAVE_WAVPACK)

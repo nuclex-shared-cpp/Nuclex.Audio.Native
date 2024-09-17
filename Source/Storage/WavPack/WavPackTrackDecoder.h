@@ -47,14 +47,6 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   /// <summary>Decodes WavPack audio tracks</summary>
   class WavPackTrackDecoder : public AudioTrackDecoder {
 
-    /// <summary>Determines the native sample format from WavPack's parameters</summary>
-    /// <param name="mode">Encoder mode that WavPack file was encoded with</param>
-    /// <param name="bitsPerSample">The number of valid bits in each sample</param>
-    /// <returns>The equivalent sample format enumeration value</returns>
-    public: static AudioSampleFormat SampleFormatFromModeAndBitsPerSample(
-      int mode, int bitsPerSample
-    );
-
     /// <summary>Initializes a new WavPack track decoder on the specified file</summary>
     /// <param name="file">File that will be opened and decoded</param>
     public: WavPackTrackDecoder(const std::shared_ptr<const VirtualFile> &file);
@@ -101,7 +93,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     /// <param name="startFrame">Index of the first frame to decode</param>
     /// <param name="frameCount">Number of audio frames that will be decoded</param>
     protected: void DecodeInterleavedInt16(
-      std::int16_t *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+      std::int16_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
     ) const override;
 
     /// <summary>Decodes audio frames, interleaved, into the target buffer</summary>
@@ -109,7 +101,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     /// <param name="startFrame">Index of the first frame to decode</param>
     /// <param name="frameCount">Number of audio frames that will be decoded</param>
     protected: void DecodeInterleavedInt32(
-      std::int32_t *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+      std::int32_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
     ) const override;
 
     /// <summary>Decodes audio frames, interleaved, into the target buffer</summary>
@@ -117,7 +109,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     /// <param name="startFrame">Index of the first frame to decode</param>
     /// <param name="frameCount">Number of audio frames that will be decoded</param>
     protected: void DecodeInterleavedFloat(
-      float *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+      float *buffer, const std::uint64_t startFrame, const std::size_t frameCount
     ) const override;
 
     /// <summary>Decodes audio frames, interleaved, into the target buffer</summary>
@@ -125,7 +117,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     /// <param name="startFrame">Index of the first frame to decode</param>
     /// <param name="frameCount">Number of audio frames that will be decoded</param>
     protected: void DecodeInterleavedDouble(
-      double *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+      double *buffer, const std::uint64_t startFrame, const std::size_t frameCount
     ) const override;
 
     /// <summary>Fetches the order of audio channels from the WavPack context</summary>

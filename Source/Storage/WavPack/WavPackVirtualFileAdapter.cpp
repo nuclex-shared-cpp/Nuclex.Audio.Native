@@ -457,17 +457,6 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void StreamAdapterState::RethrowPotentialException(StreamAdapterState &streamAdapterState) {
-    if(static_cast<bool>(streamAdapterState.Error)) {
-      ON_SCOPE_EXIT {
-        streamAdapterState.Error = nullptr;
-      };
-      std::rethrow_exception(streamAdapterState.Error);
-    }
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
 }}}} // namespace Nuclex::Audio::Storage::WavPack
 
 #endif // defined(NUCLEX_AUDIO_HAVE_WAVPACK)

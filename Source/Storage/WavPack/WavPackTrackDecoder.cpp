@@ -26,6 +26,8 @@ limitations under the License.
 
 #include "Nuclex/Audio/Processing/SampleConverter.h"
 
+#include "./WavPackReader.h"
+
 #include <cassert> // for assert()
 
 namespace {
@@ -45,32 +47,6 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
-  AudioSampleFormat WavPackTrackDecoder::SampleFormatFromModeAndBitsPerSample(
-    int mode, int bitsPerSample
-  ) {
-
-    // Figure out the data format closest to the data stored by WavPack. Normally it
-    // should be an exact match, but WavPack leaves room to store fewer bits, not only
-    // for 24-bit formats. For the sake of robustness, we'll anticipate those, too.
-    if((mode & MODE_FLOAT) != 0) {
-      if(bitsPerSample >= 33) {
-        return Nuclex::Audio::AudioSampleFormat::Float_64;
-      } else {
-        return Nuclex::Audio::AudioSampleFormat::Float_32;
-      }
-    } else {
-      if(bitsPerSample >= 25) {
-        return Nuclex::Audio::AudioSampleFormat::SignedInteger_32;
-      } else if(bitsPerSample >= 17) {
-        return Nuclex::Audio::AudioSampleFormat::SignedInteger_24;
-      } else if(bitsPerSample >= 9) {
-        return Nuclex::Audio::AudioSampleFormat::SignedInteger_16;
-      } else {
-        return Nuclex::Audio::AudioSampleFormat::UnsignedInteger_8;
-      }
-    }
-
-  }
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -79,8 +55,9 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     state(),
     context(),
     channelOrder(),
-    bitsPerSample(0),
     totalSampleCount(0),
+    sampleFormat(AudioSampleFormat::Unknown),
+    bitsPerSample(0),
     sampleCursor(0),
     decodingMutex() {
 
@@ -109,7 +86,9 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     {
       int mode = Platform::WavPackApi::GetMode(context);
       this->bitsPerSample = Platform::WavPackApi::GetBitsPerSample(context);
-      this->sampleFormat = SampleFormatFromModeAndBitsPerSample(mode, this->bitsPerSample);
+      this->sampleFormat = (
+        WavPackReader::SampleFormatFromModeAndBitsPerSample(mode, this->bitsPerSample)
+      );
     }
 
     this->totalSampleCount = Platform::WavPackApi::GetNumSamples64(this->context);
@@ -186,37 +165,46 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   void WavPackTrackDecoder::DecodeInterleavedUint8(
     std::uint8_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
-    
+    (void)buffer;
+    (void)startFrame;
+    (void)frameCount;
+    throw std::runtime_error(u8"Not implemented yet");
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   void WavPackTrackDecoder::DecodeInterleavedInt16(
-    std::int16_t *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+    std::int16_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
-    
+    (void)buffer;
+    (void)startFrame;
+    (void)frameCount;
+    throw std::runtime_error(u8"Not implemented yet");
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   void WavPackTrackDecoder::DecodeInterleavedInt32(
-    std::int32_t *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+    std::int32_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
-    
+    (void)buffer;
+    (void)startFrame;
+    (void)frameCount;
+    throw std::runtime_error(u8"Not implemented yet");
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   void WavPackTrackDecoder::DecodeInterleavedFloat(
-    float *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+    float *buffer, const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
-    if(sampleCount > std::numeric_limits<std::uint32_t>::max()) {
+    if(frameCount > std::numeric_limits<std::uint32_t>::max()) {
       throw std::logic_error(u8"Unable to unpack this many samples in one call");
     }
-    if(startSample >= this->totalSampleCount) {
+    if(startFrame >= this->totalSampleCount) {
       throw std::out_of_range(u8"Start sample index is out of bounds");
     }
-    if(this->totalSampleCount < startSample + sampleCount) {
+    if(this->totalSampleCount < startFrame + frameCount) {
       throw std::out_of_range(u8"Decode sample count goes beyond the end of audio data");
     }
 
@@ -225,11 +213,11 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
       // If the caller requests to read from a location that is not where the file cursor
       // is currently at, we need to seek to that position first.
-      if(this->sampleCursor != startSample) {
+      if(this->sampleCursor != startFrame) {
         Platform::WavPackApi::SeekSample( 
           this->state->Error, // exception_ptr that will receive VirtualFile exceptions
           this->context,
-          startSample // accepted uint64 -> int64 mismatch
+          startFrame // accepted uint64 -> int64 mismatch
         );
 
         // SeekSample64() is documented as bringing the context into an invalid state
@@ -237,32 +225,32 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
         // the WavPack file are supported after that. Should we intervene to guarantee
         // correct behavior or should we leave it up to random chance / the user?
 
-        this->sampleCursor = startSample;
+        this->sampleCursor = startFrame;
       }
 
       // If the audio data is already using floating point, pick the fast path
       if(this->sampleFormat == AudioSampleFormat::Float_32) {
         std::uint32_t unpackedSampleCount = Platform::WavPackApi::UnpackSamples(
           this->state->Error, // exception_ptr that will receive VirtualFile exceptions
-          this->context, reinterpret_cast<std::int32_t *>(buffer), sampleCount
+          this->context, reinterpret_cast<std::int32_t *>(buffer), frameCount
         );
         this->sampleCursor += unpackedSampleCount;
 
-        if(unpackedSampleCount != sampleCount) {
+        if(unpackedSampleCount != frameCount) {
           throw std::runtime_error(
             u8"libwavpack unpacked a different number of samples than was requested. "
             u8"Truncated file?"
           );
         }
       } else if(this->sampleFormat == AudioSampleFormat::SignedInteger_24) {
-        std::vector<std::int32_t> samples24(sampleCount * this->channelOrder.size());
+        std::vector<std::int32_t> samples24(frameCount * this->channelOrder.size());
         std::uint32_t unpackedSampleCount = Platform::WavPackApi::UnpackSamples(
           this->state->Error, // exception_ptr that will receive VirtualFile exceptions
-          this->context, samples24.data(), sampleCount
+          this->context, samples24.data(), frameCount
         );
         this->sampleCursor += unpackedSampleCount;
 
-        if(unpackedSampleCount != sampleCount) {
+        if(unpackedSampleCount != frameCount) {
           throw std::runtime_error(
             u8"libwavpack unpacked a different number of samples than was requested. "
             u8"Truncated file?"
@@ -270,7 +258,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
         }
 
         Processing::SampleConverter::Reconstruct(
-          samples24.data(), 24, buffer, sampleCount * this->channelOrder.size()
+          samples24.data(), 24, buffer, frameCount * this->channelOrder.size()
         );
 
       } else {
@@ -297,14 +285,18 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   // ------------------------------------------------------------------------------------------- //
 
   void WavPackTrackDecoder::DecodeInterleavedDouble(
-    double *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+    double *buffer, const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
     std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
-    throw std::runtime_error(u8"Formats other than float not implemented yet");
+
+    (void)buffer;
+    (void)startFrame;
+    (void)frameCount;
+    throw std::runtime_error(u8"Not implemented yet");
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-}}}} // namespace Nuclex::Audio::Storage::Wave
+}}}} // namespace Nuclex::Audio::Storage::WavPack
 
 #endif // defined(NUCLEX_AUDIO_HAVE_WAVPACK)

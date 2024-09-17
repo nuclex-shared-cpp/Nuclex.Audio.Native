@@ -24,44 +24,23 @@ limitations under the License.
 
 #if defined(NUCLEX_AUDIO_HAVE_WAVPACK)
 
-#include <string> // for std::string
+#include "../Shared/VirtualFileAdapterState.h"
+
 #include <memory> // for std::unique_ptr
 #include <cstdint> // for std::uint64_t
 #include <vector> // for std::vector
 
 #include <wavpack.h> // for all wavpack functions
 
-namespace Nuclex { namespace Audio { namespace Storage {
-
-  // ------------------------------------------------------------------------------------------- //
-
-  class VirtualFile;
-
-  // ------------------------------------------------------------------------------------------- //
-
-}}} // namespace Nuclex::Audio::Storage
-
 namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Stores informations processed by the WavPack stream adapters</summary>
-  struct StreamAdapterState {
+  struct StreamAdapterState : public Shared::VirtualFileAdapterState {
 
-    /// <summary>
-    ///   Re-throws any exceptions that happened while libwavpack accessed the adapter
-    /// </summary>
-    /// <param name="streamAdapterState">State that will be checked for an exception</param>
-    public: static void RethrowPotentialException(StreamAdapterState &state);
-
-    /// <summary>Whether this environment supports writing to the virtual file</summary>
-    public: bool IsReadOnly;
-    /// <summary>Current position of the emulated file cursor</summary>
-    public: std::uint64_t FileCursor;
     /// <summary>Bytes that have been buffered for read operations</summary>
     public: std::vector<std::uint8_t> BufferedBytes;
-    /// <summary>Stores any exception thrown by the virtual file interface</summary>
-    public: std::exception_ptr Error;
 
   };
 
