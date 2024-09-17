@@ -234,17 +234,6 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void FileAdapterState::RethrowPotentialException(FileAdapterState &fileAdapterState) {
-    if(static_cast<bool>(fileAdapterState.Error)) {
-      ON_SCOPE_EXIT {
-        fileAdapterState.Error = nullptr;
-      };
-      std::rethrow_exception(fileAdapterState.Error);
-    }
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
 }}}} // namespace Nuclex::Audio::Storage::Opus
 
 #endif // defined(NUCLEX_AUDIO_HAVE_OPUS)

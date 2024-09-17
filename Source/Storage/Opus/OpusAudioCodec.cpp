@@ -174,7 +174,7 @@ namespace {
     {
       // Completely unfounded, arbitrary value to estimate the precision (which may or may
       // not even change depending on Opus bitrates) of an Opus file compared to any audio
-      // format that stored signed integer samples.
+      // format that stores signed integer samples.
       const std::size_t MadeUpOpusPrecisionFromCompressionRatio = 80;
 
       // Calculate the number of bytes the audio data would decode to
@@ -277,12 +277,14 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     const std::string &extensionHint /* = std::string() */,
     std::size_t trackIndex /* = 0 */
   ) const {
+    (void)extensionHint;
     if(trackIndex != 0) {
       throw std::runtime_error(
         u8"Alternate track decoding is not implemented yet, track index must be 0"
       );
     }
 
+    (void)source;
     throw std::runtime_error(u8"Not implemented yet");
   }
 

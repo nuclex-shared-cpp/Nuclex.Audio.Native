@@ -112,7 +112,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
   ) {
     ::ogg_int64_t containerSizeOrErrorCode = ::op_raw_total(opusFile.get(), linkIndex);
     if(containerSizeOrErrorCode < 0) {
-      std::string message(u8"Error getting OGG raw total size via libopusfile: ", 54);
+      std::string message(u8"Error getting OGG raw total size via libopusfile: ", 50);
       message.append(::opus_strerror(containerSizeOrErrorCode));
       throw std::runtime_error(message);
     }

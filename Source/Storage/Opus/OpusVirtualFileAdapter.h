@@ -24,44 +24,18 @@ limitations under the License.
 
 #if defined(NUCLEX_AUDIO_HAVE_OPUS)
 
-#include <string> // for std::string
+#include "../Shared/VirtualFileAdapterState.h"
+
 #include <memory> // for std::unique_ptr
-#include <cstdint> // for std::uint64_t
-#include <vector> // for std::vector
 
 #include <opusfile.h> // for op
-
-namespace Nuclex { namespace Audio { namespace Storage {
-
-  // ------------------------------------------------------------------------------------------- //
-
-  class VirtualFile;
-
-  // ------------------------------------------------------------------------------------------- //
-
-}}} // namespace Nuclex::Audio::Storage
 
 namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Stores informations processed by the Opus stream adapters</summary>
-  struct FileAdapterState {
-
-    /// <summary>
-    ///   Re-throws any exceptions that happened while libopsufile accessed the adapter
-    /// </summary>
-    /// <param name="streamAdapterState">State that will be checked for an exception</param>
-    public: static void RethrowPotentialException(FileAdapterState &state);
-
-    /// <summary>Whether this environment supports writing to the virtual file</summary>
-    public: bool IsReadOnly;
-    /// <summary>Current position of the emulated file cursor</summary>
-    public: std::uint64_t FileCursor;
-    /// <summary>Stores any exception thrown by the virtual file interface</summary>
-    public: std::exception_ptr Error;
-
-  };
+  struct FileAdapterState : public Shared::VirtualFileAdapterState {};
 
   // ------------------------------------------------------------------------------------------- //
 
