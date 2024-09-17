@@ -195,7 +195,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// <param name="startFrame">Index of the first frame to decode</param>
     /// <param name="frameCount">Number of audio frames that will be decoded</param>
     protected: virtual void DecodeInterleavedInt16(
-      std::int16_t *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+      std::int16_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
     ) const = 0;
 
     /// <summary>Decodes audio frames, interleaved, into the target buffer</summary>
@@ -203,7 +203,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// <param name="startFrame">Index of the first frame to decode</param>
     /// <param name="frameCount">Number of audio frames that will be decoded</param>
     protected: virtual void DecodeInterleavedInt32(
-      std::int32_t *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+      std::int32_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
     ) const = 0;
 
     /// <summary>Decodes audio frames, interleaved, into the target buffer</summary>
@@ -211,7 +211,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// <param name="startFrame">Index of the first frame to decode</param>
     /// <param name="frameCount">Number of audio frames that will be decoded</param>
     protected: virtual void DecodeInterleavedFloat(
-      float *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+      float *buffer, const std::uint64_t startFrame, const std::size_t frameCount
     ) const = 0;
 
     /// <summary>Decodes audio frames, interleaved, into the target buffer</summary>
@@ -219,7 +219,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// <param name="startFrame">Index of the first frame to decode</param>
     /// <param name="frameCount">Number of audio frames that will be decoded</param>
     protected: virtual void DecodeInterleavedDouble(
-      double *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+      double *buffer, const std::uint64_t startFrame, const std::size_t frameCount
     ) const = 0;
 
   };

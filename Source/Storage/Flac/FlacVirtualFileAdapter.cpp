@@ -32,7 +32,7 @@ limitations under the License.
 
 #include "Nuclex/Audio/Storage/VirtualFile.h" // for VitualFile
 
-#include "../../Platform/FlacApi.h"
+#include "../../Platform/FlacApi.h" // for the wrapped FLAC API methods
 
 namespace {
 
@@ -349,17 +349,6 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void FileAdapterState::RethrowPotentialException(FileAdapterState &fileAdapterState) {
-    if(static_cast<bool>(fileAdapterState.Error)) {
-      ON_SCOPE_EXIT {
-        fileAdapterState.Error = nullptr;
-      };
-      std::rethrow_exception(fileAdapterState.Error);
-    }
-  }
+}}}} // namespace Nuclex::Audio::Storage::Flac
 
-  // ------------------------------------------------------------------------------------------- //
-
-}}}} // namespace Nuclex::Audio::Storage::Opus
-
-#endif // defined(NUCLEX_AUDIO_HAVE_OPUS)
+#endif // defined(NUCLEX_AUDIO_HAVE_FLAC)

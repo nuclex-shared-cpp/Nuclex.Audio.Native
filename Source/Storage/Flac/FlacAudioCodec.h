@@ -28,7 +28,7 @@ limitations under the License.
 
 #include <string> // for std::string
 #include <memory> // for std::unique_ptr
-#include <cstdint> // for std::uint64_t
+#include <cstddef> // for std::size_t
 
 namespace Nuclex { namespace Audio { namespace Storage {
 

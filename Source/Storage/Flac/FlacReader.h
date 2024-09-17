@@ -27,10 +27,9 @@ limitations under the License.
 #include "Nuclex/Audio/AudioSampleFormat.h"
 #include "Nuclex/Audio/ChannelPlacement.h"
 
-#include "./FlacVirtualFileAdapter.h"
-#include "../../Platform/FlacApi.h"
+#include "./FlacVirtualFileAdapter.h" // for the FlacDecodeProcessor interface
 
-#include <optional>
+#include <optional> // for std::optional
 
 namespace Nuclex { namespace Audio {
 
@@ -57,7 +56,30 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Utility class with intermediate methods used to decode FLAC files</summary>
+  /// <remarks>
+  ///   <para>
+  ///     This is a high-level wrapper to libflac that takes care of most of the plumbing
+  ///     required to integrate libflac into a C++ environment with exceptions. Because libflac
+  ///     uses file cursors (or rather, sample/frame cursors), this class is designed to be used
+  ///     from a single thread at a time.
+  ///   </para>
+  ///   <para>
+  ///     The &quot;FlacDecodeProcessor&quot; this class inherits from is part of the
+  ///     &quot;FlacVirtualFileAdapter&quot;. Due to the design of libflac, the callbacks
+  ///     to receive metadata and decoded audio samples must be set when opening a file,
+  ///     so the virtual file adapter is forced to ignore &quot;separation of concerns&quot;
+  ///     here and handle the decoding callbacks on the virtual file adapter level.
+  ///   </para>
+  /// </remarks>
   class FlacReader : protected FlacDecodeProcessor {
+
+    /// <summary>Signature for the callback function used to process decoded samples</summary>
+    /// <param name="userPointer">Pointer passed, unchanged, from the decode method</param>
+    /// <param name="buffers">Buffers containing the separated audio channels</param>
+    /// <param name="frameCount">Total number of samples in each of the channels</param>
+    public: typedef void ProcessDecodedSamplesFunction(
+      void *userPointer, const std::int32_t *const buffers[], std::size_t frameCount
+    );
 
     /// <summary>Determines the native sample format from Flac's parameters</summary>
     /// <param name="bitsPerSample">The number of valid bits in each sample</param>
@@ -111,12 +133,11 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     /// <param name="frameIndex">Index of the frame (= sample index on all channels)</param>
     public: void Seek(std::uint64_t frameIndex);
 
-    public: typedef void ProcessDecodedSamplesFunction(
-      void *userPointer, std::uint32_t *buffers[], std::size_t frameCount
-    );
-
     /// <summary>Decodes the requested number of samples</summary>
     /// <param name="buffers">Buffers into which the samples will be decoded</param>
+    /// <param name="processDecodedSamples">
+    ///   Callback through which each decoded block of samples will be delivered
+    /// </param>
     /// <param name="frameCount">Number of frames (= sampeles on all channels) to decode</param>
     public: void Decode(
       void *userPointer,
@@ -166,22 +187,25 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     /// <summary>Potnetial Error reported through libflac's error callback</summary>
     private: std::exception_ptr error;
 
-    /// <summary>Target track information container for meta data</summary>
-    private: Nuclex::Audio::TrackInfo *trackInfo;
-
     /// <summary>Whether the metadata block was delivered</summary>
     private: bool obtainedMetadata;
     /// <summary>Whether a Vorbis comment block with a channel mask was delivered</summary>
     private: bool obtainedChannelMask;
-
-    /// <summary>If true, the reader is just looking to obtain the file's metadata</summary>
-    private: bool isReadingMetadata;
     /// <summary>Channel assignment in the most recently decoded frame</summary>
     private: std::optional<::FLAC__ChannelAssignment> channelAssignment;
     /// <summary>Total number of frames (= samples in each channel) in the file</summary>
     private: std::uint64_t totalFrameCount;
+
+    /// <summary>Target track information container for meta data</summary>
+    private: Nuclex::Audio::TrackInfo *trackInfo;
     /// <summary>Current assumed position of the stream decoder's cursor</summary>
     private: std::uint64_t frameCursor;
+    /// <summary>User pointer that will be delivered to the callback</summary>
+    private: void *userPointerForCallback;
+    /// <summary>Callback that should be invoked to handle the decoded samples</summary>
+    private: ProcessDecodedSamplesFunction *processDecodedSamplesCallback;
+    /// <summary>Ramaining number of frames the caller is interested in</summary>
+    private: std::size_t remainingFrameCount;
 
   };
 

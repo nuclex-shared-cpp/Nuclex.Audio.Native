@@ -24,22 +24,11 @@ limitations under the License.
 
 #if defined(NUCLEX_AUDIO_HAVE_FLAC)
 
-#include <string> // for std::string
-#include <memory> // for std::unique_ptr
-#include <cstdint> // for std::uint64_t
-#include <vector> // for std::vector
+#include "../Shared/VirtualFileAdapterState.h"
 
 #include <FLAC/stream_decoder.h> // for the callback signatures
 
-namespace Nuclex { namespace Audio { namespace Storage {
-
-  // ------------------------------------------------------------------------------------------- //
-
-  class VirtualFile;
-
-  // ------------------------------------------------------------------------------------------- //
-
-}}} // namespace Nuclex::Audio::Storage
+#include <memory> // for std::unique_ptr
 
 namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
@@ -77,22 +66,10 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Stores informations processed by the Opus stream adapters</summary>
-  struct FileAdapterState {
+  struct FileAdapterState : public Shared::VirtualFileAdapterState {
 
-    /// <summary>
-    ///   Re-throws any exceptions that happened while libopsufile accessed the adapter
-    /// </summary>
-    /// <param name="streamAdapterState">State that will be checked for an exception</param>
-    public: static void RethrowPotentialException(FileAdapterState &state);
-
-    /// <summary>Whether this environment supports writing to the virtual file</summary>
-    public: bool IsReadOnly;
-    /// <summary>Current position of the emulated file cursor</summary>
-    public: std::uint64_t FileCursor;
     /// <summary>Receives decoded samples, metadata and error reports</summary>
     public: FlacDecodeProcessor *DecodeProcessor;
-    /// <summary>Stores any exception thrown by the virtual file interface</summary>
-    public: std::exception_ptr Error;
 
   };
 

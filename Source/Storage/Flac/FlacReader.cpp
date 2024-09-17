@@ -24,11 +24,12 @@ limitations under the License.
 
 #if defined(NUCLEX_AUDIO_HAVE_FLAC)
 
-#include <Nuclex/Support/Text/StringHelper.h>
-
 #include "Nuclex/Audio/TrackInfo.h"
 #include "Nuclex/Audio/Errors/CorruptedFileError.h"
 
+#include "../../Platform/FlacApi.h" // for the wrapped FLAC API functions
+
+#include <Nuclex/Support/Text/StringHelper.h> // for StringHelper::GetTrimmed()
 #include <cassert> // for assert()
 
 namespace {
@@ -195,13 +196,15 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     state(),
     streamDecoder(Platform::FlacApi::NewStreamDecoder()),
     error(),
-    trackInfo(nullptr),
     obtainedMetadata(false),
     obtainedChannelMask(false),
-    isReadingMetadata(true),
     channelAssignment(),
     totalFrameCount(std::uint64_t(-1)),
-    frameCursor(0) {
+    trackInfo(nullptr),
+    frameCursor(0),
+    userPointerForCallback(nullptr),
+    processDecodedSamplesCallback(nullptr),
+    remainingFrameCount() {
 
     // We want the VorbisComment block as well because non-standard audio channel
     // sets in FLAC are stored as a WAVEFORMATEXTENSIBLE_CHANNELMAP=0x tag,
@@ -226,7 +229,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
   // ------------------------------------------------------------------------------------------- //
 
   void FlacReader::ReadMetadata(TrackInfo &target) {
-    this->isReadingMetadata = true;
+    this->processDecodedSamplesCallback = nullptr;
+    this->remainingFrameCount = 0;
 
     // Let the stream decoder process FLAC data blocks. They will be delivered via
     // the callbacks set up together with the virtual file I/O callbacks (libflac's design
@@ -236,11 +240,18 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     Platform::FlacApi::ProcessUntilEndOfStream(this->streamDecoder);
     this->trackInfo = nullptr;
 
+    // Errors may have happened in either the virtual file (if this happens, it's considered
+    // the root cause and other errors are merely follow-up problems from there) or libflac
+    // encountered problems decoding the file, in which case we saved the error in order to
+    // not throw exceptions right through unsuspecting C code. Both need to be checked.
     FileAdapterState::RethrowPotentialException(*state);
     if(static_cast<bool>(this->error)) {
       std::rethrow_exception(this->error);
     }
 
+    // Finally, no error may have happened, but the FLAC metadata block might not have been
+    // encountered. This might be fine for libflac in streaming scenarios, but we absolutely
+    // want to know the exact specifications of the audio data we're dealing with.
     if(!this->obtainedMetadata) {
       throw Errors::CorruptedFileError(u8"FLAC audio file is missing the metadata block");
     }
@@ -250,16 +261,35 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
   void FlacReader::Seek(std::uint64_t frameIndex) {
     Platform::FlacApi::SeekAbsolute(this->streamDecoder, frameIndex);
+    this->frameCursor = frameIndex;
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   void FlacReader::Decode(
     void *userPointer,
-    ProcessDecodedSamplesFunction processDecodedSamples,
+    ProcessDecodedSamplesFunction *processDecodedSamples,
     std::size_t frameCount
   ) {
-    //processDecodedSamples(userPointer, nullptr, 12345);
+    this->userPointerForCallback = userPointer;
+    this->processDecodedSamplesCallback = processDecodedSamples;
+    this->remainingFrameCount = frameCount;
+
+    // Let the stream decoder process FLAC data blocks. They will be delivered via
+    // the callbacks set up together with the virtual file I/O callbacks (libflac's design
+    // is like that), and with the 'isReadingMetadata' property set, the callbacks will
+    // trigger an early stop right after the first audio frame has been decoded.
+    this->trackInfo = nullptr;
+    Platform::FlacApi::ProcessUntilEndOfStream(this->streamDecoder);
+
+    // Errors may have happened in either the virtual file (if this happens, it's considered
+    // the root cause and other errors are merely follow-up problems from there) or libflac
+    // encountered problems decoding the file, in which case we saved the error in order to
+    // not throw exceptions right through unsuspecting C code. Both need to be checked.
+    FileAdapterState::RethrowPotentialException(*state);
+    if(static_cast<bool>(this->error)) {
+      std::rethrow_exception(this->error);
+    }
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -278,7 +308,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
   bool FlacReader::ProcessAudioFrame(
     const ::FLAC__Frame &frame,
-    const ::FLAC__int32 *const buffer[]
+    const ::FLAC__int32 *const buffers[]
   ) {
     this->channelAssignment = frame.header.channel_assignment;
 
@@ -291,7 +321,30 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
       );
     }
 
-    return !this->isReadingMetadata;
+    // VERIFY: It seems that frame.header.blocksize is the delivered sample count
+    std::size_t deliveredFrameCount = frame.header.blocksize;
+
+    // Update the frame cursor (so we know whether seeking is needed) and
+    // the number of remaining samples. If no more samples were requested,
+    // stop decoding at this point by returning false.
+    this->frameCursor += deliveredFrameCount;
+
+    // If we're decoding (rather than just snatching the channel assignment for our metadata),
+    // deliver the decoded samples to the callback.
+    if(this->processDecodedSamplesCallback != nullptr) {
+      this->processDecodedSamplesCallback(
+        this->userPointerForCallback, buffers, deliveredFrameCount
+      );
+
+      if(deliveredFrameCount < this->remainingFrameCount) {
+        this->remainingFrameCount -= deliveredFrameCount;
+        return true;
+      } else {
+        this->remainingFrameCount = 0;
+      }
+    }
+
+    return false;
   }
 
   // ------------------------------------------------------------------------------------------- //

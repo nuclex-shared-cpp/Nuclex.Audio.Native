@@ -24,10 +24,8 @@ limitations under the License.
 
 #if defined(NUCLEX_AUDIO_HAVE_FLAC)
 
-#include <string> // for std::string
 #include <memory> // for std::shared_ptr
-#include <vector> // for std::vector
-#include <cstdint> // for std::uint32_t
+#include <cstdint> // for std::int32_t, std::uint64_t
 
 #include <FLAC/stream_decoder.h> // for the plain C FLAC decoder
 

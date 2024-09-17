@@ -25,20 +25,18 @@ limitations under the License.
 #if defined(NUCLEX_AUDIO_HAVE_FLAC)
 
 #include "Nuclex/Audio/Storage/AudioTrackDecoder.h"
-#include "./FlacVirtualFileAdapter.h"
-#include "../../Platform/FlacApi.h"
 
 #include <mutex> // for std::mutex
 
-namespace Nuclex { namespace Audio { namespace Storage {
+namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
   // ------------------------------------------------------------------------------------------- //
 
-  class VirtualFile;
+  class FlacReader;
 
   // ------------------------------------------------------------------------------------------- //
 
-}}} // namespace Nuclex::Audio::Storage
+}}}} // namespace Nuclex::Audio::Storage::Flac
 
 namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
@@ -51,7 +49,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     /// <param name="file">File that will be opened and decoded</param>
     public: FlacTrackDecoder(const std::shared_ptr<const VirtualFile> &file);
     /// <summary>Frees all resources owned by the instance</summary>
-    public: ~FlacTrackDecoder() override = default;
+    public: ~FlacTrackDecoder() override;
 
     /// <summary>Creates a clone of the audio track decoder</summary>
     /// <returns>A clone of the audio track decoder that can be used independently</returns>
@@ -93,7 +91,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     /// <param name="startFrame">Index of the first frame to decode</param>
     /// <param name="frameCount">Number of audio frames that will be decoded</param>
     protected: void DecodeInterleavedInt16(
-      std::int16_t *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+      std::int16_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
     ) const override;
 
     /// <summary>Decodes audio frames, interleaved, into the target buffer</summary>
@@ -101,7 +99,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     /// <param name="startFrame">Index of the first frame to decode</param>
     /// <param name="frameCount">Number of audio frames that will be decoded</param>
     protected: void DecodeInterleavedInt32(
-      std::int32_t *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+      std::int32_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
     ) const override;
 
     /// <summary>Decodes audio frames, interleaved, into the target buffer</summary>
@@ -109,7 +107,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     /// <param name="startFrame">Index of the first frame to decode</param>
     /// <param name="frameCount">Number of audio frames that will be decoded</param>
     protected: void DecodeInterleavedFloat(
-      float *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+      float *buffer, const std::uint64_t startFrame, const std::size_t frameCount
     ) const override;
 
     /// <summary>Decodes audio frames, interleaved, into the target buffer</summary>
@@ -117,12 +115,14 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     /// <param name="startFrame">Index of the first frame to decode</param>
     /// <param name="frameCount">Number of audio frames that will be decoded</param>
     protected: void DecodeInterleavedDouble(
-      double *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+      double *buffer, const std::uint64_t startFrame, const std::size_t frameCount
     ) const override;
 
     /// <summary>Fetches the order of audio channels from the Flac context</summary>
     private: void fetchChannelOrder();
 
+    /// <summary>Reader through which the audio file will be decoded</summary>
+    private: std::unique_ptr<FlacReader> reader;
     /// <summary>Order in which audio channels appear</summary>
     private: std::vector<ChannelPlacement> channelOrder;
     /// <summary>Total number of samples in the Flac file</summary>

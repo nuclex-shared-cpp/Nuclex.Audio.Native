@@ -93,14 +93,15 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     const std::string &extensionHint /* = std::string() */,
     std::size_t trackIndex /* = 0 */
   ) const {
+    (void)extensionHint;
+
     if(trackIndex != 0) {
       throw std::runtime_error(
         u8"Alternate track decoding is not implemented yet, track index must be 0"
       );
     }
 
-    //return std::make_shared<FlacTrackDecoder>(source);
-    throw std::runtime_error(u8"Not implemented yet");
+    return std::make_shared<FlacTrackDecoder>(source);
   }
 
   // ------------------------------------------------------------------------------------------- //
