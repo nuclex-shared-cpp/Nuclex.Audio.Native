@@ -25,6 +25,7 @@ limitations under the License.
 #if defined(NUCLEX_AUDIO_HAVE_OPUS)
 
 #include "../FailingVirtualFile.h"
+#include "../ResourceDirectoryLocator.h"
 
 #include <gtest/gtest.h>
 
@@ -66,7 +67,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
   TEST(OpusAudioCodecTest, ExceptionsFromVirtualFileResurface) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
-      u8"Resources/opus-stereo-v152.opus"
+      GetResourcesDirectory() + u8"opus-stereo-v152.opus"
     );
     std::shared_ptr<const VirtualFile> failingFile = std::make_shared<FailingVirtualFile>(
       file
@@ -87,7 +88,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
   TEST(OpusAudioCodecTest, CanReadInfoFromStereoFile) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
-      u8"Resources/opus-stereo-v152.opus"
+      GetResourcesDirectory() + u8"opus-stereo-v152.opus"
     );
 
     OpusAudioCodec codec;
@@ -107,7 +108,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
   TEST(OpusAudioCodecTest, CanReadInfoFromSurroundFile) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
-      u8"Resources/opus-5dot1-v152.opus"
+      GetResourcesDirectory() + u8"opus-5dot1-v152.opus"
     );
 
     OpusAudioCodec codec;
@@ -133,6 +134,6 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
   // ------------------------------------------------------------------------------------------- //
 
-}}}} // namespace Nuclex::Audio::Storage::WavPack
+}}}} // namespace Nuclex::Audio::Storage::Opus
 
-#endif // defined(NUCLEX_AUDIO_HAVE_WAVPACK)
+#endif // defined(NUCLEX_AUDIO_HAVE_OPUS)

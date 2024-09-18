@@ -22,6 +22,7 @@ limitations under the License.
 
 #include "../../../Source/Storage/Waveform/WaveformAudioCodec.h"
 #include "../FailingVirtualFile.h"
+#include "../ResourceDirectoryLocator.h"
 
 #include <gtest/gtest.h>
 
@@ -40,7 +41,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
   TEST(WaveformAudioCodecTest, ExceptionsFromVirtualFileResurface) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
-      u8"Resources/waveform-stereo-float32le-pcmwaveformat.wav"
+      GetResourcesDirectory() + u8"waveform-stereo-float32le-pcmwaveformat.wav"
     );
     std::shared_ptr<const VirtualFile> failingFile = std::make_shared<FailingVirtualFile>(
       file
@@ -61,7 +62,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
   TEST(WaveformAudioCodecTest, CanReadInfoFromFloatStereoFile) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
-      u8"Resources/waveform-stereo-float32le-pcmwaveformat.wav"
+      GetResourcesDirectory() + u8"waveform-stereo-float32le-pcmwaveformat.wav"
     );
 
     WaveformAudioCodec codec;
@@ -81,7 +82,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
   TEST(WaveformAudioCodecTest, CanReadInfoFromFloatSurroundFile) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
-      u8"Resources/waveform-5dot1-int16le-waveformatextensible.wav"
+      GetResourcesDirectory() + u8"waveform-5dot1-int16le-waveformatextensible.wav"
     );
 
     WaveformAudioCodec codec;

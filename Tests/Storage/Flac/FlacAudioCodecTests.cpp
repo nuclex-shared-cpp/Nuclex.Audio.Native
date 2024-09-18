@@ -25,6 +25,7 @@ limitations under the License.
 #if defined(NUCLEX_AUDIO_HAVE_FLAC)
 
 #include "../FailingVirtualFile.h"
+#include "../ResourceDirectoryLocator.h"
 
 #include <gtest/gtest.h>
 
@@ -43,7 +44,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
   TEST(FlacAudioCodecTest, ExceptionsFromVirtualFileResurface) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
-      u8"Resources/flac-stereo-int16-v143.flac"
+      GetResourcesDirectory() + u8"flac-stereo-int16-v143.flac"
     );
     std::shared_ptr<const VirtualFile> failingFile = std::make_shared<FailingVirtualFile>(
       file
@@ -64,7 +65,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
   TEST(FlacAudioCodecTest, CanReadInfoFromInt16StereoFile) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
-      u8"Resources/flac-stereo-int16-v143.flac"
+      GetResourcesDirectory() + u8"flac-stereo-int16-v143.flac"
     );
 
     FlacAudioCodec codec;
@@ -84,7 +85,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
   TEST(FlacAudioCodecTest, CanReadInfoWithExoticChannelPlacements) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
-      u8"Resources/flac-exotic-int16-v143.flac"
+      GetResourcesDirectory() + u8"flac-exotic-int16-v143.flac"
     );
 
     FlacAudioCodec codec;

@@ -25,6 +25,7 @@ limitations under the License.
 #if defined(NUCLEX_AUDIO_HAVE_WAVPACK)
 
 #include "../FailingVirtualFile.h"
+#include "../ResourceDirectoryLocator.h"
 
 #include <gtest/gtest.h>
 
@@ -43,7 +44,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   TEST(WavPackAudioCodecTest, ExceptionsFromVirtualFileResurface) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
-      u8"Resources/wavpack-stereo-float32-v416.wv"
+      GetResourcesDirectory() + u8"wavpack-stereo-float32-v416.wv"
     );
     std::shared_ptr<const VirtualFile> failingFile = std::make_shared<FailingVirtualFile>(
       file
@@ -64,7 +65,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   TEST(WavPackAudioCodecTest, CanReadInfoFromFloatStereoFile) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
-      u8"Resources/wavpack-stereo-float32-v416.wv"
+      GetResourcesDirectory() + u8"wavpack-stereo-float32-v416.wv"
     );
 
     WavPackAudioCodec codec;
@@ -84,7 +85,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   TEST(WavPackAudioCodecTest, CanReadInfoFromFloatSurroundFile) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
-      u8"Resources/wavpack-5dot1-int16-v416.wv"
+      GetResourcesDirectory() + u8"wavpack-5dot1-int16-v416.wv"
     );
 
     WavPackAudioCodec codec;

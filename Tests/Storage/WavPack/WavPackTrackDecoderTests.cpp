@@ -26,6 +26,7 @@ limitations under the License.
 
 #include "../ByteArrayAsFile.h"
 #include "../FailingVirtualFile.h"
+#include "../ResourceDirectoryLocator.h"
 #include "../../Processing/SineWaveDetector.h"
 #include "../../ExpectRange.h"
 
@@ -42,7 +43,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   TEST(WavPackTrackDecoderTest, ExceptionsFromVirtualFileResurface) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
-      u8"Resources/wavpack-stereo-float32-v416.wv"
+      GetResourcesDirectory() + u8"wavpack-stereo-float32-v416.wv"
     );
     std::shared_ptr<const VirtualFile> failingFile = std::make_shared<FailingVirtualFile>(
       file
@@ -62,7 +63,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   TEST(WavPackTrackDecoderTest, ReportsChannelOrderForExoticFile) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
-      u8"Resources/wavpack-exotic-int16-v416.wv"
+      GetResourcesDirectory() + u8"wavpack-exotic-int16-v416.wv"
     );
 
     WavPackTrackDecoder decoder(file);
@@ -77,7 +78,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   TEST(WavPackTrackDecoderTest, ReportsChannelOrderForEightDotOneFile) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
-      u8"Resources/wavpack-7dot1-int16-v416.wv"
+      GetResourcesDirectory() + u8"wavpack-7dot1-int16-v416.wv"
     );
 
     WavPackTrackDecoder decoder(file);
@@ -96,9 +97,49 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(WavPackTrackDecoderTest, DecodesToFloatingPoint) {
+  TEST(WavPackTrackDecoderTest, DecodesFloatingPoint) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
-      u8"Resources/wavpack-stereo-float32-v416.wv"
+      GetResourcesDirectory() + u8"wavpack-stereo-float32-v416.wv"
+    );
+
+    WavPackTrackDecoder decoder(file);
+
+    std::size_t frameCount = decoder.CountFrames();
+    std::size_t channelCount = decoder.CountChannels();
+
+    std::vector<float> samples(frameCount * channelCount);
+    decoder.DecodeInterleaved(samples.data(), 0, frameCount);
+
+    // Left signal should be at 0° phase, 25 Hz and have an amplitude of 1.0
+    {
+      Processing::SineWaveDetector left;
+      left.DetectAmplitude(samples.data(), frameCount, channelCount);
+      left.AddSamples(samples.data(), frameCount, channelCount);
+
+      EXPECT_RANGE(left.GetFrequency(44100), 24.9f, 25.1f);
+      EXPECT_RANGE(left.GetAmplitude(), 0.9f, 1.1f);
+      EXPECT_RANGE(left.GetPhase360(), -0.5f, 0.5f);
+      EXPECT_LT(left.GetError(), 0.0001f);
+    }
+
+    // Right signal should be at 180° phase, 25 Hz and have an amplitude of 1.0
+    {
+      Processing::SineWaveDetector right;
+      right.DetectAmplitude(samples.data() + 1, frameCount, channelCount);
+      right.AddSamples(samples.data() + 1, frameCount, channelCount);
+
+      EXPECT_RANGE(right.GetFrequency(44100), 24.9f, 25.1f);
+      EXPECT_RANGE(right.GetAmplitude(), 0.9f, 1.1f);
+      EXPECT_RANGE(right.GetPhase360(), 179.5f, 180.5f); // or -180.0 .. -179.5...
+      EXPECT_LT(right.GetError(), 0.0001f);
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(WavPackTrackDecoderTest, Decodes24BitQuantized) {
+    std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
+      GetResourcesDirectory() + u8"wavpack-stereo-int24-v416.wv"
     );
 
     WavPackTrackDecoder decoder(file);
