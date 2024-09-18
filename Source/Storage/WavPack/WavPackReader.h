@@ -26,19 +26,19 @@ limitations under the License.
 
 #include "Nuclex/Audio/AudioSampleFormat.h"
 
-#include <memory> // for std::unique_ptr
+#include <memory> // for std::unique_ptr, std::shared_ptr
 
 #include <wavpack.h> // for the WavPack types
 
-namespace Nuclex { namespace Audio {
+namespace Nuclex { namespace Audio { namespace Storage {
 
   // ------------------------------------------------------------------------------------------- //
 
-  class TrackInfo;
+  class VirtualFile;
 
   // ------------------------------------------------------------------------------------------- //
 
-}} // namespace Nuclex::Audio
+}}} // namespace Nuclex::Audio::Storage
 
 namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
@@ -65,6 +65,15 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
       int mode, int bitsPerSample
     );
 
+    /// <summary>Initializes a new WavPack reader accessing the specified file</summary>
+    /// <param name="file">File that will be opened by the reader</param>
+    public: WavPackReader(const std::shared_ptr<const VirtualFile> &file);
+
+    /// <summary>Frees all resources owned by the instance</summary>
+    public: ~WavPackReader();
+
+    /// <summary>File the reader is accessing</summary>
+    private: std::shared_ptr<const VirtualFile> file;
     /// <summary>
     ///   Stores callbacks through which libwavpack accesses the VirtualFile instance
     /// </summary>

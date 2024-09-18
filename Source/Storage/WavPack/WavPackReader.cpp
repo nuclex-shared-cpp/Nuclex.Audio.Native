@@ -24,6 +24,9 @@ limitations under the License.
 
 #if defined(NUCLEX_AUDIO_HAVE_WAVPACK)
 
+#include "./WavPackVirtualFileAdapter.h"
+#include "../../Platform/WavPackApi.h"
+
 namespace {
 
   // ------------------------------------------------------------------------------------------- //
@@ -61,6 +64,40 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     }
 
   }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  WavPackReader::WavPackReader(const std::shared_ptr<const VirtualFile> &file) :
+    file(file),
+    streamReader(),
+    state(),
+    context() {
+
+    // Set up a WavPack stream reader with adapter methods that will perform all reads
+    // on the provided virtual file.
+    this->state = std::move(
+      StreamAdapterFactory::CreateAdapterForReading(file, this->streamReader)
+    );
+
+    // Open the WavPack file, obtaining a WavPack context.The exception_ptr is checked
+    // inside that WavPackApi wrapper, ensuring that the right exception surfaces if
+    // either libwavpack reports an error or the virtual file throws.
+    this->context = Platform::WavPackApi::OpenStreamReaderInput(
+      this->state->Error, // exception_ptr that will receive VirtualFile exceptions
+      this->streamReader,
+      this->state.get() // passed to all IO callbacks as void pointer
+    );
+
+    // The OpenStreamReaderInput() method will already have checked for errors,
+    // but if some file access error happened that libwavpack deemed non-fatal,
+    // we still want to throw it - an exception in VirtualFile should always surface.
+    StreamAdapterState::RethrowPotentialException(*state);
+
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  WavPackReader::~WavPackReader() {}
 
   // ------------------------------------------------------------------------------------------- //
 
