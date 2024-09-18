@@ -55,20 +55,24 @@ namespace {
     // Limit the read to the length of the virtual file (because our interface does
     // not allow leisurely reading past the end of the file and having the virtual file
     // 'clip' the read call by itself).
+    std::size_t byteCountToRead;
     {
-      std::uint64_t fileLength = state.File->GetSize();
-      if(state.FileCursor >= fileLength) {
+      std::uint64_t remainingByteCount = state.File->GetSize();
+
+      if(state.FileCursor >= remainingByteCount) {
         return 0; // EOF!
       } else {
-        fileLength -= state.FileCursor;
-        if(fileLength < static_cast<std::uint64_t>(byteCount)) {
-          byteCount = static_cast<std::size_t>(fileLength);
+        remainingByteCount -= state.FileCursor;
+        if(remainingByteCount < static_cast<std::uint64_t>(byteCount)) {
+          byteCountToRead = static_cast<std::size_t>(remainingByteCount);
+        } else {
+          byteCountToRead = static_cast<std::size_t>(byteCount);
         }
       }
     }
 
     try {
-      state.File->ReadAt(state.FileCursor, byteCount, data);
+      state.File->ReadAt(state.FileCursor, byteCountToRead, data);
     }
     catch(const std::exception &) {
       state.Error = std::current_exception();
@@ -77,7 +81,7 @@ namespace {
 
     state.FileCursor += byteCount;
 
-    return byteCount;
+    return static_cast<int>(byteCountToRead);
   }
 
   // ------------------------------------------------------------------------------------------- //
