@@ -44,7 +44,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
-  class ReadOnlyStreamAdapterState;
+  struct ReadOnlyStreamAdapterState;
 
   // ------------------------------------------------------------------------------------------- //
 

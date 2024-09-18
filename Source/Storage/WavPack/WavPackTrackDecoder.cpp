@@ -29,16 +29,11 @@ limitations under the License.
 #include "./WavPackReader.h"
 
 #include <cassert> // for assert()
+#include <limits> // for std::numeric_limits
 
 namespace {
 
   // ------------------------------------------------------------------------------------------- //
-
-  /// <summary>
-  ///   Special value found in the bitsPerSample attribute when using floating point samples
-  /// </summary>
-  constexpr std::size_t FloatBitsPerSample(-32);
-
   // ------------------------------------------------------------------------------------------- //
 
 } // anonymous namespace
@@ -87,7 +82,9 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
       int mode = Platform::WavPackApi::GetMode(context);
       this->bitsPerSample = Platform::WavPackApi::GetBitsPerSample(context);
       this->sampleFormat = (
-        WavPackReader::SampleFormatFromModeAndBitsPerSample(mode, this->bitsPerSample)
+        WavPackReader::SampleFormatFromModeAndBitsPerSample(
+          mode, static_cast<int>(this->bitsPerSample)
+        )
       );
     }
 
@@ -230,9 +227,12 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
       // If the audio data is already using floating point, pick the fast path
       if(this->sampleFormat == AudioSampleFormat::Float_32) {
+        assert(frameCount < std::numeric_limits<std::uint32_t>::max());
         std::uint32_t unpackedSampleCount = Platform::WavPackApi::UnpackSamples(
           this->state->Error, // exception_ptr that will receive VirtualFile exceptions
-          this->context, reinterpret_cast<std::int32_t *>(buffer), frameCount
+          this->context,
+          reinterpret_cast<std::int32_t *>(buffer),
+          static_cast<std::uint32_t>(frameCount)
         );
         this->sampleCursor += unpackedSampleCount;
 
@@ -243,10 +243,13 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
           );
         }
       } else if(this->sampleFormat == AudioSampleFormat::SignedInteger_24) {
+        assert(frameCount < std::numeric_limits<std::uint32_t>::max());
         std::vector<std::int32_t> samples24(frameCount * this->channelOrder.size());
         std::uint32_t unpackedSampleCount = Platform::WavPackApi::UnpackSamples(
           this->state->Error, // exception_ptr that will receive VirtualFile exceptions
-          this->context, samples24.data(), frameCount
+          this->context,
+          samples24.data(),
+          static_cast<std::uint32_t>(frameCount)
         );
         this->sampleCursor += unpackedSampleCount;
 
