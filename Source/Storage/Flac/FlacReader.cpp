@@ -382,7 +382,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
       this->trackInfo->SampleRate = static_cast<std::size_t>(streamInfo.sample_rate);
       this->trackInfo->BitsPerSample = static_cast<std::size_t>(streamInfo.bits_per_sample);
       this->trackInfo->SampleFormat = SampleFormatFromBitsPerSample(
-        this->trackInfo->BitsPerSample
+        streamInfo.bits_per_sample
       );
 
       // Given the sample rate and total sample count, we can calculate the total

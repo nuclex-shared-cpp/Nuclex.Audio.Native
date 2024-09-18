@@ -45,7 +45,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
   // ------------------------------------------------------------------------------------------- //
 
-  class ReadOnlyFileAdapterState;
+  struct ReadOnlyFileAdapterState;
 
   // ------------------------------------------------------------------------------------------- //
 

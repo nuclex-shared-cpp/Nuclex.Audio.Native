@@ -208,7 +208,7 @@ namespace {
     try {
       shouldContinue = state.DecodeProcessor->ProcessAudioFrame(*frame, buffer);
     }
-    catch(const std::exception &error) {
+    catch(const std::exception &) {
       state.Error = std::current_exception();
       shouldContinue = false;
     }
