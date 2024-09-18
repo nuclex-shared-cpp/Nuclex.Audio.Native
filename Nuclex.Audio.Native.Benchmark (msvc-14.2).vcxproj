@@ -29,34 +29,34 @@
   </PropertyGroup>
   <PropertyGroup Label="Globals" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{b7edcb26-c6db-4d99-a421-b6cd6736de87}</ProjectGuid>
+    <ProjectGuid>{318c27fc-068c-45c5-9e60-94cff0f3bf7f}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>NuclexAudioNative</RootNamespace>
-    <ProjectName>Nuclex.Audio.Native (msvc-14.2)</ProjectName>
+    <RootNamespace>NuclexAudioNativeBenchmark</RootNamespace>
+    <ProjectName>Nuclex.Audio.Native.Benchmark (msvc-14.2)</ProjectName>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -81,66 +81,64 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\</OutDir>
-    <IntDir>obj\windows-msvc14.2-$(SanePlatform)-$(Configuration)\</IntDir>
-    <TargetName>Nuclex.Audio.Native</TargetName>
+    <IntDir>obj\windows-msvc14.2-$(SanePlatform)-$(Configuration)-benchmark\</IntDir>
+    <TargetName>Nuclex.Audio.Native.Benchmark</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\</OutDir>
-    <IntDir>obj\windows-msvc14.2-$(SanePlatform)-$(Configuration)\</IntDir>
-    <TargetName>Nuclex.Audio.Native</TargetName>
+    <IntDir>obj\windows-msvc14.2-$(SanePlatform)-$(Configuration)-benchmark\</IntDir>
+    <TargetName>Nuclex.Audio.Native.Benchmark</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\</OutDir>
-    <IntDir>obj\windows-msvc14.2-$(SanePlatform)-$(Configuration)\</IntDir>
-    <TargetName>Nuclex.Audio.Native</TargetName>
+    <IntDir>obj\windows-msvc14.2-$(SanePlatform)-$(Configuration)-benchmark\</IntDir>
+    <TargetName>Nuclex.Audio.Native.Benchmark</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\</OutDir>
-    <IntDir>obj\windows-msvc14.2-$(SanePlatform)-$(Configuration)\</IntDir>
-    <TargetName>Nuclex.Audio.Native</TargetName>
+    <IntDir>obj\windows-msvc14.2-$(SanePlatform)-$(Configuration)-benchmark\</IntDir>
+    <TargetName>Nuclex.Audio.Native.Benchmark</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>HAVE_CONFIG_H;FLAC__NO_DLL;NUCLEX_AUDIO_HAVE_FLAC;NUCLEX_AUDIO_HAVE_OPUS;NUCLEX_AUDIO_HAVE_WAVPACK;WIN32;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\;$(ProjectDir)..\Nuclex.Support.Native\Include\;$(ProjectDir)..\third-party\nuclex-flac\build\include\;$(ProjectDir)..\third-party\nuclex-opusfile\build\include\;$(ProjectDir)..\third-party\nuclex-opus\build\include\;$(ProjectDir)..\third-party\nuclex-ogg\build\include\;$(ProjectDir)..\third-party\nuclex-wavpack\build\include\</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NUCLEX_AUDIO_EXECUTABLE;HAVE_CONFIG_H;FLAC__NO_DLL;NUCLEX_AUDIO_HAVE_FLAC;NUCLEX_AUDIO_HAVE_OPUS;NUCLEX_AUDIO_HAVE_WAVPACK;CELERO_STATIC;WIN32;_DEBUG;_WINDOWS;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\;$(ProjectDir)..\Nuclex.Support.Native\Include\;$(ProjectDir)..\third-party\nuclex-flac\build\include\;$(ProjectDir)..\third-party\nuclex-opusfile\build\include\;$(ProjectDir)..\third-party\nuclex-opus\build\include\;$(ProjectDir)..\third-party\nuclex-ogg\build\include\;$(ProjectDir)..\third-party\nuclex-wavpack\build\include\;$(ProjectDir)..\third-party\nuclex-moodycamelqueues\build-concurrentqueue;$(ProjectDir)..\third-party\nuclex-celero\build\include\</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <FloatingPointModel>Fast</FloatingPointModel>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>Nuclex.Support.Native.lib;flac.lib;opusfile.lib;opus.lib;ogg.lib;wavpack.lib;celero.lib;synchronization.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\Nuclex.Support.Native\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-flac\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opusfile\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opus\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-ogg\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-wavpack\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-celero\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>Nuclex.Audio.Native.def</ModuleDefinitionFile>
-      <AdditionalDependencies>Nuclex.Support.Native.lib;flac.lib;opusfile.lib;opus.lib;ogg.lib;wavpack.lib;synchronization.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\Nuclex.Support.Native\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-flac\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opusfile\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opus\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-ogg\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-wavpack\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>HAVE_CONFIG_H;FLAC__NO_DLL;NUCLEX_AUDIO_HAVE_FLAC;NUCLEX_AUDIO_HAVE_OPUS;NUCLEX_AUDIO_HAVE_WAVPACK;WIN32;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\;$(ProjectDir)..\Nuclex.Support.Native\Include\;$(ProjectDir)..\third-party\nuclex-flac\build\include\;$(ProjectDir)..\third-party\nuclex-opusfile\build\include\;$(ProjectDir)..\third-party\nuclex-opus\build\include\;$(ProjectDir)..\third-party\nuclex-ogg\build\include\;$(ProjectDir)..\third-party\nuclex-wavpack\build\include\</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NUCLEX_AUDIO_EXECUTABLE;HAVE_CONFIG_H;FLAC__NO_DLL;NUCLEX_AUDIO_HAVE_FLAC;NUCLEX_AUDIO_HAVE_OPUS;NUCLEX_AUDIO_HAVE_WAVPACK;CELERO_STATIC;WIN32;_DEBUG;_WINDOWS;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\;$(ProjectDir)..\Nuclex.Support.Native\Include\;$(ProjectDir)..\third-party\nuclex-flac\build\include\;$(ProjectDir)..\third-party\nuclex-opusfile\build\include\;$(ProjectDir)..\third-party\nuclex-opus\build\include\;$(ProjectDir)..\third-party\nuclex-ogg\build\include\;$(ProjectDir)..\third-party\nuclex-wavpack\build\include\;$(ProjectDir)..\third-party\nuclex-moodycamelqueues\build-concurrentqueue;$(ProjectDir)..\third-party\nuclex-celero\build\include\</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <FloatingPointModel>Fast</FloatingPointModel>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>Nuclex.Support.Native.lib;flac.lib;opusfile.lib;opus.lib;ogg.lib;wavpack.lib;celero.lib;synchronization.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\Nuclex.Support.Native\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-flac\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opusfile\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opus\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-ogg\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-wavpack\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-celero\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>Nuclex.Audio.Native.def</ModuleDefinitionFile>
-      <AdditionalDependencies>Nuclex.Support.Native.lib;flac.lib;opusfile.lib;opus.lib;ogg.lib;wavpack.lib;synchronization.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\Nuclex.Support.Native\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-flac\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opusfile\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opus\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-ogg\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-wavpack\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -149,26 +147,26 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>HAVE_CONFIG_H;FLAC__NO_DLL;NUCLEX_AUDIO_HAVE_FLAC;NUCLEX_AUDIO_HAVE_OPUS;NUCLEX_AUDIO_HAVE_WAVPACK;WIN32;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\;$(ProjectDir)..\Nuclex.Support.Native\Include\;$(ProjectDir)..\third-party\nuclex-flac\build\include\;$(ProjectDir)..\third-party\nuclex-opusfile\build\include\;$(ProjectDir)..\third-party\nuclex-opus\build\include\;$(ProjectDir)..\third-party\nuclex-ogg\build\include\;$(ProjectDir)..\third-party\nuclex-wavpack\build\include\</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NUCLEX_AUDIO_EXECUTABLE;HAVE_CONFIG_H;FLAC__NO_DLL;NUCLEX_AUDIO_HAVE_FLAC;NUCLEX_AUDIO_HAVE_OPUS;NUCLEX_AUDIO_HAVE_WAVPACK;CELERO_STATIC;WIN32;NDEBUG;_WINDOWS;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\;$(ProjectDir)..\Nuclex.Support.Native\Include\;$(ProjectDir)..\third-party\nuclex-flac\build\include\;$(ProjectDir)..\third-party\nuclex-opusfile\build\include\;$(ProjectDir)..\third-party\nuclex-opus\build\include\;$(ProjectDir)..\third-party\nuclex-ogg\build\include\;$(ProjectDir)..\third-party\nuclex-wavpack\build\include\;$(ProjectDir)..\third-party\nuclex-moodycamelqueues\build-concurrentqueue;$(ProjectDir)..\third-party\nuclex-celero\build\include\</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <FloatingPointModel>Fast</FloatingPointModel>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>Nuclex.Support.Native.lib;flac.lib;opusfile.lib;opus.lib;ogg.lib;wavpack.lib;celero.lib;synchronization.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\Nuclex.Support.Native\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-flac\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opusfile\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opus\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-ogg\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-wavpack\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-celero\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>Nuclex.Audio.Native.def</ModuleDefinitionFile>
-      <AdditionalDependencies>Nuclex.Support.Native.lib;flac.lib;opusfile.lib;opus.lib;ogg.lib;wavpack.lib;synchronization.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\Nuclex.Support.Native\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-flac\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opusfile\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opus\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-ogg\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-wavpack\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -177,25 +175,25 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>HAVE_CONFIG_H;FLAC__NO_DLL;NUCLEX_AUDIO_HAVE_FLAC;NUCLEX_AUDIO_HAVE_OPUS;NUCLEX_AUDIO_HAVE_WAVPACK;WIN32;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\;$(ProjectDir)..\Nuclex.Support.Native\Include\;$(ProjectDir)..\third-party\nuclex-flac\build\include\;$(ProjectDir)..\third-party\nuclex-opusfile\build\include\;$(ProjectDir)..\third-party\nuclex-opus\build\include\;$(ProjectDir)..\third-party\nuclex-ogg\build\include\;$(ProjectDir)..\third-party\nuclex-wavpack\build\include\</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NUCLEX_AUDIO_EXECUTABLE;HAVE_CONFIG_H;FLAC__NO_DLL;NUCLEX_AUDIO_HAVE_FLAC;NUCLEX_AUDIO_HAVE_OPUS;NUCLEX_AUDIO_HAVE_WAVPACK;CELERO_STATIC;WIN32;NDEBUG;_WINDOWS;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\;$(ProjectDir)..\Nuclex.Support.Native\Include\;$(ProjectDir)..\third-party\nuclex-flac\build\include\;$(ProjectDir)..\third-party\nuclex-opusfile\build\include\;$(ProjectDir)..\third-party\nuclex-opus\build\include\;$(ProjectDir)..\third-party\nuclex-ogg\build\include\;$(ProjectDir)..\third-party\nuclex-wavpack\build\include\;$(ProjectDir)..\third-party\nuclex-moodycamelqueues\build-concurrentqueue;$(ProjectDir)..\third-party\nuclex-celero\build\include\</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <FloatingPointModel>Fast</FloatingPointModel>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>Nuclex.Support.Native.lib;flac.lib;opusfile.lib;opus.lib;ogg.lib;wavpack.lib;celero.lib;synchronization.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\Nuclex.Support.Native\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-flac\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opusfile\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opus\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-ogg\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-wavpack\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-celero\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>Nuclex.Audio.Native.def</ModuleDefinitionFile>
-      <AdditionalDependencies>Nuclex.Support.Native.lib;flac.lib;opusfile.lib;opus.lib;ogg.lib;wavpack.lib;synchronization.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\Nuclex.Support.Native\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-flac\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opusfile\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opus\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-ogg\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-wavpack\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -282,6 +280,10 @@
     <ClCompile Include="Source\ContainerInfo.cpp" />
     <ClCompile Include="Source\TrackInfo.cpp" />
     <ClCompile Include="Source\Track.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Benchmarks\BenchmarkMain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.md" />

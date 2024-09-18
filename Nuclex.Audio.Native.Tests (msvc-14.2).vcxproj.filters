@@ -41,8 +41,33 @@
     <Filter Include="Source\Storage\WavPack">
       <UniqueIdentifier>{c5c45bef-0d66-4302-ac82-5aab77525aa2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Documents">
+      <UniqueIdentifier>{5824954d-36dc-4758-a813-71cec7c4488b}</UniqueIdentifier>
+      <Extensions>md;txt;pdf</Extensions>
+    </Filter>
+    <Filter Include="Tests">
+      <UniqueIdentifier>{c7f37be0-0dc0-46b9-99b2-3b45cbc22fce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Processing">
+      <UniqueIdentifier>{9c52c7e7-86d3-4379-98ca-e415cd17ef1e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Storage">
+      <UniqueIdentifier>{e94d92eb-9aeb-4e88-820c-d30bd87d2987}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Storage\WavPack">
+      <UniqueIdentifier>{b0a0e6e9-4fc0-4e29-8b03-611dc1358e0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Storage\Flac">
+      <UniqueIdentifier>{d6d97dc2-75ee-4da5-add5-a672e1f7006e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Storage\Opus">
+      <UniqueIdentifier>{7757c29d-117d-4f7e-8845-8786aa6e8f6b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Storage\Waveform">
+      <UniqueIdentifier>{623ca6f0-7ca8-4838-9994-4aa17814db9d}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source\Storage\Shared">
-      <UniqueIdentifier>{180f8b53-83a6-45f3-b94e-9e56a72805b9}</UniqueIdentifier>
+      <UniqueIdentifier>{4aac9c0f-5dfb-4d85-b87a-781881cdae2d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -284,11 +309,84 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Tests\Processing\SampleConverterTest.cpp">
+      <Filter>Tests\Processing</Filter>
+    </ClCompile>
+    <ClCompile Include="Tests\Processing\SineWaveDetectorTest.cpp">
+      <Filter>Tests\Processing</Filter>
+    </ClCompile>
+    <ClInclude Include="Tests\Processing\SineWaveDetector.h">
+      <Filter>Tests\Processing</Filter>
+    </ClInclude>
+    <ClCompile Include="Tests\Processing\SineWaveDetector.cpp">
+      <Filter>Tests\Processing</Filter>
+    </ClCompile>
+    <ClCompile Include="Tests\Storage\Flac\FlacAudioCodecTests.cpp">
+      <Filter>Tests\Storage\Flac</Filter>
+    </ClCompile>
+    <ClCompile Include="Tests\Storage\Flac\FlacDetectionTests.cpp">
+      <Filter>Tests\Storage\Flac</Filter>
+    </ClCompile>
+    <ClCompile Include="Tests\Storage\Opus\OpusAudioCodecTests.cpp">
+      <Filter>Tests\Storage\Opus</Filter>
+    </ClCompile>
+    <ClCompile Include="Tests\Storage\Opus\OpusDetectionTests.cpp">
+      <Filter>Tests\Storage\Opus</Filter>
+    </ClCompile>
+    <ClCompile Include="Tests\Storage\Waveform\WaveformAudioCodecTests.cpp">
+      <Filter>Tests\Storage\Waveform</Filter>
+    </ClCompile>
+    <ClCompile Include="Tests\Storage\Waveform\WaveformDetectionTests.cpp">
+      <Filter>Tests\Storage\Waveform</Filter>
+    </ClCompile>
+    <ClCompile Include="Tests\Storage\WavPack\WavPackAudioCodecTests.cpp">
+      <Filter>Tests\Storage\WavPack</Filter>
+    </ClCompile>
+    <ClCompile Include="Tests\Storage\WavPack\WavPackDetectionTests.cpp">
+      <Filter>Tests\Storage\WavPack</Filter>
+    </ClCompile>
+    <ClCompile Include="Tests\Storage\WavPack\WavPackTrackDecoderTests.cpp">
+      <Filter>Tests\Storage\WavPack</Filter>
+    </ClCompile>
+    <ClCompile Include="Tests\Storage\AudioLoaderTests.cpp">
+      <Filter>Tests\Storage</Filter>
+    </ClCompile>
+    <ClCompile Include="Tests\Storage\ByteArrayAsFile.cpp">
+      <Filter>Tests\Storage</Filter>
+    </ClCompile>
+    <ClInclude Include="Tests\Storage\ByteArrayAsFile.h">
+      <Filter>Tests\Storage</Filter>
+    </ClInclude>
+    <ClCompile Include="Tests\Storage\FailingVirtualFile.cpp">
+      <Filter>Tests\Storage</Filter>
+    </ClCompile>
+    <ClInclude Include="Tests\Storage\FailingVirtualFile.h">
+      <Filter>Tests\Storage</Filter>
+    </ClInclude>
+    <ClCompile Include="Tests\ExpectRange.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClInclude Include="Tests\ExpectRange.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClCompile Include="Tests\Storage\ResourceDirectoryLocator.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+    <ClInclude Include="Tests\Storage\ResourceDirectoryLocator.h">
+      <Filter>Tests</Filter>
+    </ClInclude>
+    <ClCompile Include="Tests\ChannelPlacementTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
     <Text Include="Documents\EventBenchmark.md" />
     <Text Include="ReadMe.md" />
     <Text Include="Notice.md" />
     <Text Include="License.md" />
-    <Text Include="Dependencies.md" />
+    <Text Include="Dependencies.md">
+      <Filter>Documents</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Nuclex.Support.Native.ref" />

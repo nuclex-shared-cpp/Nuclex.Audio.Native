@@ -44,6 +44,9 @@
     <Filter Include="Source\Storage\Shared">
       <UniqueIdentifier>{180f8b53-83a6-45f3-b94e-9e56a72805b9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Benchmark">
+      <UniqueIdentifier>{c306ef32-0296-4281-970c-7054ff218d04}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Nuclex\Audio\Errors\UnsupportedFormatError.h">
@@ -281,6 +284,11 @@
     </ClCompile>
     <ClCompile Include="Source\TrackInfo.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Benchmarks\BenchmarkMain.cpp">
+      <Filter>Benchmark</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
