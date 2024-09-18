@@ -103,7 +103,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
     /// <summary>Assumed amplitude of the signal</summary>
     private: float amplitude;
     /// <summary>Number of samples that have been processed so far</summary>
-    private: std::size_t sampleCount;
+    private: std::size_t totalSampleCount;
     /// <summary>Sample that has been processed previously</summary>
     private: float previousSample;
     /// <summary>Sample from which on we began analyzing the signal</summary>
@@ -113,7 +113,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
     /// <summary>Angle progression accumulated since the start sample</summary>
     private: double accumulatedAngle;
     /// <summary>Whether the previous sample was a rising sample</summary>
-    private: bool previousWasFalling;
+    private: bool previousWasFallingFlank;
     /// <summary>Determined angle of the previous sample</summary>
     private: double previousAngle;
     /// <summary>Accumulated mismatch from a pure sine wave</summary>

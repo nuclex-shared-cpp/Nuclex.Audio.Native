@@ -80,12 +80,12 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   SineWaveDetector::SineWaveDetector() :
     amplitude(1.0f),
-    sampleCount(0),
+    totalSampleCount(0),
     previousSample(0.0f),
     startSampleIndex(std::size_t(-1)),
     startAngle(0.0),
     accumulatedAngle(0.0),
-    previousWasFalling(false),
+    previousWasFallingFlank(false),
     accumulatedError(0.0) {}
 
   // ------------------------------------------------------------------------------------------- //
@@ -183,15 +183,15 @@ namespace Nuclex { namespace Audio { namespace Processing {
   // ------------------------------------------------------------------------------------------- //
 
   void SineWaveDetector::AddSample(float sample) {
-    ++this->sampleCount;
+    ++this->totalSampleCount;
 
     // Stage 1: Just record the first and second sample, we can't determine anything yet
-    if(this->sampleCount == 1) {
+    if(this->totalSampleCount == 1) {
       this->previousSample = sample;
       return;
     }
-    if(this->sampleCount == 2) {
-      this->previousWasFalling = (sample < this->previousSample);
+    if(this->totalSampleCount == 2) {
+      this->previousWasFallingFlank = (sample < this->previousSample);
       this->previousSample = sample;
       return;
     }
@@ -200,15 +200,15 @@ namespace Nuclex { namespace Audio { namespace Processing {
     if(this->startSampleIndex == std::size_t(-1)) {
       std::optional<bool> isInsideFallingHalf;
       if(sample < this->previousSample) {
-        if(this->previousWasFalling) {
+        if(this->previousWasFallingFlank) {
           isInsideFallingHalf = true;
         }
-        this->previousWasFalling = true;
+        this->previousWasFallingFlank = true;
       } else if(this->previousSample < sample) {
-        if(!this->previousWasFalling) {
+        if(!this->previousWasFallingFlank) {
           isInsideFallingHalf = false;
         }
-        this->previousWasFalling = false;
+        this->previousWasFallingFlank = false;
       }
 
       if(isInsideFallingHalf.has_value()) {
@@ -218,7 +218,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
         } else {
           this->startAngle = this->previousAngle = halfWaveAngle;
         }
-        this->startSampleIndex = this->sampleCount;
+        this->startSampleIndex = this->totalSampleCount;
       }
 
       return; // return even when setting the start sample index
@@ -243,7 +243,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
     {
       double expectedAngle;
       {
-        std::size_t averagedSampleCount = this->sampleCount - this->startSampleIndex - 1;
+        std::size_t averagedSampleCount = this->totalSampleCount - this->startSampleIndex - 1;
         if(averagedSampleCount == 0) {
           expectedAngle = angle; // with only 1 sample, the average is clear :-)
         } else {
@@ -255,7 +255,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
       this->accumulatedAngle += getForwardDeltaAngle(this->previousAngle, angle);
       this->previousAngle = angle;
 
-      float expectedSample = std::sin(expectedAngle) * this->amplitude;
+      float expectedSample = static_cast<float>(std::sin(expectedAngle) * this->amplitude);
       this->accumulatedError += std::fabs(expectedSample - sample);
     }
   }
@@ -273,7 +273,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
       return 0.0;
     }
 
-    std::size_t averagedSampleCount = this->sampleCount - this->startSampleIndex - 1;
+    std::size_t averagedSampleCount = this->totalSampleCount - this->startSampleIndex - 1;
     if(averagedSampleCount == 0) {
       return 0.0;
     }
@@ -290,7 +290,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
       return 0.0;
     }
 
-    std::size_t accumulatedSampleCount = this->sampleCount - this->startSampleIndex - 1;
+    std::size_t accumulatedSampleCount = this->totalSampleCount - this->startSampleIndex - 1;
     if(accumulatedSampleCount == 0) {
       return 0.0;
     }
@@ -304,7 +304,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
   // ------------------------------------------------------------------------------------------- //
 
   float SineWaveDetector::GetPhase() const {
-    std::size_t averagedSampleCount = this->sampleCount - this->startSampleIndex;
+    std::size_t averagedSampleCount = this->totalSampleCount - this->startSampleIndex;
     double averageStep = this->accumulatedAngle / averagedSampleCount;
 
     return static_cast<float>(
@@ -315,7 +315,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
   // ------------------------------------------------------------------------------------------- //
 
   float SineWaveDetector::GetPhase360() const {
-    std::size_t averagedSampleCount = this->sampleCount - this->startSampleIndex;
+    std::size_t averagedSampleCount = this->totalSampleCount - this->startSampleIndex;
     double averageStep = this->accumulatedAngle / averagedSampleCount;
 
     return static_cast<float>(
