@@ -282,7 +282,6 @@
     <ClCompile Include="Source\Track.cpp" />
   </ItemGroup>
   <ItemGroup>
-  <ItemGroup>
     <ClCompile Include="Benchmarks\BenchmarkMain.cpp" />
   </ItemGroup>
   <ItemGroup>
