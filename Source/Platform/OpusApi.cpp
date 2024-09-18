@@ -31,6 +31,31 @@ limitations under the License.
 namespace {
 
   // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Returns an error message matching the specified opusfile error code</summary>
+  /// <param name="errorCode">Error code for which an error message will be returned</param>
+  /// <returns>A string stating the error indicated by the error code</returns>
+  std::string stringFromOpusFileErrorCode(int errorCode) {
+    switch(errorCode) {
+      case OP_FALSE: { return u8"A request did not succeed"; }
+      case OP_EOF: { return u8"Unexpected end of file"; }
+      case OP_HOLE: { return u8"Page sequence number skipped, file corrupt"; }
+      case OP_EREAD: { return u8"Read, seek or tell on a file has failed"; }
+      case OP_EFAULT: { return u8"Internal library error, out of memory or null pointer"; }
+      case OP_EIMPL: { return u8"Stream is using an unsupported feature"; }
+      case OP_EINVAL: { return u8"Function called with invalid parameters"; }
+      case OP_ENOTFORMAT: { return u8"Stream did not contain OGG/OPus data"; }
+      case OP_EBADHEADER: { return u8"Required header missing or format violation"; }
+      case OP_EVERSION: { return u8"Unsupported stream version"; }
+      case OP_ENOTAUDIO: { return u8"OGG stream did not contain Opus audio data"; }
+      case OP_EBADPACKET: { return u8"Packed failed to decode properly"; }
+      case OP_EBADLINK: { return u8"Error navigating between linked audio streams"; }
+      case OP_ENOSEEK: { return u8"Operation requires seeking but stream is unseekable"; }
+      case OP_EBADTIMESTAMP: { return u8"Start or end timestamp of stream was invalid"; }
+      default: { return u8"An unspecified error occurred"; }
+    }
+  }
+
   // ------------------------------------------------------------------------------------------- //
 
 } // anonymous namespace
@@ -59,7 +84,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
       }
 
       std::string message(u8"Error opening virtual file via libopusfile: ", 44);
-      message.append(::opus_strerror(errorCode));
+      message.append(stringFromOpusFileErrorCode(errorCode));
       throw std::runtime_error(message);
 
     }
@@ -98,7 +123,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
     ::ogg_int64_t sampleCountOrErrorCode = ::op_pcm_total(opusFile.get(), linkIndex);
     if(sampleCountOrErrorCode < 0) {
       std::string message(u8"Error getting total pcm sample count via libopusfile: ", 54);
-      message.append(::opus_strerror(sampleCountOrErrorCode));
+      message.append(stringFromOpusFileErrorCode(static_cast<int>(sampleCountOrErrorCode)));
       throw std::runtime_error(message);
     }
 
@@ -113,7 +138,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
     ::ogg_int64_t containerSizeOrErrorCode = ::op_raw_total(opusFile.get(), linkIndex);
     if(containerSizeOrErrorCode < 0) {
       std::string message(u8"Error getting OGG raw total size via libopusfile: ", 50);
-      message.append(::opus_strerror(containerSizeOrErrorCode));
+      message.append(stringFromOpusFileErrorCode(static_cast<int>(containerSizeOrErrorCode)));
       throw std::runtime_error(message);
     }
 
