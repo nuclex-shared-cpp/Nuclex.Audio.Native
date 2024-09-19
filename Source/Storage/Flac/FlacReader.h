@@ -146,7 +146,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     /// <param name="processDecodedSamples">
     ///   Callback through which each decoded block of samples will be delivered
     /// </param>
-    /// <param name="frameCount">Number of frames (= sampeles on all channels) to decode</param>
+    /// <param name="frameCount">Number of frames (= samples on all channels) to decode</param>
     public: void DecodeSeparated(
       void *userPointer,
       ProcessDecodedSamplesFunction processDecodedSamples,

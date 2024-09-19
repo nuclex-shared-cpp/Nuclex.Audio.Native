@@ -70,7 +70,7 @@ namespace {
     }
 
     /// <summary>
-    ///   Static callback sink that forwards to the WriteDecoddSamples() method
+    ///   Static callback sink that forwards to the WriteDecodedSamples() method
     /// </summary>
     /// <param name="userPointer">The instance of this class to forward to</param>
     /// <param name="buffers">

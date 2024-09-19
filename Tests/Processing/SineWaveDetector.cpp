@@ -63,6 +63,31 @@ namespace {
 
   // ------------------------------------------------------------------------------------------- //
 
+  /// <summary>Calculates the mostly forward delta angle between two angles</summary>
+  /// <param name="angle1">First angle from which on to calculate the delta</param>
+  /// <param name="angle2">Second angle towards which to calculate the delta</param>
+  /// <returns>
+  ///   The amount <paramref ref="angle1" /> needs to be rotated forward to
+  ///   match the angle <paramref ref="angle2" />
+  /// </returns>
+  /// <remarks>
+  ///   This variant of the function assumes that if the angle is rotated forward by
+  ///   more than 315 degrees (7/8th of a turn), we're actually just experiencing jitter
+  ///   or dithering noise and returns a negative angle still.
+  /// </remarks>
+  double getForwardDeltaAngleWithTolerance(double angle1, double angle2) {
+    constexpr const double tolerance = (360.0 - 45.0) / 180.0 * pi;
+
+    double forwardDelta = std::fmod(std::fmod(angle2 - angle1, tau) + tau, tau);
+    if(forwardDelta > tolerance) {
+      return forwardDelta - tau;
+    } else {
+      return forwardDelta;
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   /// <summary>Clamps a value to the -1.0 .. +1.0 range</summary>
   /// <param name="value">Value that will be clamped</param>
   /// <returns>The value in the -1.0 .. +1.0 range</returns>
@@ -252,7 +277,14 @@ namespace Nuclex { namespace Audio { namespace Processing {
         }
       }
 
-      this->accumulatedAngle += getForwardDeltaAngle(this->previousAngle, angle);
+      /*
+      double test = getForwardDeltaAngle(this->previousAngle, angle);
+      if(test > pi) {
+        getNormalizedAngle(test);
+      }
+      */
+
+      this->accumulatedAngle += getForwardDeltaAngleWithTolerance(this->previousAngle, angle);
       this->previousAngle = angle;
 
       float expectedSample = static_cast<float>(std::sin(expectedAngle) * this->amplitude);

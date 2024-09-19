@@ -113,8 +113,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     // Left signal should be at 0° phase, 25 Hz and have an amplitude of 1.0
     {
       Processing::SineWaveDetector left;
-      left.DetectAmplitude(samples.data(), frameCount, channelCount);
-      left.AddSamples(samples.data(), frameCount, channelCount);
+      left.DetectAmplitude(samples.data(), frameCount * 2, channelCount);
+      left.AddSamples(samples.data(), frameCount * 2, channelCount);
 
       EXPECT_RANGE(left.GetFrequency(44100), 24.9f, 25.1f);
       EXPECT_RANGE(left.GetAmplitude(), 0.9f, 1.1f);
@@ -125,8 +125,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     // Right signal should be at 180° phase, 25 Hz and have an amplitude of 1.0
     {
       Processing::SineWaveDetector right;
-      right.DetectAmplitude(samples.data() + 1, frameCount, channelCount);
-      right.AddSamples(samples.data() + 1, frameCount, channelCount);
+      right.DetectAmplitude(samples.data() + 1, frameCount * 2, channelCount);
+      right.AddSamples(samples.data() + 1, frameCount * 2, channelCount);
 
       EXPECT_RANGE(right.GetFrequency(44100), 24.9f, 25.1f);
       EXPECT_RANGE(right.GetAmplitude(), 0.9f, 1.1f);
