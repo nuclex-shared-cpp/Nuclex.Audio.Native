@@ -25,20 +25,9 @@ limitations under the License.
 #if defined(NUCLEX_AUDIO_HAVE_WAVPACK)
 
 #include "Nuclex/Audio/Storage/AudioTrackDecoder.h"
-#include "./WavPackVirtualFileAdapter.h"
-#include "../../Platform/WavPackApi.h"
+#include "./WavPackReader.h"
 
 #include <mutex> // for std::mutex
-
-namespace Nuclex { namespace Audio { namespace Storage {
-
-  // ------------------------------------------------------------------------------------------- //
-
-  class VirtualFile;
-
-  // ------------------------------------------------------------------------------------------- //
-
-}}} // namespace Nuclex::Audio::Storage
 
 namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
@@ -123,27 +112,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     /// <summary>Fetches the order of audio channels from the WavPack context</summary>
     private: void fetchChannelOrder();
 
-    /// <summary>
-    ///   Stores callbacks through which libwavpack accesses the VirtualFile instance
-    /// </summary>
-    /// <remarks>
-    ///   When opening the WavPack file, a pointer to this structure is stored Within
-    ///   the WavPackContext, so it needs to continue to exist.
-    /// </remarks>
-    private: ::WavpackStreamReader64 streamReader;
-    /// <summary>Holds the state of the VirtualFile stream adapter</summary>
-    /// <remarks>
-    ///   This stores the emulated file cursor for the specific WavPack context and 
-    ///   records any exceptions from the VirtualFile so they do not have to pass through
-    ///   libwavpack, which is C code and won't anticipate being interrupted this way.
-    /// </remarks>
-    private: std::unique_ptr<ReadOnlyStreamAdapterState> state;
-    /// <summary>Represents the opened WavPack file for the libwavpack API</summary>
-    /// <remarks>
-    ///   This ties all the internal WavPack data structure together and is passed
-    ///   to any public API method in libwavpack we can call.
-    /// </remarks>
-    private: std::shared_ptr<::WavpackContext> context;
+    /// <summary>Reader that handles accessing the WavPack file via libwavpack</summary>
+    private: mutable WavPackReader reader;
     /// <summary>Order in which audio channels appear</summary>
     private: std::vector<ChannelPlacement> channelOrder;
     /// <summary>Total number of samples in the WavPack file</summary>
@@ -153,12 +123,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     ///   and complete WavPack files, at most wrapped in a media container or archive.
     /// </remarks>
     private: std::uint64_t totalSampleCount;
-    /// <summary>Format in which the samples are deliverd by libwavpack</summary>
-    private: AudioSampleFormat sampleFormat;
-    /// <summary>Number of valid bits in the audio sample from the WavPack file</summary>
-    private: std::size_t bitsPerSample;
-    /// <summary>Known position of libwavpacks cursor within the audio data</summary>
-    private: mutable std::uint64_t sampleCursor;
+    /// <summary>The native sample format in the audio file</summary>
+    private: AudioSampleFormat nativeSampleFormat;
     /// <summary>Must be held while decoding</summary>
     private: mutable std::mutex decodingMutex;
 

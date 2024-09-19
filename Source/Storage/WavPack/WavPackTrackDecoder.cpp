@@ -42,63 +42,23 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
-
-  // ------------------------------------------------------------------------------------------- //
-
   WavPackTrackDecoder::WavPackTrackDecoder(const std::shared_ptr<const VirtualFile> &file) :
-    streamReader(),
-    state(),
-    context(),
+    reader(file),
     channelOrder(),
     totalSampleCount(0),
-    sampleFormat(AudioSampleFormat::Unknown),
-    bitsPerSample(0),
-    sampleCursor(0),
+    nativeSampleFormat(AudioSampleFormat::Unknown),
     decodingMutex() {
 
-    // Set up a WavPack stream reader with adapter methods that will perform all reads
-    // on the provided virtual file.
-    this->state = std::move(
-      StreamAdapterFactory::CreateAdapterForReading(file, this->streamReader)
-    );
-
-    // Open the WavPack file, obtaining a WavPack context.The exception_ptr is checked
-    // inside that WavPackApi wrapper, ensuring that the right exception surfaces if
-    // either libwavpack reports an error or the virtual file throws.
-    this->context = Platform::WavPackApi::OpenStreamReaderInput(
-      this->state->Error, // exception_ptr that will receive VirtualFile exceptions
-      this->streamReader,
-      this->state.get() // passed to all IO callbacks as void pointer
-    );
-
-    // The OpenStreamReaderInput() method will already have checked for errors,
-    // but if some file access error happened that libwavpack deemed non-fatal,
-    // we still want to throw it - an exception in VirtualFile should always surface.
-    StreamAdapterState::RethrowPotentialException(*state);
-
-    // Determine the number of bits per sample and whether the WavPack file contains
-    // floating point audio samples.
-    {
-      int mode = Platform::WavPackApi::GetMode(context);
-      this->bitsPerSample = Platform::WavPackApi::GetBitsPerSample(context);
-      this->sampleFormat = (
-        WavPackReader::SampleFormatFromModeAndBitsPerSample(
-          mode, static_cast<int>(this->bitsPerSample)
-        )
-      );
-    }
-
-    this->totalSampleCount = Platform::WavPackApi::GetNumSamples64(this->context);
-
-    // Finally, figure out the order in which channels will be interleaved when decoding
-    fetchChannelOrder();
-
+    this->totalSampleCount = this->reader.CountTotalFrames();
+    this->channelOrder = this->reader.GetChannelOrder();
+    this->nativeSampleFormat = this->reader.GetSampleFormat();
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   std::shared_ptr<AudioTrackDecoder> WavPackTrackDecoder::Clone() const {
-    return std::make_shared<WavPackTrackDecoder>(this->state->File);
+    throw std::runtime_error(u8"Not implemented yet");
+    //return std::make_shared<WavPackTrackDecoder>(this->state->File);
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -122,39 +82,13 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   // ------------------------------------------------------------------------------------------- //
 
   AudioSampleFormat WavPackTrackDecoder::GetNativeSampleFormat() const {
-    return this->sampleFormat;
+    return this->nativeSampleFormat;
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   bool WavPackTrackDecoder::IsNativelyInterleaved() const {
     return true;
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  void WavPackTrackDecoder::fetchChannelOrder() {
-    int wavPackChannelCount = Platform::WavPackApi::GetNumChannels(this->context);
-    int wavPackChannelMask = Platform::WavPackApi::GetChannelMask(this->context);
-
-    // First, add all channels for which a channel flag bit is set. Just like Waveform,
-    // in WavPack the channel order matches the order of the flag bits.
-    for(std::size_t bitIndex = 0; bitIndex < 17; ++bitIndex) {
-      if((static_cast<std::size_t>(wavPackChannelMask) & (1ULL << bitIndex)) != 0) {
-        this->channelOrder.push_back(static_cast<ChannelPlacement>(1ULL << bitIndex));
-        --wavPackChannelCount;
-      }
-    }
-
-    // However, in WAVEFORMATEXTENSIBLE (and therefore in WavPack?) it is valid to set
-    // the channel mask flags to zero and include channels. These are then arbitrary,
-    // non-placeable channels not associated with specific speakers. In such a case,
-    // or if the channel count exceeds the number of channel mask bits set, we add
-    // the remaining channels as unknown channels.
-    while(wavPackChannelCount >= 1) {
-      this->channelOrder.push_back(ChannelPlacement::Unknown);
-      --wavPackChannelCount;
-    }
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -195,8 +129,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   void WavPackTrackDecoder::DecodeInterleavedFloat(
     float *buffer, const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
-    if(frameCount > std::numeric_limits<std::uint32_t>::max()) {
-      throw std::logic_error(u8"Unable to unpack this many samples in one call");
+    if(std::numeric_limits<std::uint32_t>::max() < frameCount) {
+      throw std::logic_error(u8"Unable to decode this many samples in one call");
     }
     if(startFrame >= this->totalSampleCount) {
       throw std::out_of_range(u8"Start sample index is out of bounds");
@@ -210,60 +144,16 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
       // If the caller requests to read from a location that is not where the file cursor
       // is currently at, we need to seek to that position first.
-      if(this->sampleCursor != startFrame) {
-        Platform::WavPackApi::SeekSample( 
-          this->state->Error, // exception_ptr that will receive VirtualFile exceptions
-          this->context,
-          startFrame // accepted uint64 -> int64 mismatch
-        );
-
-        // SeekSample64() is documented as bringing the context into an invalid state
-        // when it returns an error and that no further operations besides closing
-        // the WavPack file are supported after that. Should we intervene to guarantee
-        // correct behavior or should we leave it up to random chance / the user?
-
-        this->sampleCursor = startFrame;
+      if(this->reader.GetFrameCursorPosition() != startFrame) {
+        this->reader.Seek(startFrame);
       }
 
       // If the audio data is already using floating point, pick the fast path
-      if(this->sampleFormat == AudioSampleFormat::Float_32) {
-        assert(frameCount < std::numeric_limits<std::uint32_t>::max());
-        std::uint32_t unpackedSampleCount = Platform::WavPackApi::UnpackSamples(
-          this->state->Error, // exception_ptr that will receive VirtualFile exceptions
-          this->context,
+      if(this->nativeSampleFormat == AudioSampleFormat::Float_32) {
+        this->reader.DecodeInterleaved(
           reinterpret_cast<std::int32_t *>(buffer),
           static_cast<std::uint32_t>(frameCount)
         );
-        this->sampleCursor += unpackedSampleCount;
-
-        if(unpackedSampleCount != frameCount) {
-          throw std::runtime_error(
-            u8"libwavpack unpacked a different number of samples than was requested. "
-            u8"Truncated file?"
-          );
-        }
-      } else if(this->sampleFormat == AudioSampleFormat::SignedInteger_24) {
-        assert(frameCount < std::numeric_limits<std::uint32_t>::max());
-        std::vector<std::int32_t> samples24(frameCount * this->channelOrder.size());
-        std::uint32_t unpackedSampleCount = Platform::WavPackApi::UnpackSamples(
-          this->state->Error, // exception_ptr that will receive VirtualFile exceptions
-          this->context,
-          samples24.data(),
-          static_cast<std::uint32_t>(frameCount)
-        );
-        this->sampleCursor += unpackedSampleCount;
-
-        if(unpackedSampleCount != frameCount) {
-          throw std::runtime_error(
-            u8"libwavpack unpacked a different number of samples than was requested. "
-            u8"Truncated file?"
-          );
-        }
-
-        Processing::SampleConverter::Reconstruct(
-          samples24.data(), 24, buffer, frameCount * this->channelOrder.size()
-        );
-
       } else {
         throw std::runtime_error(u8"Formats other than float not implemented yet");
       }

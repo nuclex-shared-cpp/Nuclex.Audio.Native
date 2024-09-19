@@ -26,7 +26,7 @@ limitations under the License.
 
 #include <Nuclex/Support/Text/StringConverter.h>
 
-#include <stdexcept>
+#include <stdexcept> // for std::runtime_error
 
 namespace {
 

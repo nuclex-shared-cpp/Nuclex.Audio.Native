@@ -36,45 +36,6 @@ limitations under the License.
 namespace {
 
   // ------------------------------------------------------------------------------------------- //
-
-  /// <summary>Extracts information about a WavPack file into a TrackInfo object</summary>
-  /// <param name="context">Opened WavPack audio file the informations are taken from</param>
-  /// <param name="trackInfo">Target TrackInfo instance that will be filled</param>
-  void extractTrackInfo(
-    std::shared_ptr<::WavpackContext> context, Nuclex::Audio::TrackInfo &trackInfo
-  ) {
-    using Nuclex::Audio::Platform::WavPackApi;
-    using Nuclex::Audio::Storage::WavPack::WavPackReader;
-
-    trackInfo.ChannelCount = static_cast<std::size_t>(WavPackApi::GetNumChannels(context));
-
-    // We can just cast this one to our enumeration. Why? The ChannelPlacement enumeration
-    // uses the same values that the Microsoft Waveform audio file format also uses, which
-    // happens to be what WavPack uses, too, thus WavPack's channel masks are equivalent.
-    trackInfo.ChannelPlacements = static_cast<Nuclex::Audio::ChannelPlacement>(
-      WavPackApi::GetChannelMask(context)
-    );
-
-    // This returns the number of "complete samples" (aka frames), meaning the number
-    // samples per channel (rather than the sum of the sample counts in all channels).
-    std::uint64_t frameCount = WavPackApi::GetNumSamples64(context);
-
-    std::uint32_t sampleRate = WavPackApi::GetSampleRate(context);
-    trackInfo.SampleRate = static_cast<std::size_t>(sampleRate);
-    
-    // We want an accurate result (some audio sync tool or such may depend on it),
-    // so we multiply first. No bounds checking under the assumption that nobody will
-    // ever feed this library a WavPack file with more than 584'942 years of audio.        
-    const std::uint64_t MicrosecondsPerSecond = 1'000'000;
-    trackInfo.Duration = std::chrono::microseconds(
-      frameCount * MicrosecondsPerSecond / sampleRate
-    );
-
-    trackInfo.SampleFormat = WavPackReader::SampleFormatFromModeAndBitsPerSample(
-      WavPackApi::GetMode(context), WavPackApi::GetBitsPerSample(context)
-    );
-  }
-
   // ------------------------------------------------------------------------------------------- //
 
 } // anonymous namespace
@@ -111,44 +72,18 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
       return std::optional<ContainerInfo>();
     }
 
-    // Set up a WavPack stream reader with adapter methods that will perform all reads
-    // on the user-provided virtual file.
-    ::WavpackStreamReader64 streamReader;
-    std::unique_ptr<ReadOnlyStreamAdapterState> state = (
-      StreamAdapterFactory::CreateAdapterForReading(source, streamReader)
-    );
+    WavPackReader reader(source);
 
-    // Explicit scope for the WavPackContext to ensure it is destroyed before
-    // the virtual file adapter gets killed (in case libwavpack wants to fetch
-    // additional data from the file while we examine it).
-    {
+    // WavPack file is now opened, extract the informations the caller requested.
+    ContainerInfo containerInfo;
+    containerInfo.DefaultTrackIndex = 0;
 
-      // Open the WavPack file, obtaining a WavPack context. Everything inside
-      // this scope is just error plumbing code, ensuring that the right exception
-      // surfaces if either libwavpack reports an error or the virtual file throws.
-      std::shared_ptr<::WavpackContext> context = Platform::WavPackApi::OpenStreamReaderInput(
-        state->Error, // exception_ptr that will receive VirtualFile exceptions
-        streamReader,
-        state.get() // passed to all IO callbacks as void pointer
-      );
+    // Standalone .wv files only have a single track, always.
+    TrackInfo &trackInfo = containerInfo.Tracks.emplace_back();
+    reader.ReadMetadata(trackInfo);
+    trackInfo.CodecName = GetName();
 
-      // The OpenStreamReaderInput() method will already have checked for errors,
-      // but if some file access error happened that libwavpack deemed non-fatal,
-      // we still want to throw it - an exception in VirtualFile should always surface.
-      StreamAdapterState::RethrowPotentialException(*state);
-
-      // WavPack file is now opened, extract the informations the caller requested.
-      ContainerInfo containerInfo;
-      containerInfo.DefaultTrackIndex = 0;
-
-      // Standalone .wv files only have a single track, always.
-      TrackInfo &trackInfo = containerInfo.Tracks.emplace_back();
-      trackInfo.CodecName = GetName();
-      extractTrackInfo(context, trackInfo);
-
-      return containerInfo;
-
-    } // WavPack context closing scope (so it's destroyed earlier than the virtual file adapter)
+    return containerInfo;
   }
 
   // ------------------------------------------------------------------------------------------- //

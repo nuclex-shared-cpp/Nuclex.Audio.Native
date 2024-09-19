@@ -76,7 +76,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(WavPackTrackDecoderTest, ReportsChannelOrderForEightDotOneFile) {
+  TEST(WavPackTrackDecoderTest, ReportsChannelOrderForSevenDotOneFile) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
       GetResourcesDirectory() + u8"wavpack-7dot1-int16-v416.wv"
     );

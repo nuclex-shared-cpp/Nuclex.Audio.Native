@@ -25,10 +25,23 @@ limitations under the License.
 #if defined(NUCLEX_AUDIO_HAVE_WAVPACK)
 
 #include "Nuclex/Audio/AudioSampleFormat.h"
+#include "Nuclex/Audio/ChannelPlacement.h"
 
 #include <memory> // for std::unique_ptr, std::shared_ptr
+#include <cstdint> // for std::uint64_t
+#include <vector> // for std::vector
 
 #include <wavpack.h> // for the WavPack types
+
+namespace Nuclex { namespace Audio {
+
+  // ------------------------------------------------------------------------------------------- //
+
+  class TrackInfo;
+
+  // ------------------------------------------------------------------------------------------- //
+
+}} // namespace Nuclex::Audio
 
 namespace Nuclex { namespace Audio { namespace Storage {
 
@@ -55,6 +68,17 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Utility class with intermediate methods used to decode FLAC files</summary>
+  /// <remarks>
+  ///   <para>
+  ///     This wrapper handles most of the interfacing with libwavpack, allowing other
+  ///     classes that are part of the WavPack codec implementation to focus more on
+  ///     the actual business logic.
+  ///   </para>
+  ///   <para>
+  ///     Because libwavpack uses file cursors in its design, this class is also designed to
+  ///     be used from a single thread and requires mutexes to sequentialize access to it.
+  ///   </para>
+  /// </remarks>
   class WavPackReader {
 
     /// <summary>Determines the native sample format from WavPack's parameters</summary>
@@ -71,6 +95,35 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
     /// <summary>Frees all resources owned by the instance</summary>
     public: ~WavPackReader();
+
+    /// <summary>Reads the FLAC file's metadata</summary>
+    /// <param name="target">Track informatio container that will receive the metadata</param>
+    public: void ReadMetadata(TrackInfo &target);
+
+    /// <summary>Counts the total number of frames (= samples in each channel)</summary>
+    /// <returns>The total number of frames in the audio file</returns>
+    public: std::uint64_t CountTotalFrames() const;
+
+    /// <summary>Determines the closest sample format to the file's audio data</summary>
+    /// <returns>A sample format matching or able to store the file's audio data</returns>
+    public: AudioSampleFormat GetSampleFormat() const;
+
+    /// <summary>Gets the order in which interlaved samples are decoded</summary>
+    /// <returns>A list of channels in the order they are interleaved</returns>
+    public: std::vector<ChannelPlacement> GetChannelOrder() const;
+
+    /// <summary>Retrieves the current position of the frame cursor</summary>
+    /// <returns>The frame cursor, pointing at the frame that will be decoded next</returns>
+    public: std::uint64_t GetFrameCursorPosition() const;
+
+    /// <summary>Moves the frame cursor to the specified location</summary>
+    /// <param name="frameIndex">Index of the frame that should be decoded next</param>
+    public: void Seek(std::uint64_t frameIndex);
+
+    /// <summary>Decodes sample from the audio file in interleaved format</summary>
+    /// <param name="buffer">Buffer into which the samples will be written</param>
+    /// <param name="frameCount">Number of frame that should be decoded</param>
+    public: void DecodeInterleaved(std::int32_t *buffer, std::size_t frameCount);
 
     /// <summary>File the reader is accessing</summary>
     private: std::shared_ptr<const VirtualFile> file;
@@ -95,6 +148,15 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     ///   to any public API method in libwavpack we can call.
     /// </remarks>
     private: std::shared_ptr<::WavpackContext> context;
+
+    /// <summary>Encoding mode of the WavPack file (for floating point check)</summary>
+    private: int mode;
+    /// <summary>Number of bits per sample</summary>
+    private: int bitsPerSample;
+    /// <summary>Number of bytes per sample</summary>
+    private: int bytesPerSample;
+    /// <summary>Index of the frame that will be decoded next</summary>
+    private: std::uint64_t frameCursor;
 
   };
 

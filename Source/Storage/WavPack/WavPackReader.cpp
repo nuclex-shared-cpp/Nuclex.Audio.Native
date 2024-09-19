@@ -24,7 +24,10 @@ limitations under the License.
 
 #if defined(NUCLEX_AUDIO_HAVE_WAVPACK)
 
+#include "Nuclex/Audio/TrackInfo.h"
+
 #include "./WavPackVirtualFileAdapter.h"
+#include "../Shared/ChannelOrderFactory.h"
 #include "../../Platform/WavPackApi.h"
 
 namespace {
@@ -71,7 +74,11 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     file(file),
     streamReader(),
     state(),
-    context() {
+    context(),
+    mode(0),
+    bitsPerSample(0),
+    bytesPerSample(0),
+    frameCursor(0) {
 
     // Set up a WavPack stream reader with adapter methods that will perform all reads
     // on the provided virtual file.
@@ -93,11 +100,105 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     // we still want to throw it - an exception in VirtualFile should always surface.
     StreamAdapterState::RethrowPotentialException(*state);
 
+    this->mode = Platform::WavPackApi::GetMode(this->context);
+    this->bitsPerSample = Platform::WavPackApi::GetBitsPerSample(context);
+    this->bytesPerSample = Platform::WavPackApi::GetBytesPerSample(context);
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   WavPackReader::~WavPackReader() {}
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void WavPackReader::ReadMetadata(TrackInfo &target) {
+    target.ChannelCount = Platform::WavPackApi::GetNumChannels(this->context);
+
+    target.ChannelPlacements = static_cast<ChannelPlacement>(
+      Platform::WavPackApi::GetChannelMask(this->context)
+    );
+
+    target.SampleFormat = GetSampleFormat();
+
+    target.SampleRate = Platform::WavPackApi::GetSampleRate(this->context);
+    target.BitsPerSample = this->bitsPerSample;
+
+    std::uint64_t totalSampleCount = Platform::WavPackApi::GetNumSamples64(this->context);
+    target.Duration = std::chrono::microseconds(
+      totalSampleCount * 1'000'000 / target.SampleRate
+    );
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::uint64_t WavPackReader::CountTotalFrames() const {
+    return Platform::WavPackApi::GetNumSamples64(this->context);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  AudioSampleFormat WavPackReader::GetSampleFormat() const {
+    return SampleFormatFromModeAndBitsPerSample(this->mode, this->bitsPerSample);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::vector<ChannelPlacement> WavPackReader::GetChannelOrder() const {
+
+    int wavPackChannelCount = Platform::WavPackApi::GetNumChannels(this->context);
+    int wavPackChannelMask = Platform::WavPackApi::GetChannelMask(this->context);
+
+    // Just like Waveform, in WavPack the channel order matches the order of the flag bits.
+    return Shared::ChannelOrderFactory::FromWaveformatExtensibleLayout(
+      static_cast<std::size_t>(wavPackChannelCount),
+      static_cast<ChannelPlacement>(wavPackChannelMask)
+    );
+
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::uint64_t WavPackReader::GetFrameCursorPosition() const {
+    return this->frameCursor;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void WavPackReader::Seek(std::uint64_t frameIndex) {
+
+    // ISSUE: SeekSample64() is documented as bringing the context into an invalid state
+    // when it returns an error and that no further operations besides closing
+    // the WavPack file are supported after that. Should we intervene to guarantee
+    // correct behavior or should we leave it up to random chance / the user?
+    Platform::WavPackApi::SeekSample(this->state->Error, this->context, frameIndex);
+    this->frameCursor = frameIndex;
+    //StreamAdapterState::RethrowPotentialException(*state);
+
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void WavPackReader::DecodeInterleaved(std::int32_t *buffer, std::size_t frameCount) {
+    if(std::numeric_limits<std::uint32_t>::max() < frameCount) {
+      throw std::invalid_argument(u8"Unable to decode that many samples in a single call");
+    }
+
+    std::uint32_t unpackedFrameCount = Platform::WavPackApi::UnpackSamples(
+      this->state->Error, // exception_ptr that will receive VirtualFile exceptions
+      this->context,
+      buffer,
+      static_cast<std::uint32_t>(frameCount)
+    );
+
+    this->frameCursor += unpackedFrameCount;
+
+    if(unpackedFrameCount != frameCount) {
+      throw std::runtime_error(
+        u8"libwavpack unpacked a different number of samples than was requested. "
+        u8"Truncated file?"
+      );
+    }
+  }
 
   // ------------------------------------------------------------------------------------------- //
 
