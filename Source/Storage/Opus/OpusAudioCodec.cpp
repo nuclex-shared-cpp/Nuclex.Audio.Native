@@ -45,21 +45,6 @@ namespace {
     using Nuclex::Audio::Platform::OpusApi;
     using Nuclex::Audio::Storage::Opus::OpusReader;
 
-    // Opus audio streams can be chained together (sequentially and not in the sense of
-    // interleaving it as another stream in the OGG container). This would mean that
-    // the audio stream properties (i.e. channel count, sample rate) might change while
-    // we are decoding...
-    //
-    // TODO: Investigate, in detail, how libopusfile deals with multiple links in Opus files.
-    //   I'm unsure of how to deal with this, and the degree to which libopusfile will
-    //   automate things - if it just switches to the next link, what if the channel count
-    //   suddenly changes? Will libopusfile upmix and downmix? Leave it all to us?
-    //
-    std::size_t linkCount = OpusApi::CountLinks(opusFile);
-    if(linkCount != 1) {
-      throw std::runtime_error(u8"Multi-link Opus files are not supported");
-    }
-
     const ::OpusHead &header = OpusApi::GetHeader(opusFile);
 
     trackInfo.ChannelCount = static_cast<std::size_t>(header.channel_count);
@@ -136,44 +121,18 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
       return std::optional<ContainerInfo>();
     }
 
-    // Set up the libopusfile callbacks with adapter methods that will perform all reads
-    // on the user-provided virtual file.
-    ::OpusFileCallbacks fileCallbacks;
-    std::unique_ptr<ReadOnlyFileAdapterState> state = (
-      FileAdapterFactory::CreateAdapterForReading(source, fileCallbacks)
-    );
+    OpusReader reader(source);
 
-    // Explicit scope for the OggOpusFile to ensure it is destroyed before
-    // the virtual file adapter gets killed (in case libopusfile wants to fetch
-    // additional data from the file while we examine it).
-    {
+    // WavPack file is now opened, extract the informations the caller requested.
+    ContainerInfo containerInfo;
+    containerInfo.DefaultTrackIndex = 0;
 
-      // Open the Opus file, obtaining a OggOpusFile instance. Everything inside
-      // this scope is just error plumbing code, ensuring that the right exception
-      // surfaces if either libopusfile reports an error or the virtual file throws.
-      std::shared_ptr<::OggOpusFile> opusFile = Platform::OpusApi::OpenFromCallbacks(
-        state->Error,
-        state.get(),
-        &fileCallbacks
-      );
+    // Standalone .wv files only have a single track, always.
+    TrackInfo &trackInfo = containerInfo.Tracks.emplace_back();
+    reader.ReadMetadata(trackInfo);
+    trackInfo.CodecName = GetName();
 
-      // The OpenFromCallbacks() method will already have checked for errors,
-      // but if some file access error happened that libopusfile deemed non-fatal,
-      // we still want to throw it - an exception in VirtualFile should always surface.
-      FileAdapterState::RethrowPotentialException(*state);
-
-      // OGG/Opus file is now opened, extract the informations the caller requested.
-      ContainerInfo containerInfo;
-      containerInfo.DefaultTrackIndex = 0;
-
-      // Standalone .opus files only have a single track, always.
-      TrackInfo &trackInfo = containerInfo.Tracks.emplace_back();
-      trackInfo.CodecName = GetName();
-      extractTrackInfo(opusFile, trackInfo);
-
-      return containerInfo;
-
-    } // opusFile closing scope (so it's destroyed earlier than the virtual file adapter)
+    return containerInfo;
   }
 
   // ------------------------------------------------------------------------------------------- //

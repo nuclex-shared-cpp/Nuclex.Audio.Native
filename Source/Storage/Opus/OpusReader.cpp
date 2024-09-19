@@ -24,7 +24,12 @@ limitations under the License.
 
 #if defined(NUCLEX_AUDIO_HAVE_OPUS)
 
-#include "Nuclex/Audio/Storage/VirtualFile.h"
+#include "./OpusVirtualFileAdapter.h" // for FileAdapterFactory
+#include "../../Platform/OpusApi.h" // for OpusApi
+
+#include "Nuclex/Audio/TrackInfo.h"
+
+#include <stdexcept> // for std::runtime_error
 
 namespace {
 
@@ -121,6 +126,98 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     } else { // family (0 | 1) / other family
       return ChannelPlacement::Unknown;
     }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  OpusReader::OpusReader(const std::shared_ptr<const VirtualFile> &file) :
+    file(file),
+    fileCallbacks(),
+    state(),
+    opusFile() {
+
+    // Set up the libopusfile callbacks with adapter methods that will perform all reads
+    // on the user-provided virtual file.
+    this->state = (
+      FileAdapterFactory::CreateAdapterForReading(file, this->fileCallbacks)
+    );
+
+    // Open the Opus file, obtaining a OggOpusFile instance. Everything inside
+    // this scope is just error plumbing code, ensuring that the right exception
+    // surfaces if either libopusfile reports an error or the virtual file throws.
+    this->opusFile = Platform::OpusApi::OpenFromCallbacks(
+      state->Error,
+      state.get(),
+      &fileCallbacks
+    );
+
+    // The OpenFromCallbacks() method will already have checked for errors,
+    // but if some file access error happened that libopusfile deemed non-fatal,
+    // we still want to throw it - an exception in VirtualFile should always surface.
+    FileAdapterState::RethrowPotentialException(*state);
+
+    // Opus audio streams can be chained together (sequentially and not in the sense of
+    // interleaving it as another stream in the OGG container). This would mean that
+    // the audio stream properties (i.e. channel count, sample rate) might change while
+    // we are decoding...
+    //
+    // TODO: Investigate, in detail, how libopusfile deals with multiple links in Opus files.
+    //   I'm unsure of how to deal with this, and the degree to which libopusfile will
+    //   automate things - if it just switches to the next link, what if the channel count
+    //   suddenly changes? Will libopusfile upmix and downmix? Leave it all to us?
+    //
+    std::size_t linkCount = Platform::OpusApi::CountLinks(opusFile);
+    if(linkCount != 1) {
+      throw std::runtime_error(u8"Multi-link Opus files are not supported");
+    }
+
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  OpusReader::~OpusReader() {}
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void OpusReader::ReadMetadata(TrackInfo &target) {
+    const ::OpusHead &header = Platform::OpusApi::GetHeader(this->opusFile);
+
+    target.ChannelCount = static_cast<std::size_t>(header.channel_count);
+
+    target.ChannelPlacements = OpusReader::ChannelPlacementFromMappingFamilyAndChannelCount(
+      header.mapping_family, target.ChannelCount
+    );
+
+    // Opus audio is always encoded at 48000 samples per second, no matter what the original
+    // input sample rate had been. The .input_sample_rate field merely states what
+    // the original sample rate had been, but is not useful for playback of the Opus file.
+    //trackInfo.SampleRate = static_cast<std::size_t>(header.input_sample_rate)
+    target.SampleRate = 48000;
+
+    std::uint64_t totalSampleCount = Platform::OpusApi::CountSamples(opusFile);
+    target.Duration = std::chrono::microseconds(totalSampleCount * 1'000 / 48);
+
+    {
+      // Completely unfounded, arbitrary value to estimate the precision (which may or may
+      // not even change depending on Opus bitrates) of an Opus file compared to any audio
+      // format that stores signed integer samples.
+      const std::size_t MadeUpOpusPrecisionFromCompressionRatio = 80;
+
+      // Calculate the number of bytes the audio data would decode to
+      std::uint64_t decodedByteCount = totalSampleCount * 2; // bytes
+      decodedByteCount *= target.ChannelCount;
+
+      target.BitsPerSample = std::max<std::size_t>(
+        1, // Let's not report less than 1 bit per sample...
+        Platform::OpusApi::GetRawContainerSize(opusFile) *
+        MadeUpOpusPrecisionFromCompressionRatio /
+        decodedByteCount
+      );
+    }
+
+    // TODO: Replace with correct value once actual decoding format is known
+    target.SampleFormat = Nuclex::Audio::AudioSampleFormat::SignedInteger_16;
+
   }
 
   // ------------------------------------------------------------------------------------------- //

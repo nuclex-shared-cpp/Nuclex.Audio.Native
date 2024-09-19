@@ -188,11 +188,11 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
     /// <summary>File the reader is accessing</summary>
     private: std::shared_ptr<const VirtualFile> file;
-    /// <summary>State (emulated file cursor, errors) or the virtual file adapter</summary>
+    /// <summary>State (emulated file cursor, errors) of the virtual file adapter</summary>
     private: std::unique_ptr<ReadOnlyFileAdapterState> state;
     /// <summary>Stream decoder from libflac that does the actual decoding work</summary>
     private: std::shared_ptr<::FLAC__StreamDecoder> streamDecoder;
-    /// <summary>Potnetial Error reported through libflac's error callback</summary>
+    /// <summary>Potential error reported through libflac's error callback</summary>
     private: std::exception_ptr error;
 
     /// <summary>Whether the metadata block was delivered</summary>

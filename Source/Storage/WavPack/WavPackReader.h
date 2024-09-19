@@ -97,7 +97,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     public: ~WavPackReader();
 
     /// <summary>Reads the FLAC file's metadata</summary>
-    /// <param name="target">Track informatio container that will receive the metadata</param>
+    /// <param name="target">Track information container that will receive the metadata</param>
     public: void ReadMetadata(TrackInfo &target);
 
     /// <summary>Counts the total number of frames (= samples in each channel)</summary>

@@ -28,6 +28,19 @@ limitations under the License.
 
 #include <string> // for std::string
 #include <cstddef> // for std::size_t
+#include <memory> // for std::unique_ptr
+
+#include <opusfile.h>
+
+namespace Nuclex { namespace Audio {
+
+  // ------------------------------------------------------------------------------------------- //
+
+  class TrackInfo;
+
+  // ------------------------------------------------------------------------------------------- //
+
+}} // namespace Nuclex::Audio
 
 namespace Nuclex { namespace Audio { namespace Storage {
 
@@ -38,6 +51,16 @@ namespace Nuclex { namespace Audio { namespace Storage {
   // ------------------------------------------------------------------------------------------- //
 
 }}} // namespace Nuclex::Audio::Storage
+
+namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
+
+  // ------------------------------------------------------------------------------------------- //
+
+  struct ReadOnlyFileAdapterState;
+
+  // ------------------------------------------------------------------------------------------- //
+
+}}}} // namespace Nuclex::Audio::Storage::Opus
 
 namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
@@ -61,6 +84,30 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     public: static ChannelPlacement ChannelPlacementFromMappingFamilyAndChannelCount(
       int mappingFamily, std::size_t channelCount
     );
+
+    /// <summary>Initializes a new Opus reader on the specified file</summary>
+    /// <param name="file">File the reader will access</param>
+    public: OpusReader(const std::shared_ptr<const VirtualFile> &file);
+
+    /// <summary>Frees all resources owned by the Opus reader</summary>
+    public: ~OpusReader();
+
+    /// <summary>Reads the metadata from an Opus audi ofile</summary>
+    /// <param name="target">Track information container that will receive the metadata</param>
+    public: void ReadMetadata(TrackInfo &target);
+
+    /// <summary>File the reader is accessing</summary>
+    private: std::shared_ptr<const VirtualFile> file;
+    /// <summary>Holds the function pointers to the file I/O functions</summary>
+    /// <remarks>
+    ///   libopusfile takes a pointer to these, so we try to err on the side of caution
+    ///   and keep the structure around for as long as the opus file is opened.
+    /// </remarks>
+    private: ::OpusFileCallbacks fileCallbacks;
+    /// <summary>State (emulated file cursor, errors) of the virtual file adapter</summary>
+    private: std::unique_ptr<ReadOnlyFileAdapterState> state;
+    /// <summary>Manages the state and decoder state of the opened Opus file</summary>
+    private: std::shared_ptr<::OggOpusFile> opusFile;
 
   };
 
