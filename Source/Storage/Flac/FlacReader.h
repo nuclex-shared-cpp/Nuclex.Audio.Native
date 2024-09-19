@@ -208,12 +208,12 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     private: Nuclex::Audio::TrackInfo *trackInfo;
     /// <summary>Current assumed position of the stream decoder's cursor</summary>
     private: std::uint64_t frameCursor;
+    /// <summary>Absolute frame index from which the next decode should start</summary>
+    private: std::optional<std::uint64_t> scheduledSeekPosition;
     /// <summary>User pointer that will be delivered to the callback</summary>
     private: void *userPointerForCallback;
     /// <summary>Callback that should be invoked to handle the decoded samples</summary>
     private: ProcessDecodedSamplesFunction *processDecodedSamplesCallback;
-    /// <summary>Ramaining number of frames the caller is interested in</summary>
-    private: std::uint64_t remainingFrameCount;
 
   };
 

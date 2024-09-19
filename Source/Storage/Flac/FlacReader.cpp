@@ -27,6 +27,8 @@ limitations under the License.
 #include "Nuclex/Audio/TrackInfo.h"
 #include "Nuclex/Audio/Errors/CorruptedFileError.h"
 
+#include <Nuclex/Support/ScopeGuard.h> // for ON_SCOPE_EXIT
+
 #include "../../Platform/FlacApi.h" // for the wrapped FLAC API functions
 
 #include <Nuclex/Support/Text/StringHelper.h> // for StringHelper::GetTrimmed()
@@ -202,9 +204,9 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     totalFrameCount(std::uint64_t(-1)),
     trackInfo(nullptr),
     frameCursor(0),
+    scheduledSeekPosition(),
     userPointerForCallback(nullptr),
-    processDecodedSamplesCallback(nullptr),
-    remainingFrameCount() {
+    processDecodedSamplesCallback(nullptr) {
 
     // We want the VorbisComment block as well because non-standard audio channel
     // sets in FLAC are stored as a WAVEFORMATEXTENSIBLE_CHANNELMAP=0x tag,
@@ -236,7 +238,6 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
   void FlacReader::ReadMetadata(TrackInfo &target) {
     this->processDecodedSamplesCallback = nullptr;
-    this->remainingFrameCount = 0;
 
     // Let the stream decoder process FLAC data blocks. They will be delivered via
     // the callbacks set up together with the virtual file I/O callbacks (libflac's design
@@ -278,14 +279,28 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
   // ------------------------------------------------------------------------------------------- //
 
   std::uint64_t FlacReader::GetFrameCursorPosition() const {
-    return this->frameCursor;
+    if(this->scheduledSeekPosition.has_value()) {
+      return this->scheduledSeekPosition.value();
+    } else {
+      return this->frameCursor;
+    }
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   void FlacReader::Seek(std::uint64_t frameIndex) {
-    Platform::FlacApi::SeekAbsolute(this->streamDecoder, frameIndex);
-    this->frameCursor = frameIndex;
+
+    // Originally, this was a simple call to Platform::FlacApi::SeekAbsolute(), but as it
+    // turns out, ::FLAC__stream_decoder_seek_absolute() will "helpfully" call
+    // ::FLAC__stream_decoder_process_single() for us. Not only that, that call will be
+    // the only chance for us to grab the audio data we're seeking to :/
+    //
+    // So instead of seeking, we're just scheduling the seek and it will be done on
+    // the next Decode() request in lieu of calling DecodeSingle()...
+    //
+    this->scheduledSeekPosition = frameIndex;
+    // Do not update frameCursor here until we're actually done seeking!
+
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -297,37 +312,65 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
   ) {
     this->userPointerForCallback = userPointer;
     this->processDecodedSamplesCallback = processDecodedSamples;
-    this->remainingFrameCount = frameCount;
 
     assert(
-      this->totalFrameCount >= (this->frameCursor + frameCount) &&
+      this->totalFrameCount >= (GetFrameCursorPosition() + frameCount) &&
       u8"Decode request remains within the file's stated audio data length"
     );
 
-    // Let the stream decoder process FLAC data blocks. They will be delivered via
-    // the callbacks set up together with the virtual file I/O callbacks (libflac's design
-    // is like that), and with the 'isReadingMetadata' property set, the callbacks will
-    // trigger an early stop right after the first audio frame has been decoded.
+    // We're decoding now and not interested in metadata anymore
     this->trackInfo = nullptr;
-    while(this->remainingFrameCount >= 1) {
-      std::uint64_t previousRemainingFrameCount = this->remainingFrameCount;
-      bool wasProcessed = Platform::FlacApi::ProcessSingle(this->streamDecoder);
-      if(!wasProcessed) {
+
+    // Will be set to the end position below to know when we're finished decoding
+    std::uint64_t endFrameCursor;
+
+    // If a seek is scheduled, we do it here. The reason is that seeking in libflac
+    // will invoke the audio decode callback as if ProcessSingle() was called (which it is
+    // internally!) and that will be the only chance to grab the first audio block.
+    if(this->scheduledSeekPosition.has_value()) {
+      this->frameCursor = this->scheduledSeekPosition.value();
+
+      // !! This includes an automatic call to Platform::FlacApi::ProcessSingle() !!
+      Platform::FlacApi::SeekAbsolute(this->streamDecoder, this->frameCursor);
+
+      FileAdapterState::RethrowPotentialException(*state);
+      if(static_cast<bool>(this->error)) {
+        std::rethrow_exception(this->error);
       }
-      if(!wasProcessed || (this->remainingFrameCount == previousRemainingFrameCount)) {
+
+      // If we want to make the current seek-calls-process_single behavior of libflac
+      // mandatory. Leaving this out will (should) gracefully continue to work even
+      // if future libflac version to not call process_single() from within seek().
+      //
+      //if(this->frameCursor == this->scheduledSeekPosition.value()) {
+      //  throw Errors::CorruptedFileError(
+      //    u8"FLAC audio file did not provide all requested samples. File truncated?"
+      //  );
+      //}
+
+      endFrameCursor = this->scheduledSeekPosition.value() + frameCount;
+      this->scheduledSeekPosition.reset();
+    } else {
+      endFrameCursor = this->frameCursor + frameCount;
+    }
+
+    // Let the stream decoder process FLAC data blocks. They will be delivered via
+    // the callbacks set up together with the virtual file I/O callbacks, which are
+    // then forwarded into our ProcessAudioFrame() method.
+    while(this->frameCursor < endFrameCursor) {
+      std::uint64_t previousFrameCursor = this->frameCursor;
+      bool wasProcessed = Platform::FlacApi::ProcessSingle(this->streamDecoder);
+
+      FileAdapterState::RethrowPotentialException(*state);
+      if(static_cast<bool>(this->error)) {
+        std::rethrow_exception(this->error);
+      }
+
+      if(!wasProcessed || (this->frameCursor == previousFrameCursor)) {
         throw Errors::CorruptedFileError(
           u8"FLAC audio file did not provide all requested samples. File truncated?"
         );
       }
-    }
-
-    // Errors may have happened in either the virtual file (if this happens, it's considered
-    // the root cause and other errors are merely follow-up problems from there) or libflac
-    // encountered problems decoding the file, in which case we saved the error in order to
-    // not throw exceptions right through unsuspecting C code. Both need to be checked.
-    FileAdapterState::RethrowPotentialException(*state);
-    if(static_cast<bool>(this->error)) {
-      std::rethrow_exception(this->error);
     }
   }
 
@@ -366,6 +409,10 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     // Update the frame cursor (so we know whether seeking is needed) and
     // the number of remaining samples. If no more samples were requested,
     // stop decoding at this point by returning false.
+    assert(
+      (frame.header.number.frame_number == this->frameCursor) &&
+      u8"Tracked frame cursor remains in sync with the stream decoder position"
+    );
     this->frameCursor += deliveredFrameCount;
 
     // If we're decoding (rather than just snatching the channel assignment for our metadata),
@@ -374,11 +421,6 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
       this->processDecodedSamplesCallback(
         this->userPointerForCallback, buffers, deliveredFrameCount
       );
-      if(deliveredFrameCount < this->remainingFrameCount) {
-        this->remainingFrameCount -= deliveredFrameCount;
-      } else {
-        this->remainingFrameCount = 0;
-      }
     }
 
     return true; // Always return true, otherwise the decoder enters the 'aborted' state
