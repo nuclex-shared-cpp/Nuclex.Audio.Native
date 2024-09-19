@@ -88,6 +88,9 @@
     <ClInclude Include="Include\Nuclex\Audio\TrackInfo.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Storage\Shared\ChannelOrderFactory.h">
+      <Filter>Source\Storage\Shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Errors\CorruptedFileError.cpp">
@@ -284,6 +287,9 @@
     </ClCompile>
     <ClCompile Include="Source\TrackInfo.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\Shared\ChannelOrderFactory.cpp">
+      <Filter>Source\Storage\Shared</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

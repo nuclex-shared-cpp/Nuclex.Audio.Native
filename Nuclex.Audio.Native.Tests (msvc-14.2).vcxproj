@@ -243,7 +243,9 @@
     <ClInclude Include="Source\Storage\Flac\FlacTrackDecoder.h" />
     <ClCompile Include="Source\Storage\Flac\FlacVirtualFileAdapter.cpp" />
     <ClInclude Include="Source\Storage\Flac\FlacVirtualFileAdapter.h" />
+    <ClCompile Include="Source\Storage\Shared\ChannelOrderFactory.cpp" />
     <ClCompile Include="Source\Storage\Shared\VirtualFileAdapterState.cpp" />
+    <ClInclude Include="Source\Storage\Shared\ChannelOrderFactory.h" />
     <ClInclude Include="Source\Storage\Shared\VirtualFileAdapterState.h" />
     <ClCompile Include="Source\Storage\Opus\OpusAudioCodec.cpp" />
     <ClInclude Include="Source\Storage\Opus\OpusAudioCodec.h" />
@@ -288,8 +290,11 @@
     <ClInclude Include="Tests\Processing\SineWaveDetector.h" />
     <ClCompile Include="Tests\Storage\Flac\FlacAudioCodecTests.cpp" />
     <ClCompile Include="Tests\Storage\Flac\FlacDetectionTests.cpp" />
+    <ClCompile Include="Tests\Storage\Flac\FlacTrackDecoderTest.cpp" />
     <ClCompile Include="Tests\Storage\Opus\OpusAudioCodecTests.cpp" />
     <ClCompile Include="Tests\Storage\Opus\OpusDetectionTests.cpp" />
+    <ClCompile Include="Tests\Storage\Shared\ChannelOrderFactoryTest.cpp" />
+    <ClCompile Include="Tests\Storage\Shared\VirtualFileAdapterStateTest.cpp" />
     <ClCompile Include="Tests\Storage\Waveform\WaveformAudioCodecTests.cpp" />
     <ClCompile Include="Tests\Storage\Waveform\WaveformDetectionTests.cpp" />
     <ClCompile Include="Tests\Storage\WavPack\WavPackAudioCodecTests.cpp" />

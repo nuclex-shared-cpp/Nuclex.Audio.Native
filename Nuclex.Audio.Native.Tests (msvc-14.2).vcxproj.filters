@@ -69,6 +69,9 @@
     <Filter Include="Source\Storage\Shared">
       <UniqueIdentifier>{4aac9c0f-5dfb-4d85-b87a-781881cdae2d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Tests\Storage\Shared">
+      <UniqueIdentifier>{e595b2d6-065f-44bf-9b97-0cf108eaa955}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Nuclex\Audio\Errors\UnsupportedFormatError.h">
@@ -109,6 +112,9 @@
     </ClInclude>
     <ClInclude Include="Include\Nuclex\Audio\TrackInfo.h">
       <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Storage\Shared\ChannelOrderFactory.h">
+      <Filter>Source\Storage\Shared</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -306,6 +312,18 @@
     </ClCompile>
     <ClCompile Include="Source\TrackInfo.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\Shared\ChannelOrderFactory.cpp">
+      <Filter>Source\Storage\Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="Tests\Storage\Shared\ChannelOrderFactoryTest.cpp">
+      <Filter>Tests\Storage\Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="Tests\Storage\Shared\VirtualFileAdapterStateTest.cpp">
+      <Filter>Tests\Storage\Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="Tests\Storage\Flac\FlacTrackDecoderTest.cpp">
+      <Filter>Tests\Storage\Flac</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
