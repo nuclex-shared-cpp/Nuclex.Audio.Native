@@ -26,7 +26,8 @@ limitations under the License.
 
 #include <Nuclex/Support/Text/StringConverter.h>
 
-#include <stdexcept>
+#include <stdexcept> // for std::runtime_error
+#include <cassert> // for assert()
 
 namespace {
 
@@ -123,6 +124,14 @@ namespace Nuclex { namespace Audio { namespace Platform {
       throw std::runtime_error(message);
 
     }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void FlacApi::Finish(const std::shared_ptr<::FLAC__StreamDecoder> &decoder) {
+    ::FLAC__bool result = ::FLAC__stream_decoder_finish(decoder.get());
+    assert((result == true) && u8"Flac stream decoder is successfully shut down");
+    NUCLEX_AUDIO_NDEBUG_UNUSED(result);
   }
 
   // ------------------------------------------------------------------------------------------- //

@@ -123,7 +123,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     public: FlacReader(const std::shared_ptr<const VirtualFile> &file);
 
     /// <summary>Frees all resources owned by the instance</summary>
-    public: ~FlacReader() = default;
+    public: ~FlacReader();
 
     /// <summary>Reads the FLAC file's metadata</summary>
     /// <param name="target">Track informatio container that will receive the metadata</param>
@@ -213,7 +213,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     /// <summary>Callback that should be invoked to handle the decoded samples</summary>
     private: ProcessDecodedSamplesFunction *processDecodedSamplesCallback;
     /// <summary>Ramaining number of frames the caller is interested in</summary>
-    private: std::size_t remainingFrameCount;
+    private: std::uint64_t remainingFrameCount;
 
   };
 

@@ -228,6 +228,12 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
   // ------------------------------------------------------------------------------------------- //
 
+  FlacReader::~FlacReader() {
+    Platform::FlacApi::Finish(this->streamDecoder);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   void FlacReader::ReadMetadata(TrackInfo &target) {
     this->processDecodedSamplesCallback = nullptr;
     this->remainingFrameCount = 0;
@@ -237,7 +243,12 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     // is like that), and with the 'isReadingMetadata' property set, the callbacks will
     // trigger an early stop right after the first audio frame has been decoded.
     this->trackInfo = &target;
-    Platform::FlacApi::ProcessUntilEndOfStream(this->streamDecoder);
+    while(!this->obtainedMetadata || !this->channelAssignment.has_value()) {
+      bool wasProcessed = Platform::FlacApi::ProcessSingle(this->streamDecoder);
+      if(!wasProcessed) {
+        throw Errors::CorruptedFileError(u8"FLAC audio file is missing the metadata block");
+      }
+    }
     this->trackInfo = nullptr;
 
     // Errors may have happened in either the virtual file (if this happens, it's considered
@@ -288,12 +299,27 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     this->processDecodedSamplesCallback = processDecodedSamples;
     this->remainingFrameCount = frameCount;
 
+    assert(
+      this->totalFrameCount >= (this->frameCursor + frameCount) &&
+      u8"Decode request remains within the file's stated audio data length"
+    );
+
     // Let the stream decoder process FLAC data blocks. They will be delivered via
     // the callbacks set up together with the virtual file I/O callbacks (libflac's design
     // is like that), and with the 'isReadingMetadata' property set, the callbacks will
     // trigger an early stop right after the first audio frame has been decoded.
     this->trackInfo = nullptr;
-    Platform::FlacApi::ProcessUntilEndOfStream(this->streamDecoder);
+    while(this->remainingFrameCount >= 1) {
+      std::uint64_t previousRemainingFrameCount = this->remainingFrameCount;
+      bool wasProcessed = Platform::FlacApi::ProcessSingle(this->streamDecoder);
+      if(!wasProcessed) {
+      }
+      if(!wasProcessed || (this->remainingFrameCount == previousRemainingFrameCount)) {
+        throw Errors::CorruptedFileError(
+          u8"FLAC audio file did not provide all requested samples. File truncated?"
+        );
+      }
+    }
 
     // Errors may have happened in either the virtual file (if this happens, it's considered
     // the root cause and other errors are merely follow-up problems from there) or libflac
@@ -348,16 +374,14 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
       this->processDecodedSamplesCallback(
         this->userPointerForCallback, buffers, deliveredFrameCount
       );
-
       if(deliveredFrameCount < this->remainingFrameCount) {
         this->remainingFrameCount -= deliveredFrameCount;
-        return true;
       } else {
         this->remainingFrameCount = 0;
       }
     }
 
-    return false;
+    return true; // Always return true, otherwise the decoder enters the 'aborted' state
   }
 
   // ------------------------------------------------------------------------------------------- //

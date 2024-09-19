@@ -110,11 +110,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
       double *buffer, const std::uint64_t startFrame, const std::size_t frameCount
     ) const override;
 
-    /// <summary>Fetches the order of audio channels from the Flac context</summary>
-    private: void fetchChannelOrder();
-
     /// <summary>Reader through which the audio file will be decoded</summary>
-    private: FlacReader reader;
+    private: mutable FlacReader reader;
     /// <summary>Informations about the audio track being decoded</summary>
     private: TrackInfo trackInfo;
     /// <summary>Order in which audio channels appear</summary>

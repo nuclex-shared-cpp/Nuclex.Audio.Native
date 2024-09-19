@@ -35,6 +35,25 @@ limitations under the License.
 namespace {
 
   // ------------------------------------------------------------------------------------------- //
+
+  class FlacDecodedSampleForwarder {
+
+    public: void WriteDecodedSamples(
+      const std::int32_t *const buffers[], std::size_t frameCount
+    ) {
+
+    }
+
+    public: static void ProcessDecodedSamplesFunction(
+      void *userPointer, const std::int32_t *const buffers[], std::size_t frameCount
+    ) {
+      reinterpret_cast<FlacDecodedSampleForwarder *>(userPointer)->WriteDecodedSamples(
+        buffers, frameCount
+      );
+    }
+
+  };
+
   // ------------------------------------------------------------------------------------------- //
 
 } // anonymous namespace
@@ -74,8 +93,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
   // ------------------------------------------------------------------------------------------- //
 
   std::size_t FlacTrackDecoder::CountChannels() const {
-    //this->reader.GetFrameCursorPosition
-    throw std::runtime_error(u8"Not implemented yet");
+    return this->channelOrder.size();
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -116,50 +134,69 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
   // ------------------------------------------------------------------------------------------- //
 
   void FlacTrackDecoder::DecodeInterleavedInt16(
-    std::int16_t *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+    std::int16_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
     (void)buffer;
-    (void)startSample;
-    (void)sampleCount;
+    (void)startFrame;
+    (void)frameCount;
     throw std::runtime_error(u8"Not implemented yet");
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   void FlacTrackDecoder::DecodeInterleavedInt32(
-    std::int32_t *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+    std::int32_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
     (void)buffer;
-    (void)startSample;
-    (void)sampleCount;
+    (void)startFrame;
+    (void)frameCount;
     throw std::runtime_error(u8"Not implemented yet");
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   void FlacTrackDecoder::DecodeInterleavedFloat(
-    float *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+    float *buffer, const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
-    (void)buffer;
-    (void)startSample;
-    (void)sampleCount;
+    if(std::numeric_limits<std::uint32_t>::max() < frameCount) {
+      throw std::logic_error(u8"Unable to decode this many samples in one call");
+    }
+    if(startFrame >= this->totalSampleCount) {
+      throw std::out_of_range(u8"Start sample index is out of bounds");
+    }
+    if(this->totalSampleCount < startFrame + frameCount) {
+      throw std::out_of_range(u8"Decode sample count goes beyond the end of audio data");
+    }
+
+    {
+      std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
+
+      // If the caller requests to read from a location that is not where the file cursor
+      // is currently at, we need to seek to that position first.
+      if(this->reader.GetFrameCursorPosition() != startFrame) {
+        this->reader.Seek(startFrame);
+      }
+
+      FlacDecodedSampleForwarder forwarder;
+
+      this->reader.DecodeSeparated(
+        &forwarder,
+        &FlacDecodedSampleForwarder::ProcessDecodedSamplesFunction,
+        frameCount
+      );
+    } // mutex lock scope
+
     throw std::runtime_error(u8"Not implemented yet");
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   void FlacTrackDecoder::DecodeInterleavedDouble(
-    double *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+    double *buffer, const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
     (void)buffer;
-    (void)startSample;
-    (void)sampleCount;
-    throw std::runtime_error(u8"Not implemented yet");
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  void FlacTrackDecoder::fetchChannelOrder() {
+    (void)startFrame;
+    (void)frameCount;
     throw std::runtime_error(u8"Not implemented yet");
   }
 

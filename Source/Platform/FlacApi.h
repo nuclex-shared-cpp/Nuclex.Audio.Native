@@ -92,6 +92,14 @@ namespace Nuclex { namespace Audio { namespace Platform {
       void *clientData
     );
 
+    /// <summary>Shuts a stream decoder down after decoding has finished</summary>
+    /// <param name="decoder">Stream decoder that will be shut down</param>
+    /// <remarks>
+    ///   The FLAC API documentation recommends calling this as the counterpart to every
+    ///   call to Init (InitFile(), InitStream() in this wrapper).
+    /// </remarks>
+    public: static void Finish(const std::shared_ptr<::FLAC__StreamDecoder> &decoder);
+
     /// <summary>Enables the metadata callback for the specified metadata block type</summary>
     /// <param name="deocder">Decoder for which a metadata callback will be enabled</param>
     /// <param name="metadataType">Metadata block type for which to enable the callback</param>
