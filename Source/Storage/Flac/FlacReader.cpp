@@ -247,19 +247,20 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     while(!this->obtainedMetadata || !this->channelAssignment.has_value()) {
       bool wasProcessed = Platform::FlacApi::ProcessSingle(this->streamDecoder);
       if(!wasProcessed) {
+        FileAdapterState::RethrowPotentialException(*state);
+
+        // Errors may have happened in either the virtual file (if this happens, it's considered
+        // the root cause and other errors are merely follow-up problems from there) or libflac
+        // encountered problems decoding the file, in which case we saved the error in order to
+        // not throw exceptions right through unsuspecting C code. Both need to be checked.
+        if(static_cast<bool>(this->error)) {
+          std::rethrow_exception(this->error);
+        }
+
         throw Errors::CorruptedFileError(u8"FLAC audio file is missing the metadata block");
       }
     }
     this->trackInfo = nullptr;
-
-    // Errors may have happened in either the virtual file (if this happens, it's considered
-    // the root cause and other errors are merely follow-up problems from there) or libflac
-    // encountered problems decoding the file, in which case we saved the error in order to
-    // not throw exceptions right through unsuspecting C code. Both need to be checked.
-    FileAdapterState::RethrowPotentialException(*state);
-    if(static_cast<bool>(this->error)) {
-      std::rethrow_exception(this->error);
-    }
 
     // Finally, no error may have happened, but the FLAC metadata block might not have been
     // encountered. This might be fine for libflac in streaming scenarios, but we absolutely
