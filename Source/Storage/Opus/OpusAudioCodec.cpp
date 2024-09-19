@@ -27,107 +27,12 @@ limitations under the License.
 #include "Nuclex/Audio/Storage/VirtualFile.h"
 #include "./OpusDetection.h"
 #include "./OpusVirtualFileAdapter.h"
+#include "./OpusReader.h"
 #include "../../Platform/OpusApi.h"
 
 #include <stdexcept> // for std::runtime_error
 
 namespace {
-
-  // ------------------------------------------------------------------------------------------- //
-
-  /// <summary>
-  ///   Determines the placement of audio channels from the mapping family and channel count
-  /// </summary>
-  /// <param name="mappingFamily">Mapping family recorded in the Opus file</param>
-  /// <param name="channelCount">Number of channels present in the Opus file</param>
-  /// <returns>
-  ///   A <see cref="ChannelPlacement" /> mask describing the placments of all audio channels
-  /// </returns>
-  Nuclex::Audio::ChannelPlacement channelPlacementFromFamilyAndCount(
-    int mappingFamily, std::size_t channelCount
-  ) {
-    using Nuclex::Audio::ChannelPlacement;
-
-    // Opus uses the Vorbis channel layouts and orders. These can be found in section 4.3.9
-    // of the Vorbis 1 Specification (if you cloned the repository this file is in, you'll
-    // find a copy of said specification in its Documents directory).
-    //
-    if((mappingFamily == 0) || (mappingFamily == 1)) {
-      switch(channelCount) {
-        case 1: {
-          return ChannelPlacement::FrontCenter;
-        }
-        case 2: {
-          return (
-            ChannelPlacement::FrontLeft |
-            ChannelPlacement::FrontRight
-          );
-        }
-        case 3: {
-          return (
-            ChannelPlacement::FrontLeft |
-            ChannelPlacement::FrontCenter |
-            ChannelPlacement::FrontRight
-          );
-        }
-        case 4: {
-          return (
-            ChannelPlacement::FrontLeft |
-            ChannelPlacement::FrontCenter |
-            ChannelPlacement::FrontRight |
-            ChannelPlacement::BackCenter
-          );
-        }
-        case 5: {
-          return (
-            ChannelPlacement::FrontLeft |
-            ChannelPlacement::FrontCenter |
-            ChannelPlacement::FrontRight |
-            ChannelPlacement::BackLeft |
-            ChannelPlacement::BackRight
-          );
-        }
-        case 6: {
-          return (
-            ChannelPlacement::FrontLeft |
-            ChannelPlacement::FrontCenter |
-            ChannelPlacement::FrontRight |
-            ChannelPlacement::BackLeft |
-            ChannelPlacement::BackRight |
-            ChannelPlacement::LowFrequencyEffects
-          );
-        }
-        case 7: {
-          return (
-            ChannelPlacement::FrontLeft |
-            ChannelPlacement::FrontCenter |
-            ChannelPlacement::FrontRight |
-            ChannelPlacement::SideLeft |
-            ChannelPlacement::SideRight |
-            ChannelPlacement::BackCenter |
-            ChannelPlacement::LowFrequencyEffects
-          );
-        }
-        case 8: {
-          return (
-            ChannelPlacement::FrontLeft |
-            ChannelPlacement::FrontCenter |
-            ChannelPlacement::FrontRight |
-            ChannelPlacement::SideLeft |
-            ChannelPlacement::SideRight |
-            ChannelPlacement::BackLeft |
-            ChannelPlacement::BackRight |
-            ChannelPlacement::LowFrequencyEffects
-          );
-        }
-        default: {
-          return ChannelPlacement::Unknown;
-        }
-      }
-    } else { // family (0 | 1) / other family
-      return ChannelPlacement::Unknown;
-    }
-  }
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -138,6 +43,7 @@ namespace {
     std::shared_ptr<::OggOpusFile> opusFile, Nuclex::Audio::TrackInfo &trackInfo
   ) {
     using Nuclex::Audio::Platform::OpusApi;
+    using Nuclex::Audio::Storage::Opus::OpusReader;
 
     // Opus audio streams can be chained together (sequentially and not in the sense of
     // interleaving it as another stream in the OGG container). This would mean that
@@ -158,7 +64,7 @@ namespace {
 
     trackInfo.ChannelCount = static_cast<std::size_t>(header.channel_count);
 
-    trackInfo.ChannelPlacements = channelPlacementFromFamilyAndCount(
+    trackInfo.ChannelPlacements = OpusReader::ChannelPlacementFromMappingFamilyAndChannelCount(
       header.mapping_family, trackInfo.ChannelCount
     );
 
