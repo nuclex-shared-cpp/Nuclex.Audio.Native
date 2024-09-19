@@ -36,21 +36,60 @@ namespace {
 
   // ------------------------------------------------------------------------------------------- //
 
-  class FlacDecodedSampleForwarder {
+  /// <summary>Helper that copies and interleaves samples returne by libflac</summary>
+  class InterleavingSampleForwarder {
 
+    public: InterleavingSampleForwarder(
+      float *target, std::size_t channelCount, std::size_t bitsPerSample
+    ) :
+      target(target),
+      channelCount(channelCount),
+      factor(0.0f) {
+
+      this->factor = static_cast<float>(
+        1.0 / static_cast<double>((1 << bitsPerSample) - 1)
+      );
+    }
+
+    /// <summary>Writes the decoded samples into the user-provided buffer</summary>
+    /// <param name="buffers">
+    ///   Buffers (allocated and provided by libflac) containing the separated audio channels
+    /// </parma>
+    /// <param name="frameCount">
+    ///   Total number of frames (= samples in each channel) delivered
+    /// </param>
     public: void WriteDecodedSamples(
       const std::int32_t *const buffers[], std::size_t frameCount
     ) {
-
+      for(std::size_t frameIndex = 0; frameIndex < frameCount; ++frameIndex) {
+        for(std::size_t channelIndex = 0; channelIndex < this->channelCount; ++channelIndex) {
+          *this->target = static_cast<float>(buffers[channelIndex][frameIndex]) / this->factor;
+          ++this->target;
+        }
+      }
     }
 
+    /// <summary>
+    ///   Static callback sink that forwards to the WriteDecoddSamples() method
+    /// </summary>
+    /// <param name="userPointer">The instance of this class to forward to</param>
+    /// <param name="buffers">
+    ///   Buffers (allocated and provided by libflac) containing the separated audio channels
+    /// </parma>
+    /// <param name="frameCount">
+    ///   Total number of frames (= samples in each channel) delivered
+    /// </param>
     public: static void ProcessDecodedSamplesFunction(
       void *userPointer, const std::int32_t *const buffers[], std::size_t frameCount
     ) {
-      reinterpret_cast<FlacDecodedSampleForwarder *>(userPointer)->WriteDecodedSamples(
+      reinterpret_cast<InterleavingSampleForwarder *>(userPointer)->WriteDecodedSamples(
         buffers, frameCount
       );
     }
+
+    private: float *target;
+    private: std::size_t channelCount;
+    private: float factor;
 
   };
 
@@ -177,16 +216,16 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
         this->reader.Seek(startFrame);
       }
 
-      FlacDecodedSampleForwarder forwarder;
+      InterleavingSampleForwarder forwarder(
+        buffer, this->channelOrder.size(), this->trackInfo.BitsPerSample
+      );
 
       this->reader.DecodeSeparated(
         &forwarder,
-        &FlacDecodedSampleForwarder::ProcessDecodedSamplesFunction,
+        &InterleavingSampleForwarder::ProcessDecodedSamplesFunction,
         frameCount
       );
     } // mutex lock scope
-
-    throw std::runtime_error(u8"Not implemented yet");
   }
 
   // ------------------------------------------------------------------------------------------- //

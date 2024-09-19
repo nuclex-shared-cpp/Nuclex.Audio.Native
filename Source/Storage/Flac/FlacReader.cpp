@@ -280,11 +280,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
   // ------------------------------------------------------------------------------------------- //
 
   std::uint64_t FlacReader::GetFrameCursorPosition() const {
-    if(this->scheduledSeekPosition.has_value()) {
-      return this->scheduledSeekPosition.value();
-    } else {
-      return this->frameCursor;
-    }
+    return this->scheduledSeekPosition.value_or(this->frameCursor);
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -341,7 +337,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
       // If we want to make the current seek-calls-process_single behavior of libflac
       // mandatory. Leaving this out will (should) gracefully continue to work even
-      // if future libflac version to not call process_single() from within seek().
+      // if future libflac versions would not call process_single() from within seek().
       //
       //if(this->frameCursor == this->scheduledSeekPosition.value()) {
       //  throw Errors::CorruptedFileError(
