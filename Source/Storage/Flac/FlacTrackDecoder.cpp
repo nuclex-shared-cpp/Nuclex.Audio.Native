@@ -47,7 +47,7 @@ namespace {
       factor(0.0f) {
 
       this->factor = static_cast<float>(
-        1.0 / static_cast<double>((1 << bitsPerSample) - 1)
+        1.0 / static_cast<double>((1 << (bitsPerSample - 1)) - 1)
       );
     }
 
@@ -63,7 +63,7 @@ namespace {
     ) {
       for(std::size_t frameIndex = 0; frameIndex < frameCount; ++frameIndex) {
         for(std::size_t channelIndex = 0; channelIndex < this->channelCount; ++channelIndex) {
-          *this->target = static_cast<float>(buffers[channelIndex][frameIndex]) / this->factor;
+          *this->target = static_cast<float>(buffers[channelIndex][frameIndex]) * this->factor;
           ++this->target;
         }
       }
