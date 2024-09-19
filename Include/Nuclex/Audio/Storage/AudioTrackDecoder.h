@@ -158,23 +158,28 @@ namespace Nuclex { namespace Audio { namespace Storage {
       TSample *buffer, const std::uint64_t startFrame, const std::size_t frameCount
     ) const;
 
-#if defined(PLANNED_FEATURES)
+#if defined(CONSIDERED_FEATURES)
 
-    // GetBlockSize(std::size_t sampleIndex)
-    // GetBlockStart(std::size_t sampleIndex)
+    // Decode separated channels. More efficient for, i.e. FLAC
     //
-    //   This is probably the interface that makes the most sense,
+    // Perhaps individual pointers in the buffers list can be nullptr if only
+    // specific channels are needed to skip copying/converting those?
+    //
+    public: template<typename TSample>
+    NUCLEX_AUDIO_API void DecodeSeparated(
+      TSample *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+    );
 
-    // GetBlockSize()
+    // Allow user to start decoding at block boundaries
     //
-    //   Would return the size of the codec's blocks (all codecs are splitting audio into
-    //   individually decodable packets because otherwise, playback with seking would be
-    //   impossible).
+    // This is probably the interface that makes the most sense.
     //
-    //   This could be merely informative (and requesting a "page in" or however it's called
-    //   would round outwards to the next block boundaries).
+    std::size-t GetBlockSize(std::uint64_t sampleIndex);
+    std::size_t GetBlockStart(std::uint64_t sampleIndex);
+
+    // Default implementations for the DecodeInterleavedXxx() methods so custom
+    // codecs can get away with just implementing the floating point variant.
     //
-    //   Waveform would have a block size of 1 sample.
 
 #endif // defined(PLANNED_FEATURES)
 

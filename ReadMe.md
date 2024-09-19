@@ -21,9 +21,8 @@ It will set up the directory structure and third-party libraries
     cd Nuclex.Audio.Native
     ./build.sh
 
-*The Windows / Visual Studio projects usually lag behind and miss newly added
-source files. They also require you to build all third-party libraries with
-CMake by hand if you intend to compile inside Visual Studio itself.*
+*The Windows / Visual Studio projects usually lag behind and might miss newly
+added source files. *
 
 
 Early Development!
@@ -32,7 +31,9 @@ Early Development!
 This is an exploratory project, the design is not final and most functionality
 isn't in yet (at the time I'm writing this, you can query things like sample
 rate, data format, channel count, channel layout/placements and duration from
-Waveform (`.wav`), WavPack (`.wv`) and Opus (`.opus`) files, nothing more).
+FLAC (`.flac`), Opus (`.opus`), Waveform (`.wav`) and WavPack (`.wv`) files
+and decode float samples from WavPack, nothing more).
+
 
 Check the unit tests in the `Tests` directory for some usage samples.
 
