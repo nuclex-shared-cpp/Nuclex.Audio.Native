@@ -20,16 +20,16 @@ limitations under the License.
 // If the library is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_AUDIO_SOURCE 1
 
-#include "./WavPackTrackDecoder.h"
+#include "./OpusTrackDecoder.h"
 
-#if defined(NUCLEX_AUDIO_HAVE_WAVPACK)
+#if defined(NUCLEX_AUDIO_HAVE_OPUS)
 
 #include "Nuclex/Audio/Processing/SampleConverter.h"
+#include "Nuclex/Audio/TrackInfo.h"
 
-#include "./WavPackReader.h"
+#include "./OpusReader.h"
 
 #include <cassert> // for assert()
-#include <limits> // for std::numeric_limits
 
 namespace {
 
@@ -38,62 +38,68 @@ namespace {
 
 } // anonymous namespace
 
-namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
+namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
   // ------------------------------------------------------------------------------------------- //
 
-  WavPackTrackDecoder::WavPackTrackDecoder(const std::shared_ptr<const VirtualFile> &file) :
+  OpusTrackDecoder::OpusTrackDecoder(const std::shared_ptr<const VirtualFile> &file) :
     reader(file),
+    trackInfo(),
     channelOrder(),
-    totalFrameCount(0),
-    nativeSampleFormat(AudioSampleFormat::Unknown),
+    totalFrameCount(std::uint64_t(-1)),
     decodingMutex() {
 
-    this->totalFrameCount = this->reader.CountTotalFrames();
+    this->reader.ReadMetadata(this->trackInfo);
+
+    // Just like Waveform, in WavPack the channel order matches the order of the flag bits.
     this->channelOrder = this->reader.GetChannelOrder();
-    this->nativeSampleFormat = this->reader.GetSampleFormat();
+
+    this->totalFrameCount = this->reader.CountTotalFrames();
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-  std::shared_ptr<AudioTrackDecoder> WavPackTrackDecoder::Clone() const {
+  OpusTrackDecoder::~OpusTrackDecoder() {}
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::shared_ptr<AudioTrackDecoder> OpusTrackDecoder::Clone() const {
     throw std::runtime_error(u8"Not implemented yet");
-    //return std::make_shared<WavPackTrackDecoder>(this->state->File);
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-  std::size_t WavPackTrackDecoder::CountChannels() const {
+  std::size_t OpusTrackDecoder::CountChannels() const {
     return this->channelOrder.size();
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-  const std::vector<ChannelPlacement> &WavPackTrackDecoder::GetChannelOrder() const {
+  const std::vector<ChannelPlacement> &OpusTrackDecoder::GetChannelOrder() const {
     return this->channelOrder;
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-  std::uint64_t WavPackTrackDecoder::CountFrames() const {
+  std::uint64_t OpusTrackDecoder::CountFrames() const {
     return this->totalFrameCount;
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-  AudioSampleFormat WavPackTrackDecoder::GetNativeSampleFormat() const {
-    return this->nativeSampleFormat;
+  AudioSampleFormat OpusTrackDecoder::GetNativeSampleFormat() const {
+    return this->trackInfo.SampleFormat;
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-  bool WavPackTrackDecoder::IsNativelyInterleaved() const {
-    return true;
+  bool OpusTrackDecoder::IsNativelyInterleaved() const {
+    return false; // FLAC actually separates the audio channels
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-  void WavPackTrackDecoder::DecodeInterleavedUint8(
+  void OpusTrackDecoder::DecodeInterleavedUint8(
     std::uint8_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
     (void)buffer;
@@ -104,7 +110,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void WavPackTrackDecoder::DecodeInterleavedInt16(
+  void OpusTrackDecoder::DecodeInterleavedInt16(
     std::int16_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
     (void)buffer;
@@ -115,7 +121,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void WavPackTrackDecoder::DecodeInterleavedInt32(
+  void OpusTrackDecoder::DecodeInterleavedInt32(
     std::int32_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
     (void)buffer;
@@ -126,7 +132,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void WavPackTrackDecoder::DecodeInterleavedFloat(
+  void OpusTrackDecoder::DecodeInterleavedFloat(
     float *buffer, const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
     if(std::numeric_limits<std::uint32_t>::max() < frameCount) {
@@ -142,46 +148,16 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     {
       std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
 
-      // If the caller requests to read from a location that is not where the file cursor
-      // is currently at, we need to seek to that position first.
-      if(this->reader.GetFrameCursorPosition() != startFrame) {
-        this->reader.Seek(startFrame);
-      }
-
-      // If the audio data is already using floating point, pick the fast path
-      if(this->nativeSampleFormat == AudioSampleFormat::Float_32) {
-        this->reader.DecodeInterleaved(
-          reinterpret_cast<std::int32_t *>(buffer),
-          static_cast<std::uint32_t>(frameCount)
-        );
-      } else {
-        throw std::runtime_error(u8"Formats other than float not implemented yet");
-      }
-
     } // mutex lock scope
 
-    // TODO: Change SampleConverter or write separate LitteEndianSampleConverter
-    // Or not? Does libwavpack talk about LSB-justified or about memory-left-justified?
-
-    // WavPack API documentation for GetBitsPerSample():
-    //
-    //     "...That is, values are right justified when unpacked into ints, but are
-    //     left justified in the number of bytes used by the original data.'
-    //
-    // This is currently not the exact behavior of the SampleConverter, which always
-    // fills the most significant bits with the samples, even if bytes remain empty.
-    //
-    // It will bite us with 24-bit audio samples stored in 32-bit integers.
-    //
+    throw std::runtime_error(u8"Not implemented yet");
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-  void WavPackTrackDecoder::DecodeInterleavedDouble(
+  void OpusTrackDecoder::DecodeInterleavedDouble(
     double *buffer, const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
-    std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
-
     (void)buffer;
     (void)startFrame;
     (void)frameCount;
@@ -190,6 +166,6 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
-}}}} // namespace Nuclex::Audio::Storage::WavPack
+}}}} // namespace Nuclex::Audio::Storage::Opus
 
-#endif // defined(NUCLEX_AUDIO_HAVE_WAVPACK)
+#endif // defined(NUCLEX_AUDIO_HAVE_OPUS)

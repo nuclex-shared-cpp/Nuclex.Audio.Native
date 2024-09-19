@@ -39,17 +39,13 @@ namespace {
   /// <summary>Helper that copies and interleaves samples returne by libflac</summary>
   class InterleavingSampleForwarder {
 
+    /// <summary>Initializes a new interleaving sample forward</summary>
+    /// <param name="target">Buffer into which to write the interleaved samples</param>
+    /// <param name="channelCount">Number of channels that are being decoded</param>
+    /// <param name="bitsPerSample">Number of bits per audio sample</param>
     public: InterleavingSampleForwarder(
       float *target, std::size_t channelCount, std::size_t bitsPerSample
-    ) :
-      target(target),
-      channelCount(channelCount),
-      factor(0.0f) {
-
-      this->factor = static_cast<float>(
-        1.0 / static_cast<double>((1 << (bitsPerSample - 1)) - 1)
-      );
-    }
+    );
 
     /// <summary>Writes the decoded samples into the user-provided buffer</summary>
     /// <param name="buffers">
@@ -60,14 +56,7 @@ namespace {
     /// </param>
     public: void WriteDecodedSamples(
       const std::int32_t *const buffers[], std::size_t frameCount
-    ) {
-      for(std::size_t frameIndex = 0; frameIndex < frameCount; ++frameIndex) {
-        for(std::size_t channelIndex = 0; channelIndex < this->channelCount; ++channelIndex) {
-          *this->target = static_cast<float>(buffers[channelIndex][frameIndex]) * this->factor;
-          ++this->target;
-        }
-      }
-    }
+    );
 
     /// <summary>
     ///   Static callback sink that forwards to the WriteDecodedSamples() method
@@ -81,17 +70,62 @@ namespace {
     /// </param>
     public: static void ProcessDecodedSamplesFunction(
       void *userPointer, const std::int32_t *const buffers[], std::size_t frameCount
-    ) {
-      reinterpret_cast<InterleavingSampleForwarder *>(userPointer)->WriteDecodedSamples(
-        buffers, frameCount
-      );
-    }
+    );
 
+    /// <summary>Target buffer that receives the interleaved samples</summary>
     private: float *target;
+    /// <summary>Number of audio channels libflac is decoding for us</summary>
     private: std::size_t channelCount;
+    /// <summary>Factor by which samples need to be scaled</summary>
     private: float factor;
 
   };
+
+  // ------------------------------------------------------------------------------------------- //
+
+  InterleavingSampleForwarder::InterleavingSampleForwarder(
+    float *target, std::size_t channelCount, std::size_t bitsPerSample
+  ) :
+    target(target),
+    channelCount(channelCount),
+    factor(0.0f) {
+
+    this->factor = static_cast<float>(
+      1.0 / static_cast<double>((1 << (bitsPerSample - 1)) - 1)
+    );
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void InterleavingSampleForwarder::WriteDecodedSamples(
+    const std::int32_t *const buffers[], std::size_t frameCount
+  ) {
+
+    // The audio samples actually do sit in the least significant bits for libflac,
+    // tested on x86 with 16-bit asnd 24-bit .flac audio files.
+    //
+    // Also, they're separated, not interleaved, but our public interface currently
+    // only supports interleaved sample output. Does this result in an efficient access
+    // pattern? Or would the CPU cache be batter served by doing it channel-by-channel?
+    //
+    for(std::size_t frameIndex = 0; frameIndex < frameCount; ++frameIndex) {
+      for(std::size_t channelIndex = 0; channelIndex < this->channelCount; ++channelIndex) {
+        *this->target = static_cast<float>(buffers[channelIndex][frameIndex]) * this->factor;
+        ++this->target;
+      }
+    }
+
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void InterleavingSampleForwarder::ProcessDecodedSamplesFunction(
+    void *userPointer, const std::int32_t *const buffers[], std::size_t frameCount
+  ) {
+    reinterpret_cast<InterleavingSampleForwarder *>(userPointer)->WriteDecodedSamples(
+      buffers, frameCount
+    );
+  }
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -105,7 +139,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     reader(file),
     trackInfo(),
     channelOrder(),
-    totalSampleCount(std::uint64_t(-1)),
+    totalFrameCount(std::uint64_t(-1)),
     decodingMutex() {
 
     this->reader.ReadMetadata(this->trackInfo);
@@ -116,7 +150,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
       static_cast<ChannelPlacement>(this->trackInfo.ChannelPlacements)
     );
 
-    this->totalSampleCount = this->reader.CountTotalFrames();
+    this->totalFrameCount = this->reader.CountTotalFrames();
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -144,7 +178,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
   // ------------------------------------------------------------------------------------------- //
 
   std::uint64_t FlacTrackDecoder::CountFrames() const {
-    return this->totalSampleCount;
+    return this->totalFrameCount;
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -200,10 +234,10 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     if(std::numeric_limits<std::uint32_t>::max() < frameCount) {
       throw std::logic_error(u8"Unable to decode this many samples in one call");
     }
-    if(startFrame >= this->totalSampleCount) {
+    if(startFrame >= this->totalFrameCount) {
       throw std::out_of_range(u8"Start sample index is out of bounds");
     }
-    if(this->totalSampleCount < startFrame + frameCount) {
+    if(this->totalFrameCount < startFrame + frameCount) {
       throw std::out_of_range(u8"Decode sample count goes beyond the end of audio data");
     }
 

@@ -28,7 +28,9 @@ limitations under the License.
 
 #include <string> // for std::string
 #include <cstddef> // for std::size_t
+#include <cstdint> // for std::uint64_t
 #include <memory> // for std::unique_ptr
+#include <vector> // for std::vector
 
 #include <opusfile.h>
 
@@ -69,6 +71,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   /// <summary>Helper class for reading OPUS files using libopus</summary>
   class OpusReader {
 
+    // TODO: When I implement Vorbis, the next two methods should be shared with it.
     /// <summary>
     ///   Determines the channel placement from the mapping family and channel count
     /// </summary>
@@ -85,6 +88,14 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
       int mappingFamily, std::size_t channelCount
     );
 
+    /// <summary>Returns the order in which decoded channels will be interleaved</summary>
+    /// <param name="mappingFamily">Vorbis mapping family the channels conform to</param>
+    /// <param name="channelCount">Number of audio channels in the FLAC file</param>
+    /// <returns>A list of channels in the order in which they will be interleaved</returns>
+    public: static std::vector<ChannelPlacement> ChannelOrderFromMappingFamilyAndChannelCount(
+      int mappingFamily, std::size_t channelCount
+    );
+
     /// <summary>Initializes a new Opus reader on the specified file</summary>
     /// <param name="file">File the reader will access</param>
     public: OpusReader(const std::shared_ptr<const VirtualFile> &file);
@@ -95,6 +106,14 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     /// <summary>Reads the metadata from an Opus audi ofile</summary>
     /// <param name="target">Track information container that will receive the metadata</param>
     public: void ReadMetadata(TrackInfo &target);
+
+    /// <summary>Counts the total number of frames (= samples in each channel)</summary>
+    /// <returns>The total number of frames in the audio file</returns>
+    public: std::uint64_t CountTotalFrames() const;
+
+    /// <summary>Gets the order in which interlaved samples are decoded</summary>
+    /// <returns>A list of channels in the order they are interleaved</returns>
+    public: std::vector<ChannelPlacement> GetChannelOrder() const;
 
     /// <summary>File the reader is accessing</summary>
     private: std::shared_ptr<const VirtualFile> file;

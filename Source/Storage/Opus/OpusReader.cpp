@@ -130,6 +130,61 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
   // ------------------------------------------------------------------------------------------- //
 
+  std::vector<ChannelPlacement> OpusReader::ChannelOrderFromMappingFamilyAndChannelCount(
+    int mappingFamily, std::size_t channelCount
+  ) {
+    std::vector<ChannelPlacement> channelOrder;
+    channelOrder.reserve(channelCount);
+
+    if((mappingFamily == 0) || (mappingFamily == 1)) {
+      if(channelCount == 1) {
+        channelOrder.push_back(ChannelPlacement::FrontCenter);
+        --channelCount;
+      } else {
+        channelOrder.push_back(ChannelPlacement::FrontLeft);
+        channelCount -= 2;
+
+        if((channelCount == 3) || (channelCount >= 5)) {
+          channelOrder.push_back(ChannelPlacement::FrontCenter);
+          --channelCount;
+        }
+
+        channelOrder.push_back(ChannelPlacement::FrontRight);
+
+        if(channelCount >= 7) {
+          channelOrder.push_back(ChannelPlacement::SideLeft);
+          channelCount -= 2;
+          channelOrder.push_back(ChannelPlacement::SideRight);
+        }
+
+        if(channelCount == 7) {
+          channelOrder.push_back(ChannelPlacement::BackCenter);
+          --channelCount;
+        }
+
+        if((channelCount >= 4) && (channelCount != 7)) {
+          channelOrder.push_back(ChannelPlacement::BackLeft);
+          channelCount -= 2;
+          channelOrder.push_back(ChannelPlacement::BackRight);
+        }
+
+        if(channelCount >= 6) {
+          channelOrder.push_back(ChannelPlacement::LowFrequencyEffects);
+          --channelCount;
+        }
+      }
+    }
+
+    while(channelCount >= 1) {
+      channelOrder.push_back(ChannelPlacement::Unknown);
+      --channelCount;
+    }
+
+    return channelOrder;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   OpusReader::OpusReader(const std::shared_ptr<const VirtualFile> &file) :
     file(file),
     fileCallbacks(),
@@ -218,6 +273,22 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     // TODO: Replace with correct value once actual decoding format is known
     target.SampleFormat = Nuclex::Audio::AudioSampleFormat::SignedInteger_16;
 
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::uint64_t OpusReader::CountTotalFrames() const {
+    return Platform::OpusApi::CountSamples(opusFile);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::vector<ChannelPlacement> OpusReader::GetChannelOrder() const {
+    const ::OpusHead &header = Platform::OpusApi::GetHeader(this->opusFile);
+
+    return OpusReader::ChannelOrderFromMappingFamilyAndChannelCount(
+      header.mapping_family, header.channel_count
+    );
   }
 
   // ------------------------------------------------------------------------------------------- //

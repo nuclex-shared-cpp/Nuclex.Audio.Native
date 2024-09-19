@@ -122,7 +122,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     ///   perhaps some other cases, but this library is designed for usage with plain
     ///   and complete Flac files, at most wrapped in a media container or archive.
     /// </remarks>
-    private: std::uint64_t totalSampleCount;
+    private: std::uint64_t totalFrameCount;
     /// <summary>Must be held while decoding</summary>
     private: mutable std::mutex decodingMutex;
 

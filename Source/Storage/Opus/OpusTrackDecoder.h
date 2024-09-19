@@ -17,30 +17,31 @@ limitations under the License.
 */
 #pragma endregion // Apache License 2.0
 
-#ifndef NUCLEX_AUDIO_STORAGE_WAVPACK_WAVPACKTRACKDECODER_H
-#define NUCLEX_AUDIO_STORAGE_WAVPACK_WAVPACKTRACKDECODER_H
+#ifndef NUCLEX_AUDIO_STORAGE_OPUS_OPUSTRACKDECODER_H
+#define NUCLEX_AUDIO_STORAGE_OPUS_OPUSTRACKDECODER_H
 
 #include "Nuclex/Audio/Config.h"
 
-#if defined(NUCLEX_AUDIO_HAVE_WAVPACK)
+#if defined(NUCLEX_AUDIO_HAVE_OPUS)
 
 #include "Nuclex/Audio/Storage/AudioTrackDecoder.h"
-#include "./WavPackReader.h"
+#include "Nuclex/Audio/TrackInfo.h"
+#include "./OpusReader.h"
 
 #include <mutex> // for std::mutex
 
-namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
+namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Decodes WavPack audio tracks</summary>
-  class WavPackTrackDecoder : public AudioTrackDecoder {
+  /// <summary>Decodes Opus audio tracks</summary>
+  class OpusTrackDecoder : public AudioTrackDecoder {
 
-    /// <summary>Initializes a new WavPack track decoder on the specified file</summary>
+    /// <summary>Initializes a new Flac track decoder on the specified file</summary>
     /// <param name="file">File that will be opened and decoded</param>
-    public: WavPackTrackDecoder(const std::shared_ptr<const VirtualFile> &file);
+    public: OpusTrackDecoder(const std::shared_ptr<const VirtualFile> &file);
     /// <summary>Frees all resources owned by the instance</summary>
-    public: ~WavPackTrackDecoder() override = default;
+    public: ~OpusTrackDecoder() override;
 
     /// <summary>Creates a clone of the audio track decoder</summary>
     /// <returns>A clone of the audio track decoder that can be used independently</returns>
@@ -109,22 +110,19 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
       double *buffer, const std::uint64_t startFrame, const std::size_t frameCount
     ) const override;
 
-    /// <summary>Fetches the order of audio channels from the WavPack context</summary>
-    private: void fetchChannelOrder();
-
-    /// <summary>Reader that handles accessing the WavPack file via libwavpack</summary>
-    private: mutable WavPackReader reader;
+    /// <summary>Reader through which the audio file will be decoded</summary>
+    private: mutable OpusReader reader;
+    /// <summary>Informations about the audio track being decoded</summary>
+    private: TrackInfo trackInfo;
     /// <summary>Order in which audio channels appear</summary>
     private: std::vector<ChannelPlacement> channelOrder;
-    /// <summary>Total number of samples in the WavPack file</summary>
+    /// <summary>Total number of samples in the Flac file</summary>
     /// <remarks>
-    ///   This can be unknown if the WavPack file is being streamed, was truncated and
+    ///   This can be unknown if the Flac file is being streamed, was truncated and
     ///   perhaps some other cases, but this library is designed for usage with plain
-    ///   and complete WavPack files, at most wrapped in a media container or archive.
+    ///   and complete Flac files, at most wrapped in a media container or archive.
     /// </remarks>
     private: std::uint64_t totalFrameCount;
-    /// <summary>The native sample format in the audio file</summary>
-    private: AudioSampleFormat nativeSampleFormat;
     /// <summary>Must be held while decoding</summary>
     private: mutable std::mutex decodingMutex;
 
@@ -132,8 +130,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
-}}}} // namespace Nuclex::Audio::Storage::WavPack
+}}}} // namespace Nuclex::Audio::Storage::Opus
 
-#endif // defined(NUCLEX_AUDIO_HAVE_WAVPACK)
+#endif // defined(NUCLEX_AUDIO_HAVE_OPUS)
 
-#endif // NUCLEX_AUDIO_STORAGE_WAVPACK_WAVPACKTRACKDECODER_H
+#endif // NUCLEX_AUDIO_STORAGE_OPUS_OPUSTRACKDECODER_H
