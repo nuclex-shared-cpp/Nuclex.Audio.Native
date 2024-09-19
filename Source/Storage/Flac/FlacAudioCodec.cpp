@@ -76,12 +76,14 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
       return std::optional<ContainerInfo>();
     }
 
+    FlacReader reader(source);
+
     ContainerInfo containerInfo;
     containerInfo.DefaultTrackIndex = 0;
-    {
-      FlacReader reader(source);
-      reader.ReadMetadata(containerInfo.Tracks.emplace_back());
-    }
+
+    TrackInfo &trackInfo = containerInfo.Tracks.emplace_back();
+    reader.ReadMetadata(trackInfo);
+    trackInfo.CodecName = GetName();
 
     return containerInfo;
   }

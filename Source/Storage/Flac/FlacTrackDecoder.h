@@ -25,18 +25,10 @@ limitations under the License.
 #if defined(NUCLEX_AUDIO_HAVE_FLAC)
 
 #include "Nuclex/Audio/Storage/AudioTrackDecoder.h"
+#include "Nuclex/Audio/TrackInfo.h"
+#include "./FlacReader.h"
 
 #include <mutex> // for std::mutex
-
-namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
-
-  // ------------------------------------------------------------------------------------------- //
-
-  class FlacReader;
-
-  // ------------------------------------------------------------------------------------------- //
-
-}}}} // namespace Nuclex::Audio::Storage::Flac
 
 namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
@@ -122,7 +114,9 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     private: void fetchChannelOrder();
 
     /// <summary>Reader through which the audio file will be decoded</summary>
-    private: std::unique_ptr<FlacReader> reader;
+    private: FlacReader reader;
+    /// <summary>Informations about the audio track being decoded</summary>
+    private: TrackInfo trackInfo;
     /// <summary>Order in which audio channels appear</summary>
     private: std::vector<ChannelPlacement> channelOrder;
     /// <summary>Total number of samples in the Flac file</summary>
@@ -132,12 +126,6 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     ///   and complete Flac files, at most wrapped in a media container or archive.
     /// </remarks>
     private: std::uint64_t totalSampleCount;
-    /// <summary>Format in which the samples are deliverd by libwavpack</summary>
-    private: AudioSampleFormat sampleFormat;
-    /// <summary>Number of valid bits in the audio sample from the Flac file</summary>
-    private: std::size_t bitsPerSample;
-    /// <summary>Known position of the stream decoder's cursor in the audio data</summary>
-    private: mutable std::uint64_t sampleCursor;
     /// <summary>Must be held while decoding</summary>
     private: mutable std::mutex decodingMutex;
 

@@ -25,7 +25,9 @@ limitations under the License.
 #if defined(NUCLEX_AUDIO_HAVE_FLAC)
 
 #include "Nuclex/Audio/Processing/SampleConverter.h"
+#include "Nuclex/Audio/TrackInfo.h"
 
+#include "../Shared/ChannelOrderFactory.h"
 #include "./FlacReader.h"
 
 #include <cassert> // for assert()
@@ -42,13 +44,22 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
   // ------------------------------------------------------------------------------------------- //
 
   FlacTrackDecoder::FlacTrackDecoder(const std::shared_ptr<const VirtualFile> &file) :
-    reader(std::make_unique<FlacReader>(file)),
+    reader(file),
+    trackInfo(),
     channelOrder(),
     totalSampleCount(std::uint64_t(-1)),
-    sampleFormat(AudioSampleFormat::Unknown),
-    bitsPerSample(0),
-    sampleCursor(0),
-    decodingMutex() {}
+    decodingMutex() {
+
+    this->reader.ReadMetadata(this->trackInfo);
+
+    // Just like Waveform, in WavPack the channel order matches the order of the flag bits.
+    this->channelOrder = Shared::ChannelOrderFactory::FromWaveformatExtensibleLayout(
+      static_cast<std::size_t>(this->trackInfo.ChannelCount),
+      static_cast<ChannelPlacement>(this->trackInfo.ChannelPlacements)
+    );
+
+    this->totalSampleCount = this->reader.CountTotalFrames();
+  }
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -63,25 +74,26 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
   // ------------------------------------------------------------------------------------------- //
 
   std::size_t FlacTrackDecoder::CountChannels() const {
+    //this->reader.GetFrameCursorPosition
     throw std::runtime_error(u8"Not implemented yet");
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   const std::vector<ChannelPlacement> &FlacTrackDecoder::GetChannelOrder() const {
-    throw std::runtime_error(u8"Not implemented yet");
+    return this->channelOrder;
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   std::uint64_t FlacTrackDecoder::CountFrames() const {
-    throw std::runtime_error(u8"Not implemented yet");
+    return this->totalSampleCount;
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   AudioSampleFormat FlacTrackDecoder::GetNativeSampleFormat() const {
-    throw std::runtime_error(u8"Not implemented yet");
+    return this->trackInfo.SampleFormat;
   }
 
   // ------------------------------------------------------------------------------------------- //

@@ -259,6 +259,19 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
   // ------------------------------------------------------------------------------------------- //
 
+  std::uint64_t FlacReader::CountTotalFrames() const {
+    assert(this->obtainedMetadata && u8"Frame count must be queried after reading metadata");
+    return this->totalFrameCount;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::uint64_t FlacReader::GetFrameCursorPosition() const {
+    return this->frameCursor;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   void FlacReader::Seek(std::uint64_t frameIndex) {
     Platform::FlacApi::SeekAbsolute(this->streamDecoder, frameIndex);
     this->frameCursor = frameIndex;
@@ -266,7 +279,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void FlacReader::Decode(
+  void FlacReader::DecodeSeparated(
     void *userPointer,
     ProcessDecodedSamplesFunction *processDecodedSamples,
     std::size_t frameCount

@@ -129,6 +129,14 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     /// <param name="target">Track informatio container that will receive the metadata</param>
     public: void ReadMetadata(TrackInfo &target);
 
+    /// <summary>Counts the total number of frames (= samples in each channel)</summary>
+    /// <returns>The total number of frames in the audio file</returns>
+    public: std::uint64_t CountTotalFrames() const;
+
+    /// <summary>Retrieves the current position of the frame cursor</summary>
+    /// <returns>The frame cursor, pointing at the frame that will be decoded next</returns>
+    public: std::uint64_t GetFrameCursorPosition() const;
+
     /// <summary>Seeks to the specified frame</summary>
     /// <param name="frameIndex">Index of the frame (= sample index on all channels)</param>
     public: void Seek(std::uint64_t frameIndex);
@@ -139,7 +147,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     ///   Callback through which each decoded block of samples will be delivered
     /// </param>
     /// <param name="frameCount">Number of frames (= sampeles on all channels) to decode</param>
-    public: void Decode(
+    public: void DecodeSeparated(
       void *userPointer,
       ProcessDecodedSamplesFunction processDecodedSamples,
       std::size_t frameCount
