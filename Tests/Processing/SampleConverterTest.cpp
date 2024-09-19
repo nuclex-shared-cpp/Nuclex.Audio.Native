@@ -24,6 +24,21 @@ limitations under the License.
 
 #include <gtest/gtest.h>
 
+#if defined(_MSC_VER)
+#pragma warning(push)
+// Visual C++, up to Visual Studio 2022, wrongly warns that the lowest possible value
+// of a signed type is supposedly unsigned. The L/LL postfix doesn't suffice, explicit
+// case without suffix still causes the warning. It's just broken.
+//
+//   warning C4146: unary minus operator applied to unsigned type, result still unsigned
+//   warning C4838: conversion from 'unsigned long' to 'int32_t' requires a narrowing conversion
+//   warning C4244: 'argument': conversion from 'int32_t' to 'RawType', possible loss of data
+//
+#pragma warning(disable: 4146)
+#pragma warning(disable: 4838)
+#pragma warning(disable: 4244)
+#endif
+
 namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
@@ -202,7 +217,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
     SampleConverter::Quantize(inputSamples, outputSamples, 24, 4);
 
-    EXPECT_EQ(outputSamples[0], -2147483648);
+    EXPECT_EQ(outputSamples[0], std::int32_t(-2147483648));
     EXPECT_EQ(outputSamples[1], -2147483392);
     EXPECT_EQ(outputSamples[2], 0);
     EXPECT_EQ(outputSamples[3], 2147483392);
@@ -216,7 +231,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
     SampleConverter::Quantize(inputSamples, outputSamples, 32, 4);
 
-    EXPECT_EQ(outputSamples[0], -2147483648);
+    EXPECT_EQ(outputSamples[0], std::int32_t(-2147483648));
     EXPECT_EQ(outputSamples[1], -2147483647);
     EXPECT_EQ(outputSamples[2], 0);
     EXPECT_EQ(outputSamples[3], 2147483647);
@@ -288,8 +303,8 @@ namespace Nuclex { namespace Audio { namespace Processing {
       inputSamples, 32, outputSamples, 24, 6
     );
 
-    EXPECT_EQ(outputSamples[0], -2147483648);
-    EXPECT_EQ(outputSamples[1], -2147483648); // truncate = round towards negative, always
+    EXPECT_EQ(outputSamples[0], std::int32_t(-2147483648));
+    EXPECT_EQ(outputSamples[1], std::int32_t(-2147483648)); // truncate = round downwards
     EXPECT_EQ(outputSamples[2], -2147483392);
     EXPECT_EQ(outputSamples[3], 0);
     EXPECT_EQ(outputSamples[4], 2147483392); // truncate = round down, not round nearest
@@ -315,3 +330,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
   // ------------------------------------------------------------------------------------------- //
 
 }}} // namespace Nuclex::Audio::Processing
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
