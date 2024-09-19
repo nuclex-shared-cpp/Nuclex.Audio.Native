@@ -21,8 +21,13 @@ It will set up the directory structure and third-party libraries
     cd Nuclex.Audio.Native
     ./build.sh
 
-*The Windows / Visual Studio projects usually lag behind and might miss newly
-added source files. *
+If you're on Windows and using Visual Studio, you can compile everything
+by simply opening the `.sln` file and hitting *Build All*.
+
+    framework-package (msvc-14.2).sln
+
+*Notice: The Windows / Visual Studio projects usually lag behind and might miss newly
+added source files.*
 
 
 Early Development!
