@@ -25,6 +25,8 @@ License along with this library
 #include "Nuclex/Audio/Storage/VirtualFile.h"
 #include "Nuclex/Audio/Storage/AudioCodec.h"
 
+#include "Nuclex/Audio/Errors/UnsupportedFormatError.h"
+
 #include <Nuclex/Support/Text/StringConverter.h> // for StringConverter
 #include <stdexcept> // for std::runtime_error
 
@@ -40,6 +42,9 @@ License along with this library
 #endif
 #if defined(NUCLEX_AUDIO_HAVE_OPUS)
 #include "Opus/OpusAudioCodec.h"
+#endif
+#if defined(NUCLEX_AUDIO_HAVE_VORBIS)
+#include "Vorbis/VorbisAudioCodec.h"
 #endif
 #if defined(NUCLEX_AUDIO_HAVE_WAVPACK)
 #include "WavPack/WavPackAudioCodec.h"
@@ -68,6 +73,21 @@ namespace {
 
   // ------------------------------------------------------------------------------------------- //
 
+  /// <summary>Helper used to pass information through lambda methods</summary>
+  struct FileAndTrackDecoder {
+
+    /// <summary>File the audio loader has been tasked with decoding</summary>
+    public: std::shared_ptr<const Nuclex::Audio::Storage::VirtualFile> File;
+    /// <summary>Track the audio loader has been tasked wih decoding</summary>
+    public: std::size_t TrackIndex;
+
+    /// <summary>Audio track decoder that that will be created if successful</summary>
+    public: std::shared_ptr<Nuclex::Audio::Storage::AudioTrackDecoder> Decoder;
+
+  };
+
+  // ------------------------------------------------------------------------------------------- //
+
 } // anonymous namespace
 
 namespace Nuclex { namespace Audio { namespace Storage {
@@ -82,6 +102,9 @@ namespace Nuclex { namespace Audio { namespace Storage {
 #endif
 #if defined(NUCLEX_AUDIO_HAVE_OPUS)
     RegisterCodec(std::make_unique<Opus::OpusAudioCodec>());
+#endif
+#if defined(NUCLEX_AUDIO_HAVE_VORBIS)
+    RegisterCodec(std::make_unique<Vorbis::VorbisAudioCodec>());
 #endif
 #if defined(NUCLEX_AUDIO_HAVE_WAVPACK)
     RegisterCodec(std::make_unique<WavPack::WavPackAudioCodec>());
@@ -204,6 +227,75 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
     // The specified file has no extension, so do not provide the extension hint
     return TryReadInfo(VirtualFile::OpenRealFileForReading(path, true));
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::shared_ptr<AudioTrackDecoder> AudioLoader::OpenDecoder(
+    const std::shared_ptr<const VirtualFile> &file,
+    const std::string &extensionHint /* = std::string() */,
+    std::size_t trackIndex /* = 0 */
+  ) const {
+    FileAndTrackDecoder fileProvider;
+    fileProvider.File = file;
+    fileProvider.TrackIndex = trackIndex;
+
+    bool wasLoaded = tryCodecsInOptimalOrder<FileAndTrackDecoder>(
+      extensionHint,
+      [](
+        const AudioCodec &codec,
+        const std::string &extension,
+        FileAndTrackDecoder &fileAndTrackDecoder
+      ) {
+        fileAndTrackDecoder.Decoder = std::move(
+          codec.TryOpenDecoder(
+            fileAndTrackDecoder.File, extension, fileAndTrackDecoder.TrackIndex
+          )
+        );
+        return static_cast<bool>(fileAndTrackDecoder.Decoder);
+      },
+      fileProvider
+    );
+    if(wasLoaded) {
+      return fileProvider.Decoder;
+    } else {
+      throw Errors::UnsupportedFormatError(u8"Not an audio file or file format not supported");
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::shared_ptr<AudioTrackDecoder> AudioLoader::OpenDecoder(
+    const std::string &path,
+    std::size_t trackIndex /* = 0 */
+  ) const {
+    std::string::size_type extensionDotIndex = path.find_last_of('.');
+#if defined(NUCLEX_AUDIO_WINDOWS)
+    std::string::size_type lastPathSeparatorIndex = path.find_last_of('\\');
+#else
+    std::string::size_type lastPathSeparatorIndex = path.find_last_of('/');
+#endif
+
+    // Check if the provided path contains a file extension and if so, pass it along to
+    // the CanLoad() method as a hint (this speeds up codec search)
+    if(extensionDotIndex != std::string::npos) {
+      bool dotBelongsToFilename = (
+        (lastPathSeparatorIndex == std::string::npos) ||
+        (extensionDotIndex > lastPathSeparatorIndex)
+      );
+      if(dotBelongsToFilename) {
+        return OpenDecoder(
+          VirtualFile::OpenRealFileForReading(path, true),
+          path.substr(extensionDotIndex + 1),
+          trackIndex
+        );
+      }
+    }
+
+    // The specified file has no extension, so do not provide the extension hint
+    return OpenDecoder(
+      VirtualFile::OpenRealFileForReading(path, true), std::string(), trackIndex
+    );
   }
 
   // ------------------------------------------------------------------------------------------- //

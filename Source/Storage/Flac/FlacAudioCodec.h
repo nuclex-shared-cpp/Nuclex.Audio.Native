@@ -75,7 +75,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     /// <param name="extensionHint">Optional file extension the loaded data had</param>
     /// <param name="trackIndex">Index of the audio track to create a decoder for</param>
     /// <returns>A decoder that can be used to decode the audio track</returns>
-    public: std::shared_ptr<AudioTrackDecoder> OpenDecoder(
+    public: std::shared_ptr<AudioTrackDecoder> TryOpenDecoder(
       const std::shared_ptr<const VirtualFile> &source,
       const std::string &extensionHint = std::string(),
       std::size_t trackIndex = 0

@@ -70,13 +70,13 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// <param name="extensionHint">Optional file extension the loaded data had</param>
     /// <param name="trackIndex">Index of the audio track to create a decoder for</param>
     /// <returns>A decoder that can be used to decode the audio track</returns>
-    public: virtual std::shared_ptr<AudioTrackDecoder> OpenDecoder(
+    public: virtual std::shared_ptr<AudioTrackDecoder> TryOpenDecoder(
       const std::shared_ptr<const VirtualFile> &source,
       const std::string &extensionHint = std::string(),
       std::size_t trackIndex = 0
     ) const = 0;
 
-    // OpenDecoder(ContainerStreamReader)
+    // TryOpenDecoder(ContainerStreamReader)
     //
     //   Might add something like this. Unless it is always as "simple" as deinterleaving
     //   the audio data from a container and treating that as a VirtualFile, but containers

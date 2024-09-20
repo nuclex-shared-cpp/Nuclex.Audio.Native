@@ -333,7 +333,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
   // ------------------------------------------------------------------------------------------- //
 
-  std::shared_ptr<AudioTrackDecoder> WaveformAudioCodec::OpenDecoder(
+  std::shared_ptr<AudioTrackDecoder> WaveformAudioCodec::TryOpenDecoder(
     const std::shared_ptr<const VirtualFile> &source,
     const std::string &extensionHint /* = std::string() */,
     std::size_t trackIndex /* = 0 */

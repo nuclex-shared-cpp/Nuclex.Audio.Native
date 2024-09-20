@@ -99,6 +99,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
   class AudioCodec;
   class VirtualFile;
+  class AudioTrackDecoder;
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -195,6 +196,40 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// <returns>The audio track loaded from the specified file</returns>
     public: NUCLEX_AUDIO_API Track Load(const std::string &path) const;
 #endif
+
+    /// <summary>Creates a low-level track decoder for the specified audio file</summary>
+    /// <param name="file">File the track decoder will access</param>
+    /// <param name="extensionHint">
+    ///   Optional file extension to help detection (may speed things up)
+    /// </param>
+    /// <param name="trackIndex">
+    ///   Index of the audio track that will be accessed (this is not the channel,
+    ///   rather, it's meant for containers such as .mp4 or .mkv that can contain
+    ///   multiple audio tracks, i.e. for different languages
+    /// </param>
+    /// <returns>
+    ///   An audio track decoder through samples can be read from the audio file
+    /// </returns>
+    public: NUCLEX_AUDIO_API std::shared_ptr<AudioTrackDecoder> OpenDecoder(
+      const std::shared_ptr<const VirtualFile> &file,
+      const std::string &extensionHint = std::string(),
+      std::size_t trackIndex = 0
+    ) const;
+
+    /// <summary>Creates a low-level track decoder for the specified audio file</summary>
+    /// <param name="path">Path of the file the track decoder will access</param>
+    /// <param name="trackIndex">
+    ///   Index of the audio track that will be accessed (this is not the channel,
+    ///   rather, it's meant for containers such as .mp4 or .mkv that can contain
+    ///   multiple audio tracks, i.e. for different languages
+    /// </param>
+    /// <returns>
+    ///   An audio track decoder through samples can be read from the audio file
+    /// </returns>
+    public: NUCLEX_AUDIO_API std::shared_ptr<AudioTrackDecoder> OpenDecoder(
+      const std::string &path,
+      std::size_t trackIndex = 0
+    ) const;
 
     /// <summary>Builds a new iterator that checks codecs in the most likely order</summary>
     /// <param name="extension">File extension, if known</param>

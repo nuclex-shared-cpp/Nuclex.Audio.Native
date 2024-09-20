@@ -88,12 +88,18 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
-  std::shared_ptr<AudioTrackDecoder> WavPackAudioCodec::OpenDecoder(
+  std::shared_ptr<AudioTrackDecoder> WavPackAudioCodec::TryOpenDecoder(
     const std::shared_ptr<const VirtualFile> &source,
     const std::string &extensionHint /* = std::string() */,
     std::size_t trackIndex /* = 0 */
   ) const {
     (void)extensionHint;
+
+    // As the AudioCodec interface promises, if the file is not an Opus audio file,
+    // we'll return an empty result to indicate that we couldn't read it.
+    if(!Detection::CheckIfWavPackHeaderPresent(*source)) {
+      return std::shared_ptr<AudioTrackDecoder>();
+    }
 
     if(trackIndex != 0) {
       throw std::runtime_error(
