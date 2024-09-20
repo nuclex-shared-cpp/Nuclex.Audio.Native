@@ -21,12 +21,12 @@ It will set up the directory structure and third-party libraries
     cd Nuclex.Audio.Native
     ./build.sh
 
-If you're on Windows and using Visual Studio, you can compile everything
-by simply opening the `.sln` file and hitting *Build All*.
+If you're on Windows and using Visual Studio, instead of running `build.cmd` you can
+also compile everything by simply opening the `.sln` file and hitting *Build All*.
 
     framework-package (msvc-14.2).sln
 
-*Notice: The Windows / Visual Studio projects usually lag behind and might miss newly
+*Notice: The Windows / Visual Studio projects often lag behind and might miss newly
 added source files.*
 
 
@@ -59,3 +59,56 @@ My current concerns are
 * possibly encoding support, too, using progress notification callbacks
   and the new C++ stop_token to allow for cancelation
 
+
+Usage Examples
+--------------
+
+The `AudioLoader` is the central class you use for decoding. You can register your
+own audio codecs (inheriting from the `AudioCodec` class) to it and by default,
+a new instance already has all codecs registered that were enabled at compile time.
+
+You can query informations on an audio file like this:
+
+```cpp
+AudioLoader loader;
+
+// Will automatically detect the file format. Currently supports
+// Flac (.flac), Opus (.opus), Waveform (.wav) and WavPack (.wv)
+std::optional<ContainerInfo> info = loader.TryReadInfo("audiofile.wav");
+
+if(info.has_value()) {
+  cout << "Supported audio file found" << endl;
+  cout << "Number of Channels: " << info.value().Tracks[0].ChannelCount << endl;
+  cout << "Channel layout: " <<
+    StringFromChannelPlacement(info.value().Tracks[0].ChannelPlacements) << endl;
+  cout << "Playback duration: " << info.value().Tracks[0].Duration.count() <<
+    "μs" << endl;
+}
+```
+
+At the time I'm writing this, the library is still a work-in-progress.
+For audio decoding, only the low-level `AudioTrackDecoder` interface is available
+and only decoding to floating point samples is implemented right now:
+
+```cpp
+AudioLoader loader;
+
+// Will automatically detect the file format. Currently supports
+// Flac (.flac), Opus (.opus), Waveform (.wav) and WavPack (.wv)
+std::shared_ptr<AudioTrackDecoder> decoder = loader.OpenDecoder("stereo.flac");
+
+std::vector<float> interleavedAudioSamples;
+interleavedAudioSamples.resize(44100 * 2); // two channels, 1 second at 44100 Hz
+
+decoder->DecodeInterleaved<float>(
+  interleavedAudioSamples.data(),
+  0, // start frame index (yes, this is random access)
+  44100 // number of frames to decode
+);
+
+// Now one second of audio samples for two channels, interleaved, have been
+// written into the 'interleavedAudioSamples' buffer.
+```
+
+Wherever there's a file name, you can also provide a pointer to a `VirtualFile`,
+which is a very simple I/O interface with only three methods to implement.
