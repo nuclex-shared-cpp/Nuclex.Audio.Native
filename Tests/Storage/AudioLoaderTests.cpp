@@ -21,6 +21,7 @@ limitations under the License.
 #define NUCLEX_AUDIO_SOURCE 1
 
 #include "Nuclex/Audio/Storage/AudioLoader.h"
+#include "Nuclex/Audio/Errors/UnsupportedFormatError.h"
 
 #include "./ResourceDirectoryLocator.h"
 
@@ -53,18 +54,77 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(AudioLoaderTest, CanGetMetadataFromWavPack) {
+  TEST(AudioLoaderTest, CanGetMetadataFromFlac) {
     AudioLoader loader;
 
     std::optional<ContainerInfo> info = (
       loader.TryReadInfo(
-        GetResourcesDirectory() + u8"wavpack-stereo-int16-v416.wv"
+        GetResourcesDirectory() + u8"flac-stereo-int16-v143.flac"
       )
     );
-    #if defined(NUCLEX_AUDIO_HAVE_WAVPACK)
+    #if defined(NUCLEX_AUDIO_HAVE_FLAC)
     EXPECT_TRUE(info.has_value());
     #else
     EXPECT_FALSE(info.has_value());
+    #endif
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(AudioLoaderTest, CanOpenDecoderOnFlac) {
+    AudioLoader loader;
+
+    std::shared_ptr<AudioTrackDecoder> decoder;
+    #if defined(NUCLEX_AUDIO_HAVE_FLAC)
+    decoder = loader.OpenDecoder(
+      GetResourcesDirectory() + u8"flac-stereo-int16-v143.flac"
+    );
+    EXPECT_TRUE(static_cast<bool>(decoder));
+    #else
+    EXPECT_THROW(
+      decoder = loader.OpenDecoder(
+        GetResourcesDirectory() + u8"flac-stereo-int16-v143.flac"
+      ),
+      Nuclex::Audio::Errors::UnsupportedFormatError
+    );
+    #endif
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(AudioLoaderTest, CanGetMetadataFromOpus) {
+    AudioLoader loader;
+
+    std::optional<ContainerInfo> info = (
+      loader.TryReadInfo(
+        GetResourcesDirectory() + u8"opus-stereo-v152.opus"
+      )
+    );
+    #if defined(NUCLEX_AUDIO_HAVE_OPUS)
+    EXPECT_TRUE(info.has_value());
+    #else
+    EXPECT_FALSE(info.has_value());
+    #endif
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(AudioLoaderTest, CanOpenDecoderOnOpus) {
+    AudioLoader loader;
+
+    std::shared_ptr<AudioTrackDecoder> decoder;
+    #if defined(NUCLEX_AUDIO_HAVE_OPUS)
+    decoder = loader.OpenDecoder(
+      GetResourcesDirectory() + u8"opus-stereo-v152.opus"
+    );
+    EXPECT_TRUE(static_cast<bool>(decoder));
+    #else
+    EXPECT_THROW(
+      decoder = loader.OpenDecoder(
+        GetResourcesDirectory() + u8"opus-stereo-v152.opus"
+      ),
+      Nuclex::Audio::Errors::UnsupportedFormatError
+    );
     #endif
   }
 
@@ -83,18 +143,39 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(AudioLoaderTest, CanGetMetadataFromOpus) {
+  TEST(AudioLoaderTest, CanGetMetadataFromWavPack) {
     AudioLoader loader;
 
     std::optional<ContainerInfo> info = (
       loader.TryReadInfo(
-        GetResourcesDirectory() + u8"opus-stereo-v152.opus"
+        GetResourcesDirectory() + u8"wavpack-stereo-int16-v416.wv"
       )
     );
-    #if defined(NUCLEX_AUDIO_HAVE_OPUS)
+    #if defined(NUCLEX_AUDIO_HAVE_WAVPACK)
     EXPECT_TRUE(info.has_value());
     #else
     EXPECT_FALSE(info.has_value());
+    #endif
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(AudioLoaderTest, CanOpenDecoderOnWavPack) {
+    AudioLoader loader;
+
+    std::shared_ptr<AudioTrackDecoder> decoder;
+    #if defined(NUCLEX_AUDIO_HAVE_OPUS)
+    decoder = loader.OpenDecoder(
+      GetResourcesDirectory() + u8"wavpack-stereo-int16-v416.wv"
+    );
+    EXPECT_TRUE(static_cast<bool>(decoder));
+    #else
+    EXPECT_THROW(
+      decoder = loader.OpenDecoder(
+        GetResourcesDirectory() + u8"wavpack-stereo-int16-v416.wv"
+      ),
+      Nuclex::Audio::Errors::UnsupportedFormatError
+    );
     #endif
   }
 
