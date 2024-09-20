@@ -115,6 +115,19 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     /// <returns>A list of channels in the order they are interleaved</returns>
     public: std::vector<ChannelPlacement> GetChannelOrder() const;
 
+    /// <summary>Retrieves the current position of the frame cursor</summary>
+    /// <returns>The frame cursor, pointing at the frame that will be decoded next</returns>
+    public: std::uint64_t GetFrameCursorPosition() const;
+
+    /// <summary>Moves the frame cursor to the specified location</summary>
+    /// <param name="frameIndex">Index of the frame that should be decoded next</param>
+    public: void Seek(std::uint64_t frameIndex);
+
+    /// <summary>Decodes sample from the audio file in interleaved format</summary>
+    /// <param name="buffer">Buffer into which the samples will be written</param>
+    /// <param name="frameCount">Number of frame that should be decoded</param>
+    public: void DecodeInterleaved(float *buffer, std::size_t frameCount);
+
     /// <summary>File the reader is accessing</summary>
     private: std::shared_ptr<const VirtualFile> file;
     /// <summary>Holds the function pointers to the file I/O functions</summary>
@@ -127,6 +140,11 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     private: std::unique_ptr<ReadOnlyFileAdapterState> state;
     /// <summary>Manages the state and decoder state of the opened Opus file</summary>
     private: std::shared_ptr<::OggOpusFile> opusFile;
+
+    /// <summary>Number of channels in the Opus file</summary>
+    private: std::size_t channelCount;
+    /// <summary>Index of the audio frame that will be decoded next</summary>
+    private: std::uint64_t frameCursor;
 
   };
 

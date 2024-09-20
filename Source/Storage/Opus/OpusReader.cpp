@@ -30,6 +30,7 @@ limitations under the License.
 #include "Nuclex/Audio/TrackInfo.h"
 
 #include <stdexcept> // for std::runtime_error
+#include <cassert> // for assert()
 
 namespace {
 
@@ -137,38 +138,39 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     channelOrder.reserve(channelCount);
 
     if((mappingFamily == 0) || (mappingFamily == 1)) {
-      if(channelCount == 1) {
+      std::size_t originalChannelCount = channelCount;
+      if(originalChannelCount == 1) {
         channelOrder.push_back(ChannelPlacement::FrontCenter);
         --channelCount;
-      } else {
+      } else if(originalChannelCount < 9) {
         channelOrder.push_back(ChannelPlacement::FrontLeft);
         channelCount -= 2;
 
-        if((channelCount == 3) || (channelCount >= 5)) {
+        if((originalChannelCount == 3) || (originalChannelCount >= 5)) {
           channelOrder.push_back(ChannelPlacement::FrontCenter);
           --channelCount;
         }
 
         channelOrder.push_back(ChannelPlacement::FrontRight);
 
-        if(channelCount >= 7) {
+        if(originalChannelCount >= 7) {
           channelOrder.push_back(ChannelPlacement::SideLeft);
           channelCount -= 2;
           channelOrder.push_back(ChannelPlacement::SideRight);
         }
 
-        if(channelCount == 7) {
+        if(originalChannelCount == 7) {
           channelOrder.push_back(ChannelPlacement::BackCenter);
           --channelCount;
         }
 
-        if((channelCount >= 4) && (channelCount != 7)) {
+        if((originalChannelCount >= 4) && (originalChannelCount != 7)) {
           channelOrder.push_back(ChannelPlacement::BackLeft);
           channelCount -= 2;
           channelOrder.push_back(ChannelPlacement::BackRight);
         }
 
-        if(channelCount >= 6) {
+        if(originalChannelCount >= 6) {
           channelOrder.push_back(ChannelPlacement::LowFrequencyEffects);
           --channelCount;
         }
@@ -189,7 +191,9 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     file(file),
     fileCallbacks(),
     state(),
-    opusFile() {
+    opusFile(),
+    channelCount(0),
+    frameCursor(0) {
 
     // Set up the libopusfile callbacks with adapter methods that will perform all reads
     // on the user-provided virtual file.
@@ -224,6 +228,12 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     std::size_t linkCount = Platform::OpusApi::CountLinks(opusFile);
     if(linkCount != 1) {
       throw std::runtime_error(u8"Multi-link Opus files are not supported");
+    }
+
+    // The channel count is important for the decoding methods
+    {
+      const ::OpusHead &header = Platform::OpusApi::GetHeader(this->opusFile);
+      this->channelCount = header.channel_count;
     }
 
   }
@@ -289,6 +299,44 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     return OpusReader::ChannelOrderFromMappingFamilyAndChannelCount(
       header.mapping_family, header.channel_count
     );
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::uint64_t OpusReader::GetFrameCursorPosition() const {
+    return this->frameCursor;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void OpusReader::Seek(std::uint64_t frameIndex) {
+    // CHECK: Could PCM offset mean interleaved sample index or is it a frame index?
+    Platform::OpusApi::PcmSeek(this->opusFile, frameIndex);
+    this->frameCursor = frameIndex;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void OpusReader::DecodeInterleaved(float *buffer, std::size_t frameCount) {
+    while(frameCount >= 1) {
+      std::size_t decodedFrameCount = (
+        Platform::OpusApi::ReadFloat(this->opusFile, buffer, frameCount * this->channelCount)
+      );
+      if(decodedFrameCount == 0) {
+        throw std::runtime_error(
+          u8"Unexpected end of audio stream decoding Opus file. File truncated?"
+        );
+      }
+
+      this->frameCursor += decodedFrameCount;
+
+      buffer += decodedFrameCount;
+      if(decodedFrameCount > frameCount) {
+        assert((frameCount >= decodedFrameCount) && u8"Read stays within buffer bounds");
+        break;
+      }
+      frameCount -= decodedFrameCount;
+    }
   }
 
   // ------------------------------------------------------------------------------------------- //
