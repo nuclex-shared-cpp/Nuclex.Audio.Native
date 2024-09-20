@@ -243,8 +243,12 @@
     <ClInclude Include="Source\Storage\Flac\FlacTrackDecoder.h" />
     <ClCompile Include="Source\Storage\Flac\FlacVirtualFileAdapter.cpp" />
     <ClInclude Include="Source\Storage\Flac\FlacVirtualFileAdapter.h" />
+    <ClCompile Include="Source\Storage\Opus\OpusReader.cpp" />
+    <ClCompile Include="Source\Storage\Opus\OpusTrackDecoder.cpp" />
     <ClCompile Include="Source\Storage\Shared\ChannelOrderFactory.cpp" />
     <ClCompile Include="Source\Storage\Shared\VirtualFileAdapterState.cpp" />
+    <ClInclude Include="Source\Storage\Opus\OpusReader.h" />
+    <ClInclude Include="Source\Storage\Opus\OpusTrackDecoder.h" />
     <ClInclude Include="Source\Storage\Shared\ChannelOrderFactory.h" />
     <ClInclude Include="Source\Storage\Shared\VirtualFileAdapterState.h" />
     <ClCompile Include="Source\Storage\Opus\OpusAudioCodec.cpp" />

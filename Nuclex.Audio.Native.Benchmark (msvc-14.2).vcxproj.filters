@@ -91,6 +91,12 @@
     <ClInclude Include="Source\Storage\Shared\ChannelOrderFactory.h">
       <Filter>Source\Storage\Shared</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Storage\Opus\OpusReader.h">
+      <Filter>Source\Storage\Opus</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Storage\Opus\OpusTrackDecoder.h">
+      <Filter>Source\Storage\Opus</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Errors\CorruptedFileError.cpp">
@@ -290,6 +296,12 @@
     </ClCompile>
     <ClCompile Include="Source\Storage\Shared\ChannelOrderFactory.cpp">
       <Filter>Source\Storage\Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\Opus\OpusReader.cpp">
+      <Filter>Source\Storage\Opus</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\Opus\OpusTrackDecoder.cpp">
+      <Filter>Source\Storage\Opus</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -82,25 +82,25 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\</OutDir>
     <IntDir>obj\windows-msvc14.2-$(SanePlatform)-$(Configuration)-tests\</IntDir>
-    <TargetName>Nuclex.Support.Native.Tests</TargetName>
+    <TargetName>Nuclex.Audio.Native.Tests</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\</OutDir>
     <IntDir>obj\windows-msvc14.2-$(SanePlatform)-$(Configuration)-tests\</IntDir>
-    <TargetName>Nuclex.Support.Native.Tests</TargetName>
+    <TargetName>Nuclex.Audio.Native.Tests</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\</OutDir>
     <IntDir>obj\windows-msvc14.2-$(SanePlatform)-$(Configuration)-tests\</IntDir>
-    <TargetName>Nuclex.Support.Native.Tests</TargetName>
+    <TargetName>Nuclex.Audio.Native.Tests</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\</OutDir>
     <IntDir>obj\windows-msvc14.2-$(SanePlatform)-$(Configuration)-tests\</IntDir>
-    <TargetName>Nuclex.Support.Native.Tests</TargetName>
+    <TargetName>Nuclex.Audio.Native.Tests</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -243,8 +243,12 @@
     <ClInclude Include="Source\Storage\Flac\FlacTrackDecoder.h" />
     <ClCompile Include="Source\Storage\Flac\FlacVirtualFileAdapter.cpp" />
     <ClInclude Include="Source\Storage\Flac\FlacVirtualFileAdapter.h" />
+    <ClCompile Include="Source\Storage\Opus\OpusReader.cpp" />
+    <ClCompile Include="Source\Storage\Opus\OpusTrackDecoder.cpp" />
     <ClCompile Include="Source\Storage\Shared\ChannelOrderFactory.cpp" />
     <ClCompile Include="Source\Storage\Shared\VirtualFileAdapterState.cpp" />
+    <ClInclude Include="Source\Storage\Opus\OpusReader.h" />
+    <ClInclude Include="Source\Storage\Opus\OpusTrackDecoder.h" />
     <ClInclude Include="Source\Storage\Shared\ChannelOrderFactory.h" />
     <ClInclude Include="Source\Storage\Shared\VirtualFileAdapterState.h" />
     <ClCompile Include="Source\Storage\Opus\OpusAudioCodec.cpp" />
@@ -293,6 +297,8 @@
     <ClCompile Include="Tests\Storage\Flac\FlacTrackDecoderTest.cpp" />
     <ClCompile Include="Tests\Storage\Opus\OpusAudioCodecTests.cpp" />
     <ClCompile Include="Tests\Storage\Opus\OpusDetectionTests.cpp" />
+    <ClCompile Include="Tests\Storage\Opus\OpusReaderTest.cpp" />
+    <ClCompile Include="Tests\Storage\Opus\OpusTrackDecoderTest.cpp" />
     <ClCompile Include="Tests\Storage\Shared\ChannelOrderFactoryTest.cpp" />
     <ClCompile Include="Tests\Storage\Shared\VirtualFileAdapterStateTest.cpp" />
     <ClCompile Include="Tests\Storage\Waveform\WaveformAudioCodecTests.cpp" />
