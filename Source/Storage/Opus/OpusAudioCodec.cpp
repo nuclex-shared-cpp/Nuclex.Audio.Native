@@ -36,54 +36,6 @@ limitations under the License.
 namespace {
 
   // ------------------------------------------------------------------------------------------- //
-
-  /// <summary>Extracts information about a WavPack file into a TrackInfo object</summary>
-  /// <param name="opusFile">Opened WavPack audio file the informations are taken from</param>
-  /// <param name="trackInfo">Target TrackInfo instance that will be filled</param>
-  void extractTrackInfo(
-    std::shared_ptr<::OggOpusFile> opusFile, Nuclex::Audio::TrackInfo &trackInfo
-  ) {
-    using Nuclex::Audio::Platform::OpusApi;
-    using Nuclex::Audio::Storage::Opus::OpusReader;
-
-    const ::OpusHead &header = OpusApi::GetHeader(opusFile);
-
-    trackInfo.ChannelCount = static_cast<std::size_t>(header.channel_count);
-
-    trackInfo.ChannelPlacements = OpusReader::ChannelPlacementFromMappingFamilyAndChannelCount(
-      header.mapping_family, trackInfo.ChannelCount
-    );
-
-    // Opus audio is always encoded at 48000 samples per second, no matter what the original
-    // input sample rate had been. The .input_sample_rate field merely states what
-    // the original sample rate had been, but is not useful for playback of the Opus file.
-    //trackInfo.SampleRate = static_cast<std::size_t>(header.input_sample_rate)
-    trackInfo.SampleRate = 48000;
-
-    std::uint64_t totalSampleCount = OpusApi::CountSamples(opusFile);
-    trackInfo.Duration = std::chrono::microseconds(totalSampleCount * 1'000 / 48);
-
-    {
-      // Completely unfounded, arbitrary value to estimate the precision (which may or may
-      // not even change depending on Opus bitrates) of an Opus file compared to any audio
-      // format that stores signed integer samples.
-      const std::size_t MadeUpOpusPrecisionFromCompressionRatio = 80;
-
-      // Calculate the number of bytes the audio data would decode to
-      std::uint64_t decodedByteCount = totalSampleCount * 2; // bytes
-      decodedByteCount *= trackInfo.ChannelCount;
-
-      trackInfo.BitsPerSample = std::max<std::size_t>(
-        1, // Let's not report less than 1 bit per sample...
-        OpusApi::GetRawContainerSize(opusFile) *
-        MadeUpOpusPrecisionFromCompressionRatio /
-        decodedByteCount
-      );
-    }
-
-    trackInfo.SampleFormat = Nuclex::Audio::AudioSampleFormat::SignedInteger_16;
-  }
-
   // ------------------------------------------------------------------------------------------- //
 
 } // anonymous namespace

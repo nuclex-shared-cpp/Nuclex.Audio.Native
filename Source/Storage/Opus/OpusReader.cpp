@@ -280,8 +280,10 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
       );
     }
 
-    // TODO: Replace with correct value once actual decoding format is known
-    target.SampleFormat = Nuclex::Audio::AudioSampleFormat::SignedInteger_16;
+    // Opus decodes to float, so this is the native format. However, libopus can decode
+    // to 16-bit integers and there even is the possibility to compile libopus without
+    // floating point code for embedded systems, so... maybe dig deeper?
+    target.SampleFormat = Nuclex::Audio::AudioSampleFormat::Float_32;
 
   }
 
