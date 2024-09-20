@@ -148,9 +148,15 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     {
       std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
 
-    } // mutex lock scope
+      // If the caller requests to read from a location that is not where the file cursor
+      // is currently at, we need to seek to that position first.
+      if(this->reader.GetFrameCursorPosition() != startFrame) {
+        this->reader.Seek(startFrame);
+      }
 
-    throw std::runtime_error(u8"Not implemented yet");
+      this->reader.DecodeInterleaved(buffer, frameCount);
+
+    } // mutex lock scope
   }
 
   // ------------------------------------------------------------------------------------------- //

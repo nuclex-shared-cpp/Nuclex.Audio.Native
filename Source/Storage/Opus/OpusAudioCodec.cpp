@@ -27,6 +27,7 @@ limitations under the License.
 #include "Nuclex/Audio/Storage/VirtualFile.h"
 #include "./OpusDetection.h"
 #include "./OpusVirtualFileAdapter.h"
+#include "./OpusTrackDecoder.h"
 #include "./OpusReader.h"
 #include "../../Platform/OpusApi.h"
 
@@ -149,8 +150,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
       );
     }
 
-    (void)source;
-    throw std::runtime_error(u8"Not implemented yet");
+    return std::make_shared<OpusTrackDecoder>(source);
   }
 
   // ------------------------------------------------------------------------------------------- //

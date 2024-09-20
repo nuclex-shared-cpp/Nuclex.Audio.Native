@@ -121,6 +121,23 @@ namespace Nuclex { namespace Audio { namespace Platform {
     );
     #endif
 
+    public: static void PcmSeek(
+      const std::shared_ptr<::OggOpusFile> &opusFile,
+      std::int64_t pcmOffset // This is a signed integer in in the opusfile API...
+    );
+
+    public: static std::size_t Read(
+      const std::shared_ptr<::OggOpusFile> &opusFile,
+      std::int16_t *buffer, std::size_t bufferSize,
+      int linkIndex = -1
+    );
+
+    public: static std::size_t ReadFloat(
+      const std::shared_ptr<::OggOpusFile> &opusFile,
+      float *buffer, std::size_t bufferSize,
+      int linkIndex = -1
+    );
+
   };
 
   // ------------------------------------------------------------------------------------------- //

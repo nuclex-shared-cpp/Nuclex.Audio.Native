@@ -89,6 +89,8 @@ namespace Nuclex { namespace Audio { namespace Platform {
 
     }
 
+    //::op_set_gain_offset(opusFile, OP_HEADER_GAIN, 0);
+
     return std::shared_ptr<::OggOpusFile>(opusFile, &::op_free);
   }
 
@@ -136,7 +138,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
     const std::shared_ptr<::OggOpusFile> &opusFile, int linkIndex /* = -1 */
   ) {
     ::ogg_int64_t containerSizeOrErrorCode = ::op_raw_total(opusFile.get(), linkIndex);
-    if(containerSizeOrErrorCode < 0) {
+    if(unlikely(containerSizeOrErrorCode < 0)) {
       std::string message(u8"Error getting OGG raw total size via libopusfile: ", 50);
       message.append(stringFromOpusFileErrorCode(static_cast<int>(containerSizeOrErrorCode)));
       throw std::runtime_error(message);
@@ -154,6 +156,64 @@ namespace Nuclex { namespace Audio { namespace Platform {
     // Step through all OGG pages and sum up the size of one stream only
   }
 #endif
+  // ------------------------------------------------------------------------------------------- //
+
+  void OpusApi::PcmSeek(
+    const std::shared_ptr<::OggOpusFile> &opusFile,
+    std::int64_t pcmOffset // This is a signed integer in in the opusfile API...
+  ) {
+    int result = ::op_pcm_seek(opusFile.get(), pcmOffset);
+    if(unlikely(result != 0)) {
+      std::string message(u8"Error seeking within the Opus audio file: ", 42);
+      message.append(stringFromOpusFileErrorCode(result));
+      throw std::runtime_error(message);
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::size_t OpusApi::Read(
+    const std::shared_ptr<::OggOpusFile> &opusFile,
+    std::int16_t *buffer, std::size_t bufferSize,
+    int linkIndex /* = -1 */
+  ) {
+    int result;
+    if(linkIndex == -1) {
+      result = ::op_read(opusFile.get(), buffer, bufferSize, nullptr);
+    } else {
+      result = ::op_read(opusFile.get(), buffer, bufferSize, &linkIndex);
+    }
+    if(unlikely(result < 0)) {
+      std::string message(u8"Error decoding samples from Opus audio file: ", 45);
+      message.append(stringFromOpusFileErrorCode(result));
+      throw std::runtime_error(message);
+    }
+
+    return static_cast<std::size_t>(result);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::size_t OpusApi::ReadFloat(
+    const std::shared_ptr<::OggOpusFile> &opusFile,
+    float *buffer, std::size_t bufferSize,
+    int linkIndex /* = -1 */
+  ) {
+    int result;
+    if(linkIndex == -1) {
+      result = ::op_read_float(opusFile.get(), buffer, bufferSize, nullptr);
+    } else {
+      result = ::op_read_float(opusFile.get(), buffer, bufferSize, &linkIndex);
+    }
+    if(unlikely(result < 0)) {
+      std::string message(u8"Error decoding samples from Opus audio file: ", 45);
+      message.append(stringFromOpusFileErrorCode(result));
+      throw std::runtime_error(message);
+    }
+
+    return static_cast<std::size_t>(result);
+  }
+
   // ------------------------------------------------------------------------------------------- //
 
 }}} // namespace Nuclex::Audio::Platform
