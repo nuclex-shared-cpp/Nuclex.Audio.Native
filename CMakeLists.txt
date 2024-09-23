@@ -32,7 +32,7 @@ option(
 set(WANT_OPUS ON CACHE BOOL "Whether to integrate Opus audio decoding and encoding")
 set(WANT_FLAC ON CACHE BOOL "Whether to integrate FLAC audio decoding and encoding")
 set(WANT_WAVPACK ON CACHE BOOL "Whether to integrate WAVPACK audio decoding and encoding")
-set(WANT_VORBIS OFF CACHE BOOL "Whether to integrate Vorbis audio decoding and encoding")
+set(WANT_VORBIS ON CACHE BOOL "Whether to integrate Vorbis audio decoding and encoding")
 
 set(WANT_OGG OFF CACHE BOOL "Whether to support the OGG container format")
 set(WANT_M4A OFF CACHE BOOL "Whether to support the M4A (MP4) container format")
@@ -110,6 +110,21 @@ if(WANT_OPUS)
     add_subdirectory(
       ${PROJECT_SOURCE_DIR}/../third-party/nuclex-opusenc
       ${CMAKE_BINARY_DIR}/nuclex-opusenc
+    )
+  endif()
+endif()
+if(WANT_VORBIS)
+  message(STATUS "  ⚫ Support Vorbis")
+  if(NOT (TARGET Ogg))
+    add_subdirectory(
+      ${PROJECT_SOURCE_DIR}/../third-party/nuclex-ogg
+      ${CMAKE_BINARY_DIR}/nuclex-ogg
+    )
+  endif()
+  if(NOT (TARGET Vorbis))
+    add_subdirectory(
+      ${PROJECT_SOURCE_DIR}/../third-party/nuclex-vorbis
+      ${CMAKE_BINARY_DIR}/nuclex-vorbis
     )
   endif()
 endif()
@@ -198,6 +213,14 @@ function(add_third_party_libraries target_name)
     target_link_libraries(${target_name} PRIVATE OpusFile::Static)
     target_link_libraries(${target_name} PRIVATE OpusEnc::Static)
     target_link_libraries(${target_name} PRIVATE Opus::Static)
+  endif()
+  if(WANT_VORBIS)
+    target_compile_definitions(${target_name} PRIVATE NUCLEX_AUDIO_HAVE_VORBIS)
+    target_link_libraries(${target_name} PRIVATE VorbisFile::Static)
+    target_link_libraries(${target_name} PRIVATE VorbisEnc::Static)
+    target_link_libraries(${target_name} PRIVATE Vorbis::Static)
+  endif()
+  if(WANT_OPUS OR WANT_VORBIS)
     target_link_libraries(${target_name} PRIVATE Ogg::Static)
   endif()
   if(WANT_FLAC)

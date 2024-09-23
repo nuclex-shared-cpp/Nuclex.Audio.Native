@@ -72,6 +72,9 @@
     <Filter Include="Tests\Storage\Shared">
       <UniqueIdentifier>{e595b2d6-065f-44bf-9b97-0cf108eaa955}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Storage\Vorbis">
+      <UniqueIdentifier>{9c196f04-b7a9-4be2-89f3-2389e9794f17}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Nuclex\Audio\Errors\UnsupportedFormatError.h">
@@ -121,6 +124,21 @@
     </ClInclude>
     <ClInclude Include="Source\Storage\Opus\OpusTrackDecoder.h">
       <Filter>Source\Storage\Opus</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Storage\Vorbis\VorbisAudioCodec.h">
+      <Filter>Source\Storage\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Storage\Vorbis\VorbisDetection.h">
+      <Filter>Source\Storage\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Storage\Vorbis\VorbisReader.h">
+      <Filter>Source\Storage\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Storage\Vorbis\VorbisTrackDecoder.h">
+      <Filter>Source\Storage\Vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Storage\Vorbis\VorbisVirtualFileAdapter.h">
+      <Filter>Source\Storage\Vorbis</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -342,6 +360,21 @@
     </ClCompile>
     <ClCompile Include="Source\Storage\Opus\OpusTrackDecoder.cpp">
       <Filter>Source\Storage\Opus</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\Vorbis\VorbisAudioCodec.cpp">
+      <Filter>Source\Storage\Vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\Vorbis\VorbisDetection.cpp">
+      <Filter>Source\Storage\Vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\Vorbis\VorbisReader.cpp">
+      <Filter>Source\Storage\Vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\Vorbis\VorbisTrackDecoder.cpp">
+      <Filter>Source\Storage\Vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\Vorbis\VorbisVirtualFileAdapter.cpp">
+      <Filter>Source\Storage\Vorbis</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

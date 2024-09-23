@@ -106,8 +106,8 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>NUCLEX_AUDIO_EXECUTABLE;HAVE_CONFIG_H;FLAC__NO_DLL;NUCLEX_AUDIO_HAVE_FLAC;NUCLEX_AUDIO_HAVE_OPUS;NUCLEX_AUDIO_HAVE_WAVPACK;WIN32;_DEBUG;_WINDOWS;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\;$(ProjectDir)..\Nuclex.Support.Native\Include\;$(ProjectDir)..\third-party\nuclex-flac\build\include\;$(ProjectDir)..\third-party\nuclex-opusfile\build\include\;$(ProjectDir)..\third-party\nuclex-opus\build\include\;$(ProjectDir)..\third-party\nuclex-ogg\build\include\;$(ProjectDir)..\third-party\nuclex-wavpack\build\include\;$(ProjectDir)..\third-party\nuclex-moodycamelqueues\build-concurrentqueue;$(ProjectDir)..\third-party\nuclex-googletest\build\googletest\include\</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NUCLEX_AUDIO_EXECUTABLE;HAVE_CONFIG_H;FLAC__NO_DLL;NUCLEX_AUDIO_HAVE_FLAC;NUCLEX_AUDIO_HAVE_OPUS;NUCLEX_AUDIO_HAVE_VORBIS;NUCLEX_AUDIO_HAVE_WAVPACK;WIN32;_DEBUG;_WINDOWS;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\;$(ProjectDir)..\Nuclex.Support.Native\Include\;$(ProjectDir)..\third-party\nuclex-flac\build\include\;$(ProjectDir)..\third-party\nuclex-opusfile\build\include\;$(ProjectDir)..\third-party\nuclex-opus\build\include\;$(ProjectDir)..\third-party\nuclex-ogg\build\include\;$(ProjectDir)..\third-party\nuclex-vorbis\build\include\;$(ProjectDir)..\third-party\nuclex-wavpack\build\include\;$(ProjectDir)..\third-party\nuclex-moodycamelqueues\build-concurrentqueue;$(ProjectDir)..\third-party\nuclex-googletest\build\googletest\include\</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <FloatingPointModel>Fast</FloatingPointModel>
@@ -117,8 +117,8 @@
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>Nuclex.Support.Native.lib;flac.lib;opusfile.lib;opus.lib;ogg.lib;wavpack.lib;gtest.lib;gtest_main.lib;synchronization.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\Nuclex.Support.Native\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-flac\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opusfile\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opus\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-ogg\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-wavpack\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-googletest\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Nuclex.Support.Native.lib;flac.lib;opusenc.lib;opusfile.lib;opus.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ogg.lib;wavpack.lib;gtest.lib;gtest_main.lib;synchronization.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\Nuclex.Support.Native\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-flac\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opusenc\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opusfile\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opus\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-vorbis\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-ogg\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-wavpack\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-googletest\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>Nuclex.Audio.Native.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
@@ -126,8 +126,8 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>NUCLEX_AUDIO_EXECUTABLE;HAVE_CONFIG_H;FLAC__NO_DLL;NUCLEX_AUDIO_HAVE_FLAC;NUCLEX_AUDIO_HAVE_OPUS;NUCLEX_AUDIO_HAVE_WAVPACK;WIN32;_DEBUG;_WINDOWS;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\;$(ProjectDir)..\Nuclex.Support.Native\Include\;$(ProjectDir)..\third-party\nuclex-flac\build\include\;$(ProjectDir)..\third-party\nuclex-opusfile\build\include\;$(ProjectDir)..\third-party\nuclex-opus\build\include\;$(ProjectDir)..\third-party\nuclex-ogg\build\include\;$(ProjectDir)..\third-party\nuclex-wavpack\build\include\;$(ProjectDir)..\third-party\nuclex-moodycamelqueues\build-concurrentqueue;$(ProjectDir)..\third-party\nuclex-googletest\build\googletest\include\</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NUCLEX_AUDIO_EXECUTABLE;HAVE_CONFIG_H;FLAC__NO_DLL;NUCLEX_AUDIO_HAVE_FLAC;NUCLEX_AUDIO_HAVE_OPUS;NUCLEX_AUDIO_HAVE_VORBIS;NUCLEX_AUDIO_HAVE_WAVPACK;WIN32;_DEBUG;_WINDOWS;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\;$(ProjectDir)..\Nuclex.Support.Native\Include\;$(ProjectDir)..\third-party\nuclex-flac\build\include\;$(ProjectDir)..\third-party\nuclex-opusfile\build\include\;$(ProjectDir)..\third-party\nuclex-opus\build\include\;$(ProjectDir)..\third-party\nuclex-ogg\build\include\;$(ProjectDir)..\third-party\nuclex-vorbis\build\include\;$(ProjectDir)..\third-party\nuclex-wavpack\build\include\;$(ProjectDir)..\third-party\nuclex-moodycamelqueues\build-concurrentqueue;$(ProjectDir)..\third-party\nuclex-googletest\build\googletest\include\</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <FloatingPointModel>Fast</FloatingPointModel>
@@ -136,8 +136,8 @@
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>Nuclex.Support.Native.lib;flac.lib;opusfile.lib;opus.lib;ogg.lib;wavpack.lib;gtest.lib;gtest_main.lib;synchronization.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\Nuclex.Support.Native\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-flac\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opusfile\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opus\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-ogg\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-wavpack\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-googletest\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Nuclex.Support.Native.lib;flac.lib;opusenc.lib;opusfile.lib;opus.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ogg.lib;wavpack.lib;gtest.lib;gtest_main.lib;synchronization.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\Nuclex.Support.Native\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-flac\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opusenc\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opusfile\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opus\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-vorbis\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-ogg\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-wavpack\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-googletest\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>Nuclex.Audio.Native.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
@@ -147,8 +147,8 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NUCLEX_AUDIO_EXECUTABLE;HAVE_CONFIG_H;FLAC__NO_DLL;NUCLEX_AUDIO_HAVE_FLAC;NUCLEX_AUDIO_HAVE_OPUS;NUCLEX_AUDIO_HAVE_WAVPACK;WIN32;NDEBUG;_WINDOWS;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\;$(ProjectDir)..\Nuclex.Support.Native\Include\;$(ProjectDir)..\third-party\nuclex-flac\build\include\;$(ProjectDir)..\third-party\nuclex-opusfile\build\include\;$(ProjectDir)..\third-party\nuclex-opus\build\include\;$(ProjectDir)..\third-party\nuclex-ogg\build\include\;$(ProjectDir)..\third-party\nuclex-wavpack\build\include\;$(ProjectDir)..\third-party\nuclex-moodycamelqueues\build-concurrentqueue;$(ProjectDir)..\third-party\nuclex-googletest\build\googletest\include\</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NUCLEX_AUDIO_EXECUTABLE;HAVE_CONFIG_H;FLAC__NO_DLL;NUCLEX_AUDIO_HAVE_FLAC;NUCLEX_AUDIO_HAVE_OPUS;NUCLEX_AUDIO_HAVE_VORBIS;NUCLEX_AUDIO_HAVE_WAVPACK;WIN32;NDEBUG;_WINDOWS;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\;$(ProjectDir)..\Nuclex.Support.Native\Include\;$(ProjectDir)..\third-party\nuclex-flac\build\include\;$(ProjectDir)..\third-party\nuclex-opusfile\build\include\;$(ProjectDir)..\third-party\nuclex-opus\build\include\;$(ProjectDir)..\third-party\nuclex-ogg\build\include\;$(ProjectDir)..\third-party\nuclex-vorbis\build\include\;$(ProjectDir)..\third-party\nuclex-wavpack\build\include\;$(ProjectDir)..\third-party\nuclex-moodycamelqueues\build-concurrentqueue;$(ProjectDir)..\third-party\nuclex-googletest\build\googletest\include\</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
@@ -163,8 +163,8 @@
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>Nuclex.Support.Native.lib;flac.lib;opusfile.lib;opus.lib;ogg.lib;wavpack.lib;gtest.lib;gtest_main.lib;synchronization.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\Nuclex.Support.Native\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-flac\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opusfile\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opus\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-ogg\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-wavpack\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-googletest\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Nuclex.Support.Native.lib;flac.lib;opusenc.lib;opusfile.lib;opus.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ogg.lib;wavpack.lib;gtest.lib;gtest_main.lib;synchronization.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\Nuclex.Support.Native\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-flac\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opusenc\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opusfile\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opus\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-vorbis\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-ogg\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-wavpack\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-googletest\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>Nuclex.Audio.Native.def</ModuleDefinitionFile>
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </Link>
@@ -175,8 +175,8 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NUCLEX_AUDIO_EXECUTABLE;HAVE_CONFIG_H;FLAC__NO_DLL;NUCLEX_AUDIO_HAVE_FLAC;NUCLEX_AUDIO_HAVE_OPUS;NUCLEX_AUDIO_HAVE_WAVPACK;WIN32;NDEBUG;_WINDOWS;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\;$(ProjectDir)..\Nuclex.Support.Native\Include\;$(ProjectDir)..\third-party\nuclex-flac\build\include\;$(ProjectDir)..\third-party\nuclex-opusfile\build\include\;$(ProjectDir)..\third-party\nuclex-opus\build\include\;$(ProjectDir)..\third-party\nuclex-ogg\build\include\;$(ProjectDir)..\third-party\nuclex-wavpack\build\include\;$(ProjectDir)..\third-party\nuclex-moodycamelqueues\build-concurrentqueue;$(ProjectDir)..\third-party\nuclex-googletest\build\googletest\include\</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NUCLEX_AUDIO_EXECUTABLE;HAVE_CONFIG_H;FLAC__NO_DLL;NUCLEX_AUDIO_HAVE_FLAC;NUCLEX_AUDIO_HAVE_OPUS;NUCLEX_AUDIO_HAVE_VORBIS;NUCLEX_AUDIO_HAVE_WAVPACK;WIN32;NDEBUG;_WINDOWS;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\;$(ProjectDir)..\Nuclex.Support.Native\Include\;$(ProjectDir)..\third-party\nuclex-flac\build\include\;$(ProjectDir)..\third-party\nuclex-opusfile\build\include\;$(ProjectDir)..\third-party\nuclex-opus\build\include\;$(ProjectDir)..\third-party\nuclex-ogg\build\include\;$(ProjectDir)..\third-party\nuclex-vorbis\build\include\;$(ProjectDir)..\third-party\nuclex-wavpack\build\include\;$(ProjectDir)..\third-party\nuclex-moodycamelqueues\build-concurrentqueue;$(ProjectDir)..\third-party\nuclex-googletest\build\googletest\include\</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
@@ -190,8 +190,8 @@
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>Nuclex.Support.Native.lib;flac.lib;opusfile.lib;opus.lib;ogg.lib;wavpack.lib;gtest.lib;gtest_main.lib;synchronization.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\Nuclex.Support.Native\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-flac\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opusfile\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opus\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-ogg\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-wavpack\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-googletest\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Nuclex.Support.Native.lib;flac.lib;opusenc.lib;opusfile.lib;opus.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ogg.lib;wavpack.lib;gtest.lib;gtest_main.lib;synchronization.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\Nuclex.Support.Native\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-flac\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opusenc\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opusfile\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-opus\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-vorbis\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-ogg\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-wavpack\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\;$(ProjectDir)..\third-party\nuclex-googletest\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>Nuclex.Audio.Native.def</ModuleDefinitionFile>
       <GenerateDebugInformation>false</GenerateDebugInformation>
     </Link>
@@ -257,7 +257,17 @@
     <ClInclude Include="Source\Storage\Opus\OpusDetection.h" />
     <ClCompile Include="Source\Storage\Opus\OpusVirtualFileAdapter.cpp" />
     <ClInclude Include="Source\Storage\Opus\OpusVirtualFileAdapter.h" />
+    <ClCompile Include="Source\Storage\Vorbis\VorbisAudioCodec.cpp" />
+    <ClCompile Include="Source\Storage\Vorbis\VorbisDetection.cpp" />
+    <ClCompile Include="Source\Storage\Vorbis\VorbisReader.cpp" />
+    <ClCompile Include="Source\Storage\Vorbis\VorbisTrackDecoder.cpp" />
+    <ClCompile Include="Source\Storage\Vorbis\VorbisVirtualFileAdapter.cpp" />
     <ClCompile Include="Source\Storage\Waveform\WaveformAudioCodec.cpp" />
+    <ClInclude Include="Source\Storage\Vorbis\VorbisAudioCodec.h" />
+    <ClInclude Include="Source\Storage\Vorbis\VorbisDetection.h" />
+    <ClInclude Include="Source\Storage\Vorbis\VorbisReader.h" />
+    <ClInclude Include="Source\Storage\Vorbis\VorbisTrackDecoder.h" />
+    <ClInclude Include="Source\Storage\Vorbis\VorbisVirtualFileAdapter.h" />
     <ClInclude Include="Source\Storage\Waveform\WaveformAudioCodec.h" />
     <ClCompile Include="Source\Storage\Waveform\WaveformDetection.cpp" />
     <ClInclude Include="Source\Storage\Waveform\WaveformDetection.h" />
@@ -326,7 +336,7 @@
   <ItemGroup>
     <CustomBuild Include="Nuclex.Support.Native.ref">
       <FileType>Document</FileType>
-      <Command>COPY "$(ProjectDir)..\%(Filename)\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\Nuclex.Support.Native.dll" "$(TargetDir)"</Command>
+      <Command>(IF NOT EXIST "$(TargetDir)" MKDIR "$(TargetDir)" ) &amp;&amp; COPY "$(ProjectDir)..\%(Filename)\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\Nuclex.Support.Native.dll" "$(TargetDir)"</Command>
       <Message>Copying %(Filename) into target directory...</Message>
       <Outputs>$(TargetDir)Nuclex.Support.Native.dll</Outputs>
       <AdditionalInputs>$(ProjectDir)..\%(Filename)\bin\windows-msvc14.2-$(SanePlatform)-$(Configuration)\%(Filename).dll</AdditionalInputs>
