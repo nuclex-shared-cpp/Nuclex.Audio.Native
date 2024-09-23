@@ -25,6 +25,7 @@ limitations under the License.
 #if defined(NUCLEX_AUDIO_HAVE_VORBIS)
 
 #include "./VorbisVirtualFileAdapter.h" // for FileAdapterFactory
+#include "../Shared/ChannelOrderFactory.h"
 #include "../../Platform/VorbisApi.h" // for VorbisApi
 
 #include "Nuclex/Audio/TrackInfo.h"
@@ -76,8 +77,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
     // the audio stream properties (i.e. channel count, sample rate) might change while
     // we are decoding...
     //
-    std::size_t linkCount = Platform::VorbisApi::CountStreams(this->vorbisFile);
-    if(linkCount != 1) {
+    std::size_t streamCount = Platform::VorbisApi::CountStreams(this->vorbisFile);
+    if(streamCount != 1) {
       throw std::runtime_error(u8"Multi-stream Vorbis files are not supported");
     }
 
@@ -92,10 +93,17 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
   void VorbisReader::ReadMetadata(TrackInfo &target) {
     const ::vorbis_info &info = Platform::VorbisApi::GetStreamInformation(this->vorbisFile);
 
+    // For Vorbis files, the mapping family is always 0 (says the Vorbis 1 specification)
     target.ChannelCount = info.channels;
+    target.ChannelPlacements = (
+      Shared::ChannelOrderFactory::ChannelPlacementFromVorbisFamilyAndCount(
+        0, target.ChannelCount
+      )
+    );
+
     target.SampleRate = info.rate;
 
-    ::ogg_int64_t totalSampleCount = ::ov_pcm_total(this->vorbisFile.get(), -1);
+    ::ogg_int64_t totalSampleCount = Platform::VorbisApi::CountPcmSamples(this->vorbisFile);
 
     target.Duration = std::chrono::microseconds(
       totalSampleCount * 1'000'000 / target.SampleRate
@@ -109,13 +117,17 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
   // ------------------------------------------------------------------------------------------- //
 
   std::uint64_t VorbisReader::CountTotalFrames() const {
-    throw std::runtime_error(u8"Not implemented yet");
+    return Platform::VorbisApi::CountPcmSamples(this->vorbisFile);
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   std::vector<ChannelPlacement> VorbisReader::GetChannelOrder() const {
-    throw std::runtime_error(u8"Not implemented yet");
+    const ::vorbis_info &info = Platform::VorbisApi::GetStreamInformation(this->vorbisFile);
+
+    return Shared::ChannelOrderFactory::FromVorbisFamilyAndCount(
+      0, info.channels
+    );
   }
 
   // ------------------------------------------------------------------------------------------- //

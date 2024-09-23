@@ -96,5 +96,134 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Shared {
 
   // ------------------------------------------------------------------------------------------- //
 
+  TEST(ChannelOrderFactoryTest, VorbisChannelOrderCanBeDeducedFromOneChannel) {
+    std::vector<ChannelPlacement> placement = (
+      ChannelOrderFactory::FromVorbisFamilyAndCount(0, 1)
+    );
+
+    ASSERT_EQ(placement.size(), 1U);
+    EXPECT_EQ(placement[0], ChannelPlacement::FrontCenter);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(ChannelOrderFactoryTest, VorbisChannelOrderCanBeDeducedFromTwoChannels) {
+    std::vector<ChannelPlacement> placement = (
+      ChannelOrderFactory::FromVorbisFamilyAndCount(0, 2)
+    );
+
+    ASSERT_EQ(placement.size(), 2U);
+    EXPECT_EQ(placement[0], ChannelPlacement::FrontLeft);
+    EXPECT_EQ(placement[1], ChannelPlacement::FrontRight);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(ChannelOrderFactoryTest, VorbisChannelOrderCanBeDeducedFromThreeChannels) {
+    std::vector<ChannelPlacement> placement = (
+      ChannelOrderFactory::FromVorbisFamilyAndCount(0, 3)
+    );
+
+    ASSERT_EQ(placement.size(), 3U);
+    EXPECT_EQ(placement[0], ChannelPlacement::FrontLeft);
+    EXPECT_EQ(placement[1], ChannelPlacement::FrontCenter);
+    EXPECT_EQ(placement[2], ChannelPlacement::FrontRight);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(ChannelOrderFactoryTest, VorbisChannelOrderCanBeDeducedFromFourChannels) {
+    std::vector<ChannelPlacement> placement = (
+      ChannelOrderFactory::FromVorbisFamilyAndCount(0, 4)
+    );
+
+    ASSERT_EQ(placement.size(), 4U);
+    EXPECT_EQ(placement[0], ChannelPlacement::FrontLeft);
+    EXPECT_EQ(placement[1], ChannelPlacement::FrontRight);
+    EXPECT_EQ(placement[2], ChannelPlacement::BackLeft);
+    EXPECT_EQ(placement[3], ChannelPlacement::BackRight);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(ChannelOrderFactoryTest, VorbisChannelOrderCanBeDeducedFromFiveChannels) {
+    std::vector<ChannelPlacement> placement = (
+      ChannelOrderFactory::FromVorbisFamilyAndCount(0, 5)
+    );
+
+    ASSERT_EQ(placement.size(), 5U);
+    EXPECT_EQ(placement[0], ChannelPlacement::FrontLeft);
+    EXPECT_EQ(placement[1], ChannelPlacement::FrontCenter);
+    EXPECT_EQ(placement[2], ChannelPlacement::FrontRight);
+    EXPECT_EQ(placement[3], ChannelPlacement::BackLeft);
+    EXPECT_EQ(placement[4], ChannelPlacement::BackRight);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(ChannelOrderFactoryTest, VorbisChannelOrderCanBeDeducedFromSixChannels) {
+    std::vector<ChannelPlacement> placement = (
+      ChannelOrderFactory::FromVorbisFamilyAndCount(0, 6)
+    );
+
+    ASSERT_EQ(placement.size(), 6U);
+    EXPECT_EQ(placement[0], ChannelPlacement::FrontLeft);
+    EXPECT_EQ(placement[1], ChannelPlacement::FrontCenter);
+    EXPECT_EQ(placement[2], ChannelPlacement::FrontRight);
+    EXPECT_EQ(placement[3], ChannelPlacement::BackLeft);
+    EXPECT_EQ(placement[4], ChannelPlacement::BackRight);
+    EXPECT_EQ(placement[5], ChannelPlacement::LowFrequencyEffects);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(ChannelOrderFactoryTest, VorbisChannelOrderCanBeDeducedFromSevenChannels) {
+    std::vector<ChannelPlacement> placement = (
+      ChannelOrderFactory::FromVorbisFamilyAndCount(0, 7)
+    );
+
+    ASSERT_EQ(placement.size(), 7U);
+    EXPECT_EQ(placement[0], ChannelPlacement::FrontLeft);
+    EXPECT_EQ(placement[1], ChannelPlacement::FrontCenter);
+    EXPECT_EQ(placement[2], ChannelPlacement::FrontRight);
+    EXPECT_EQ(placement[3], ChannelPlacement::SideLeft);
+    EXPECT_EQ(placement[4], ChannelPlacement::SideRight);
+    EXPECT_EQ(placement[5], ChannelPlacement::BackCenter);
+    EXPECT_EQ(placement[6], ChannelPlacement::LowFrequencyEffects);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(ChannelOrderFactoryTest, VorbisChannelOrderCanBeDeducedFromEightChannels) {
+    std::vector<ChannelPlacement> placement = (
+      ChannelOrderFactory::FromVorbisFamilyAndCount(0, 8)
+    );
+
+    ASSERT_EQ(placement.size(), 8U);
+    EXPECT_EQ(placement[0], ChannelPlacement::FrontLeft);
+    EXPECT_EQ(placement[1], ChannelPlacement::FrontCenter);
+    EXPECT_EQ(placement[2], ChannelPlacement::FrontRight);
+    EXPECT_EQ(placement[3], ChannelPlacement::SideLeft);
+    EXPECT_EQ(placement[4], ChannelPlacement::SideRight);
+    EXPECT_EQ(placement[5], ChannelPlacement::BackLeft);
+    EXPECT_EQ(placement[6], ChannelPlacement::BackRight);
+    EXPECT_EQ(placement[7], ChannelPlacement::LowFrequencyEffects);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(ChannelOrderFactoryTest, VorbisChannelOrderDefaultsAtNineChannels) {
+    std::vector<ChannelPlacement> placement = (
+      ChannelOrderFactory::FromVorbisFamilyAndCount(0, 9)
+    );
+
+    ASSERT_EQ(placement.size(), 9U);
+    for(std::size_t index = 0; index < 9; ++index) {
+      EXPECT_EQ(placement[index], ChannelPlacement::Unknown);
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
 }}}} // namespace Nuclex::Audio::Storage::Shared
 

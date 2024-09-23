@@ -64,5 +64,148 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Shared {
   }
 
   // ------------------------------------------------------------------------------------------- //
+#if defined (NUCLEX_AUDIO_HAVE_VORBIS) || defined (NUCLEX_AUDIO_HAVE_OPUS)
+  std::vector<ChannelPlacement> ChannelOrderFactory::FromVorbisFamilyAndCount(
+    int mappingFamily, std::size_t channelCount
+  ) {
+    std::vector<ChannelPlacement> channelOrder;
+    channelOrder.reserve(channelCount);
+
+    if((mappingFamily == 0) || (mappingFamily == 1)) {
+      std::size_t originalChannelCount = channelCount;
+      if(originalChannelCount == 1) {
+        channelOrder.push_back(ChannelPlacement::FrontCenter);
+        --channelCount;
+      } else if(originalChannelCount < 9) {
+        channelOrder.push_back(ChannelPlacement::FrontLeft);
+        channelCount -= 2;
+
+        if((originalChannelCount == 3) || (originalChannelCount >= 5)) {
+          channelOrder.push_back(ChannelPlacement::FrontCenter);
+          --channelCount;
+        }
+
+        channelOrder.push_back(ChannelPlacement::FrontRight);
+
+        if(originalChannelCount >= 7) {
+          channelOrder.push_back(ChannelPlacement::SideLeft);
+          channelCount -= 2;
+          channelOrder.push_back(ChannelPlacement::SideRight);
+        }
+
+        if(originalChannelCount == 7) {
+          channelOrder.push_back(ChannelPlacement::BackCenter);
+          --channelCount;
+        }
+
+        if((originalChannelCount >= 4) && (originalChannelCount != 7)) {
+          channelOrder.push_back(ChannelPlacement::BackLeft);
+          channelCount -= 2;
+          channelOrder.push_back(ChannelPlacement::BackRight);
+        }
+
+        if(originalChannelCount >= 6) {
+          channelOrder.push_back(ChannelPlacement::LowFrequencyEffects);
+          --channelCount;
+        }
+      }
+    }
+
+    while(channelCount >= 1) {
+      channelOrder.push_back(ChannelPlacement::Unknown);
+      --channelCount;
+    }
+
+    return channelOrder;
+  }
+#endif
+  // ------------------------------------------------------------------------------------------- //
+#if defined (NUCLEX_AUDIO_HAVE_VORBIS) || defined (NUCLEX_AUDIO_HAVE_OPUS)
+  ChannelPlacement ChannelOrderFactory::ChannelPlacementFromVorbisFamilyAndCount(
+    int mappingFamily, std::size_t channelCount
+  ) {
+
+    // Opus uses the Vorbis channel layouts and orders. These can be found in section 4.3.9
+    // of the Vorbis 1 Specification (if you cloned the repository this file is in, you'll
+    // find a copy of said specification in its Documents directory).
+    //
+    if((mappingFamily == 0) || (mappingFamily == 1)) {
+      switch(channelCount) {
+        case 1: {
+          return ChannelPlacement::FrontCenter;
+        }
+        case 2: {
+          return (
+            ChannelPlacement::FrontLeft |
+            ChannelPlacement::FrontRight
+          );
+        }
+        case 3: {
+          return (
+            ChannelPlacement::FrontLeft |
+            ChannelPlacement::FrontCenter |
+            ChannelPlacement::FrontRight
+          );
+        }
+        case 4: {
+          return (
+            ChannelPlacement::FrontLeft |
+            ChannelPlacement::FrontCenter |
+            ChannelPlacement::FrontRight |
+            ChannelPlacement::BackCenter
+          );
+        }
+        case 5: {
+          return (
+            ChannelPlacement::FrontLeft |
+            ChannelPlacement::FrontCenter |
+            ChannelPlacement::FrontRight |
+            ChannelPlacement::BackLeft |
+            ChannelPlacement::BackRight
+          );
+        }
+        case 6: {
+          return (
+            ChannelPlacement::FrontLeft |
+            ChannelPlacement::FrontCenter |
+            ChannelPlacement::FrontRight |
+            ChannelPlacement::BackLeft |
+            ChannelPlacement::BackRight |
+            ChannelPlacement::LowFrequencyEffects
+          );
+        }
+        case 7: {
+          return (
+            ChannelPlacement::FrontLeft |
+            ChannelPlacement::FrontCenter |
+            ChannelPlacement::FrontRight |
+            ChannelPlacement::SideLeft |
+            ChannelPlacement::SideRight |
+            ChannelPlacement::BackCenter |
+            ChannelPlacement::LowFrequencyEffects
+          );
+        }
+        case 8: {
+          return (
+            ChannelPlacement::FrontLeft |
+            ChannelPlacement::FrontCenter |
+            ChannelPlacement::FrontRight |
+            ChannelPlacement::SideLeft |
+            ChannelPlacement::SideRight |
+            ChannelPlacement::BackLeft |
+            ChannelPlacement::BackRight |
+            ChannelPlacement::LowFrequencyEffects
+          );
+        }
+        default: {
+          return ChannelPlacement::Unknown;
+        }
+      }
+    } else { // family (0 | 1) / other family
+      return ChannelPlacement::Unknown;
+    }
+  }
+#endif
+  // ------------------------------------------------------------------------------------------- //
 
 }}}} // namespace Nuclex::Audio::Storage::Shared

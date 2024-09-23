@@ -71,31 +71,6 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   /// <summary>Helper class for reading OPUS files using libopus</summary>
   class OpusReader {
 
-    // TODO: When I implement Vorbis, the next two methods should be shared with it.
-    /// <summary>
-    ///   Determines the channel placement from the mapping family and channel count
-    /// </summary>
-    /// <param name="mappingFamily">Vorbis mapping family the channels conform to</param>
-    /// <param name="channelCount">Number of audio channels in the FLAC file</param>
-    /// <returns>The equivalent ChannelPlacement flag combination</returns>
-    /// <remarks>
-    ///   Opus shares the channel layouts and channel order with its predecessor codec,
-    ///   Vorbis. There is a choice of mapping families (with only one actually being
-    ///   really used so far) and the channel layout is fixed for each channel count.
-    ///   The channel placements are all in section 4.3.9 of the Vorbis 1 Specification.
-    /// </remarks>
-    public: static ChannelPlacement ChannelPlacementFromMappingFamilyAndChannelCount(
-      int mappingFamily, std::size_t channelCount
-    );
-
-    /// <summary>Returns the order in which decoded channels will be interleaved</summary>
-    /// <param name="mappingFamily">Vorbis mapping family the channels conform to</param>
-    /// <param name="channelCount">Number of audio channels in the FLAC file</param>
-    /// <returns>A list of channels in the order in which they will be interleaved</returns>
-    public: static std::vector<ChannelPlacement> ChannelOrderFromMappingFamilyAndChannelCount(
-      int mappingFamily, std::size_t channelCount
-    );
-
     /// <summary>Initializes a new Opus reader on the specified file</summary>
     /// <param name="file">File the reader will access</param>
     public: OpusReader(const std::shared_ptr<const VirtualFile> &file);

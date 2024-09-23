@@ -47,6 +47,37 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Shared {
       std::size_t channelCount, ChannelPlacement channelPlacements
     );
 
+#if defined (NUCLEX_AUDIO_HAVE_VORBIS) || defined (NUCLEX_AUDIO_HAVE_OPUS)
+
+    /// <summary>
+    ///   Generates an ordered channel list according to the conventions used by
+    ///   the Vorbis specification (which also applies to Opus)
+    /// </summary>
+    /// <param name="mappingFamily">Vorbis mapping family the channels conform to</param>
+    /// <param name="channelCount">Number of audio channels in the audiop file</param>
+    /// <returns>A vector containing the audio channels in the interleaved order</returns>
+    public: static std::vector<ChannelPlacement> FromVorbisFamilyAndCount(
+      int mappingFamily, std::size_t channelCount
+    );
+
+    /// <summary>
+    ///   Determines the channel placement from the mapping family and channel count
+    /// </summary>
+    /// <param name="mappingFamily">Vorbis mapping family the channels conform to</param>
+    /// <param name="channelCount">Number of audio channels in the audio file</param>
+    /// <returns>The equivalent ChannelPlacement flag combination</returns>
+    /// <remarks>
+    ///   Opus shares the channel layouts and channel order with its predecessor codec,
+    ///   Vorbis. There is a choice of mapping families (with only one actually being
+    ///   really used so far) and the channel layout is fixed for each channel count.
+    ///   The channel placements are all in section 4.3.9 of the Vorbis 1 Specification.
+    /// </remarks>
+    public: static ChannelPlacement ChannelPlacementFromVorbisFamilyAndCount(
+      int mappingFamily, std::size_t channelCount
+    );
+
+#endif // if Vorbis or Opus codecs enabled
+
   };
 
   // ------------------------------------------------------------------------------------------- //
