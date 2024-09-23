@@ -227,7 +227,9 @@
     <ClInclude Include="Source\Platform\PosixApi.h" />
     <ClCompile Include="Source\Platform\PosixFileApi.cpp" />
     <ClInclude Include="Source\Platform\PosixFileApi.h" />
+    <ClCompile Include="Source\Platform\VorbisApi.cpp" />
     <ClCompile Include="Source\Platform\WavPackApi.cpp" />
+    <ClInclude Include="Source\Platform\VorbisApi.h" />
     <ClInclude Include="Source\Platform\WavPackApi.h" />
     <ClCompile Include="Source\Platform\WindowsApi.cpp" />
     <ClInclude Include="Source\Platform\WindowsApi.h" />

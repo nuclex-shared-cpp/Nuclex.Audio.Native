@@ -140,6 +140,9 @@
     <ClInclude Include="Source\Storage\Vorbis\VorbisVirtualFileAdapter.h">
       <Filter>Source\Storage\Vorbis</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Platform\VorbisApi.h">
+      <Filter>Source\Platform</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Errors\CorruptedFileError.cpp">
@@ -375,6 +378,9 @@
     </ClCompile>
     <ClCompile Include="Source\Storage\Vorbis\VorbisVirtualFileAdapter.cpp">
       <Filter>Source\Storage\Vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Platform\VorbisApi.cpp">
+      <Filter>Source\Platform</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
