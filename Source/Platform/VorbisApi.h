@@ -70,6 +70,21 @@ namespace Nuclex { namespace Audio { namespace Platform {
     /// <returns>The number of streams on the OGG container</returns>
     public: static std::size_t CountStreams(const std::shared_ptr<::OggVorbis_File> &vorbisFile);
 
+    public: static const ::vorbis_info &GetStreamInformation(
+      const std::shared_ptr<::OggVorbis_File> &vorbisFile,
+      int streamIndex = -1
+    );
+
+    public: static const ::vorbis_comment &GetComments(
+      const std::shared_ptr<::OggVorbis_File> &vorbisFile,
+      int streamIndex = -1
+    );
+
+    public: static std::uint64_t CountPcmSamples(
+      const std::shared_ptr<::OggVorbis_File> &vorbisFile,
+      int streamIndex = -1
+    );
+
   };
 
   // ------------------------------------------------------------------------------------------- //

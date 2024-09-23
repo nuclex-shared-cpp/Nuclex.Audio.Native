@@ -91,7 +91,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
   inline void FailingVirtualFile::ReadAt(
     std::uint64_t start, std::size_t byteCount, std::uint8_t *buffer
   ) const {
-    if((start > 32) || (start + byteCount > 32)) {
+    if((start > 256) || (start + byteCount > 256)) {
       throw std::domain_error(u8"Simulated error from FailingVirtualFile");
     } else {
       return this->wrappedReadOnlyFile->ReadAt(start, byteCount, buffer);
@@ -103,7 +103,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
   inline void FailingVirtualFile::WriteAt(
     std::uint64_t start, std::size_t byteCount, const std::uint8_t *buffer
   ) {
-    if((start > 32) || (start + byteCount > 32)) {
+    if((start > 256) || (start + byteCount > 256)) {
       throw std::domain_error(u8"Simulated error from FailingVirtualFile");
     } else {
       return this->wrappedWritableFile->WriteAt(start, byteCount, buffer);

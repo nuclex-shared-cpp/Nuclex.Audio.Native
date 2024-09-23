@@ -40,12 +40,13 @@ namespace {
   /// <typeparam name="TAdapterState">
   ///   Type of state the read is done on (because we don't want to const_cast here)
   /// </typeparam>
+  /// <param name="target">Buffer that will receive the data read from the file</param>
+  /// <param name="size">Size of an data record</param>
+  /// <param name="membercount">Number of records that will be read</param>
   /// <param name="stateAsVoid">State of the virtual file adapter class</param>
-  /// <param name="data">Buffer to store the data</param>
-  /// <param name="byteCount">Maximum number of bytes to read.</param>
-  /// <returns>The numberof bytes successfully read, or a negative value on error</returns>
+  /// <returns>The number of bytes successfully read, or a negative value on error</returns>
   /// <remarks>
-  ///   The opusfile library allows this function to read fewer bytes than requested,
+  ///   The vorbisfile library allows this function to read fewer bytes than requested,
   ///   except for zero, which is only allowed when the end of the file is reached.
   /// </remarks>
   template<typename TAdapterState>

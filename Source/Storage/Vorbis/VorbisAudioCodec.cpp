@@ -69,7 +69,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
 
     // As the AudioCodec interface promises, if the file is not an Vorbiss audio file,
     // we'll return an empty result to indicate that we couldn't read it.
-    if(!Detection::CheckIfVorbisHeaderPresent(*source)) {
+    if(!Detection::CheckIfVorbisHeaderPresentLite(*source)) {
       return std::optional<ContainerInfo>();
     }
 
@@ -79,7 +79,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
     ContainerInfo containerInfo;
     containerInfo.DefaultTrackIndex = 0;
 
-    // Standalone .wv files only have a single track, always.
+    // For now, we just read the first track's metadata, assuming that we're
+    // dealing with a single audio track encoded to Ogg Vorbis
     TrackInfo &trackInfo = containerInfo.Tracks.emplace_back();
     reader.ReadMetadata(trackInfo);
     trackInfo.CodecName = GetName();

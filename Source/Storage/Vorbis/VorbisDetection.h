@@ -41,14 +41,13 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Size of the smallest valid VORBIS file possible</summary>
+  /// <summary>Size of the smallest valid Vorbis file possible</summary>
   /// <remarks>
-  ///   Unknown. The smallest file I can produce with opusenc is 470 bytes, but I suspect
-  ///   that, armed with a hex editor and a deep understanding of OGG+VORBIS, one could
-  ///   create a much smaller example. The documentation says 57 bytes are needed for
-  ///   a good chance at detecting VORBIS, better yet 512 bytes.
+  ///   Unknown. The smallest file I can produce with opusenc is way over 4 kilobytes.
+  ///   Some cursory research seems to indicate that Vorbis uses dynamic code tables,
+  ///   which give it a base footprint even for very short audio streams.
   /// </remarks>
-  constexpr const std::size_t SmallestPossibleVorbisSize = 57; // bytes
+  constexpr const std::size_t SmallestPossibleVorbisSize = 4096; // bytes
 
   // ------------------------------------------------------------------------------------------- //
 

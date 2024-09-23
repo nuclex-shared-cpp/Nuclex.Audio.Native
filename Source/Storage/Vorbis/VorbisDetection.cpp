@@ -84,15 +84,15 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
       return false; // File is too small to be an .opus file
     }
 
+    // The ::ov_test_callbacks() method needs a complete setup of I/O callbacks
+    // to fetch data. I don't want to change all detection methods to shared_ptrs
+    // for their virtual files, so we're just temporarily wrapping the reference
+    // to the virtual file in a shared_ptr with an empty deleter.
     ::ov_callbacks fileCallbacks;
-
-    // TODO: Oh yes, this is plain evil. Not dangerous, but 
     std::shared_ptr<const VirtualFile> wrappedSource(&source, &doNothing);
-
     std::unique_ptr<ReadOnlyFileAdapterState> state = (
       FileAdapterFactory::CreateAdapterForReading(wrappedSource, fileCallbacks)
     );
-
     ::OggVorbis_File unusedFile;
 
     // This can return OV_FALSE (too little data), OP_EFAULT (out of memory),
@@ -101,7 +101,12 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
     //
     // We're only interested in figuring out whether the file can be loaded:
     int result = ::ov_test_callbacks(state.get(), &unusedFile, nullptr, 0, fileCallbacks);
-    return (result == 0);
+    if(result == 0) {
+      ::ov_clear(&unusedFile);
+      return true;
+    } else {
+      return false;
+    }
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -169,8 +174,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
       (fileHeader[31] == 0x72) && //  3 r |
       (fileHeader[32] == 0x62) && //  4 b |
       (fileHeader[33] == 0x69) && //  5 i |
-      (fileHeader[34] == 0x73) && //  6 s |
-      (fileHeader[36] == 0x01)    //  - version
+      (fileHeader[34] == 0x73)    //  6 s |
     );
   }
 

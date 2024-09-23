@@ -103,6 +103,43 @@ namespace Nuclex { namespace Audio { namespace Platform {
 
   // ------------------------------------------------------------------------------------------- //
 
+  const ::vorbis_info &VorbisApi::GetStreamInformation(
+    const std::shared_ptr<::OggVorbis_File> &vorbisFile,
+    int streamIndex /* = -1 */
+  ) {
+    ::vorbis_info *info = ::ov_info(vorbisFile.get(), streamIndex);
+    if(unlikely(info == nullptr)) {
+      throw std::runtime_error(u8"Could not obtain Vorbis information read from audio file");
+    }
+
+    return *info;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  const ::vorbis_comment &VorbisApi::GetComments(
+    const std::shared_ptr<::OggVorbis_File> &vorbisFile,
+    int streamIndex /* = -1 */
+  ) {
+    ::vorbis_comment *comment = ::ov_comment(vorbisFile.get(), streamIndex);
+    if(unlikely(comment == nullptr)) {
+      throw std::runtime_error(u8"Could not obtain Vorbis information read from audio file");
+    }
+
+    return *comment;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::uint64_t VorbisApi::CountPcmSamples(
+    const std::shared_ptr<::OggVorbis_File> &vorbisFile,
+    int streamIndex /* = -1 */
+  ) {
+    return ::ov_pcm_total(vorbisFile.get(), streamIndex);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
 }}} // namespace Nuclex::Audio::Platform
 
 #endif // defined(NUCLEX_AUDIO_HAVE_VORBIS)

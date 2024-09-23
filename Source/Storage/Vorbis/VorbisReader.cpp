@@ -90,7 +90,20 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
   // ------------------------------------------------------------------------------------------- //
 
   void VorbisReader::ReadMetadata(TrackInfo &target) {
-    throw std::runtime_error(u8"Not implemented yet");
+    const ::vorbis_info &info = Platform::VorbisApi::GetStreamInformation(this->vorbisFile);
+
+    target.ChannelCount = info.channels;
+    target.SampleRate = info.rate;
+
+    ::ogg_int64_t totalSampleCount = ::ov_pcm_total(this->vorbisFile.get(), -1);
+
+    target.Duration = std::chrono::microseconds(
+      totalSampleCount * 1'000'000 / target.SampleRate
+    );
+
+    target.BitsPerSample = 15; // come up with a silly, wrong approximation formula here
+
+    target.SampleFormat = AudioSampleFormat::Float_32;
   }
 
   // ------------------------------------------------------------------------------------------- //
