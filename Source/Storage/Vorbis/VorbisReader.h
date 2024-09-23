@@ -123,10 +123,12 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
     /// <param name="frameIndex">Index of the frame that should be decoded next</param>
     public: void Seek(std::uint64_t frameIndex);
 
-    /// <summary>Decodes sample from the audio file in interleaved format</summary>
-    /// <param name="buffer">Buffer into which the samples will be written</param>
+    /// <summary>Decodes sample from the audio file as separated channels</summary>
+    /// <param name="buffer">
+    ///   Pointer that will receive a set of buffers holding the audio samples
+    /// </param>
     /// <param name="frameCount">Number of frame that should be decoded</param>
-    public: void DecodeInterleaved(float *buffer, std::size_t frameCount);
+    public: void DecodeSeparated(float **&buffer, std::size_t frameCount);
 
     /// <summary>File the reader is accessing</summary>
     private: std::shared_ptr<const VirtualFile> file;

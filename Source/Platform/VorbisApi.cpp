@@ -140,6 +140,60 @@ namespace Nuclex { namespace Audio { namespace Platform {
 
   // ------------------------------------------------------------------------------------------- //
 
+  void VorbisApi::Seek(
+    const std::exception_ptr &rootCauseException,
+    const std::shared_ptr<::OggVorbis_File> &vorbisFile,
+    ::ogg_int64_t sampleIndex
+  ) {
+    int result = ::ov_pcm_seek(vorbisFile.get(), sampleIndex);
+    if(unlikely(result != 0)) {
+
+      // If something happened reading from the virtual file, that is the root cause
+      // exception and will be reported above whatever consequences it had inside libwavpack.
+      if(unlikely(static_cast<bool>(rootCauseException))) {
+        std::rethrow_exception(rootCauseException);
+      }
+
+      std::string message(u8"Error seeking in virtual file via libvorbisfile: ", 49);
+      message.append(stringFromVorbisFileErrorCode(result));
+      throw std::runtime_error(message);
+
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::size_t VorbisApi::ReadSeparated(
+    const std::exception_ptr &rootCauseException,
+    const std::shared_ptr<::OggVorbis_File> &vorbisFile,
+    float **&channelBuffers,
+    int sampleCount,
+    int &outStreamIndex
+  ) {
+    long result = ::ov_read_float(
+      vorbisFile.get(), &channelBuffers, sampleCount, &outStreamIndex
+    );
+    if(unlikely(result < 0)) {
+
+      // If something happened reading from the virtual file, that is the root cause
+      // exception and will be reported above whatever consequences it had inside libwavpack.
+      if(unlikely(static_cast<bool>(rootCauseException))) {
+        std::rethrow_exception(rootCauseException);
+      }
+
+      std::string message(
+        u8"Unable to decode audio samples from virtual file via libvorbisfile: ", 80
+      );
+      message.append(stringFromVorbisFileErrorCode(result));
+      throw std::runtime_error(message);
+
+    }
+
+    return static_cast<std::size_t>(result);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
 }}} // namespace Nuclex::Audio::Platform
 
 #endif // defined(NUCLEX_AUDIO_HAVE_VORBIS)

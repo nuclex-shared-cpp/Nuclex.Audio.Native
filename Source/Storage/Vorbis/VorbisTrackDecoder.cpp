@@ -94,7 +94,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
   // ------------------------------------------------------------------------------------------- //
 
   bool VorbisTrackDecoder::IsNativelyInterleaved() const {
-    return false; // FLAC actually separates the audio channels
+    return false; // The Direct-low-level-to-float decode chain separates channels
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -154,7 +154,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
         this->reader.Seek(startFrame);
       }
 
-      this->reader.DecodeInterleaved(buffer, frameCount);
+      //this->reader.DecodeInterleaved(buffer, frameCount);
 
     } // mutex lock scope
   }

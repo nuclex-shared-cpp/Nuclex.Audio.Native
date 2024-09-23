@@ -40,7 +40,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
 
     /// <summary>Opens a Vorbis audio file accessed through file callbacks</summary>
     /// <param name="rootCauseException">
-    ///   Captured exception pointer that will be rethrown in place of the libopusfile error
+    ///   Captured exception pointer that will be rethrown in place of the libvorbisfile error
     ///   if something goes wrong. This allows proper error reporting if a fault occurrs
     ///   in a callback that is invoked by libvorbisfile.
     /// </param>
@@ -70,19 +70,71 @@ namespace Nuclex { namespace Audio { namespace Platform {
     /// <returns>The number of streams on the OGG container</returns>
     public: static std::size_t CountStreams(const std::shared_ptr<::OggVorbis_File> &vorbisFile);
 
+    /// <summary>Looks up the stream information structure in a Vorbis file</summary>
+    /// <param name="vorbisFile">
+    ///   Opened Vorbis file to retrieve the stream information from
+    /// </param>
+    /// <param name="streamIndex">Index of the stream whose information to retrieve</param>
+    /// <returns>The stream information structure of the specified file and stream</returns>
     public: static const ::vorbis_info &GetStreamInformation(
       const std::shared_ptr<::OggVorbis_File> &vorbisFile,
       int streamIndex = -1
     );
 
+    /// <summary>Looks up the comment structure in a Vorbis file</summary>
+    /// <param name="vorbisFile">Opened Vorbis file to retrieve the comments from</param>
+    /// <param name="streamIndex">Index of the stream whose comments to retrieve</param>
+    /// <returns>The comments for the specified file and stream</returns>
     public: static const ::vorbis_comment &GetComments(
       const std::shared_ptr<::OggVorbis_File> &vorbisFile,
       int streamIndex = -1
     );
 
+    /// <summary>Looks up the total number of audio frames in a Vorbis file</summary>
+    /// <param name="vorbisFile">Opened Vorbis file whose audio frames to count</param>
+    /// <param name="streamIndex">Index of the stream whose samples to count</param>
+    /// <returns>The number of audio samples (per channel?) in the specified file</returns>
     public: static std::uint64_t CountPcmSamples(
       const std::shared_ptr<::OggVorbis_File> &vorbisFile,
       int streamIndex = -1
+    );
+
+    /// <summary>Seeks to the specified sample in a Vorbis audio stream</summary>
+    /// <param name="rootCauseException">
+    ///   Captured exception pointer that will be rethrown in place of the libvorbisfile error
+    ///   if something goes wrong. This allows proper error reporting if a fault occurrs
+    ///   in a callback that is invoked by libvorbisfile.
+    /// </param>
+    /// <param name="vorbisFile">Opened Vorbis file in which to seek</param>
+    /// <param name="sampleIndex">Index of the sample to which to seek</param>
+    /// <returns>The number of audio samples (per channel?) in the specified file</returns>
+    public: static void Seek(
+      const std::exception_ptr &rootCauseException,
+      const std::shared_ptr<::OggVorbis_File> &vorbisFile,
+      ::ogg_int64_t sampleIndex
+    );
+
+    /// <summary>Decodes a block of samples from the Vorbis audio file</summary>
+    /// <param name="rootCauseException">
+    ///   Captured exception pointer that will be rethrown in place of the libvorbisfile error
+    ///   if something goes wrong. This allows proper error reporting if a fault occurrs
+    ///   in a callback that is invoked by libvorbisfile.
+    /// </param>
+    /// <param name="vorbisFile">Opened Vorbis file in which to seek</param>
+    /// <param name="channelBuffers">
+    ///   Receives pointers to buffers holding the decoded audio channels
+    /// </param>
+    /// <param name="sampleCount">Number of samples that should be decoded</param>
+    /// <param name="outStreamIndex">
+    ///   Recevies the index of the stream that is being decoded
+    /// </param>
+    /// <returns>The number of samples that have been decoded</returns>
+    public: static std::size_t ReadSeparated(
+      const std::exception_ptr &rootCauseException,
+      const std::shared_ptr<::OggVorbis_File> &vorbisFile,
+      float **&channelBuffers,
+      int sampleCount,
+      int &outStreamIndex
     );
 
   };

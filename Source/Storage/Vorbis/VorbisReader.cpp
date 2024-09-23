@@ -139,12 +139,17 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
   // ------------------------------------------------------------------------------------------- //
 
   void VorbisReader::Seek(std::uint64_t frameIndex) {
-    throw std::runtime_error(u8"Not implemented yet");
+    Platform::VorbisApi::Seek(
+      this->state->Error,
+      this->vorbisFile,
+      frameIndex
+    );
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-  void VorbisReader::DecodeInterleaved(float *buffer, std::size_t frameCount) {
+  void VorbisReader::DecodeSeparated(float **&buffer, std::size_t frameCount) {
+
     throw std::runtime_error(u8"Not implemented yet");
   }
 
