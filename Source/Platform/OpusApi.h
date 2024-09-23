@@ -39,6 +39,11 @@ namespace Nuclex { namespace Audio { namespace Platform {
   class OpusApi {
 
     /// <summary>Opens an Opus audio file accessed through file callbacks</summary>
+    /// <param name="rootCauseException">
+    ///   Captured exception pointer that will be rethrown in place of the libopusfile error
+    ///   if something goes wrong. This allows proper error reporting if a fault occurrs
+    ///   in a callback that is invoked by libopusfile.
+    /// </param>
     /// <param name="state">State, will be passed unmodified to all file callbacks</param>
     /// <param name="callbacks">Callbacks through which file accesses will happen</param>
     /// <param name="initialBytes">Extra buffer of bytes that have alraedy been read</param>
@@ -121,20 +126,41 @@ namespace Nuclex { namespace Audio { namespace Platform {
     );
     #endif
 
+    /// <summary>Moves the file cursor to the specified frame location</summary>
+    /// <param name="opusFile">Opened Opus audio file to perform the seek in</param>
+    /// <param name="pcmOffset">Absolute offset of the frame to decode next</param>
     public: static void PcmSeek(
       const std::shared_ptr<::OggOpusFile> &opusFile,
       std::int64_t pcmOffset // This is a signed integer in in the opusfile API...
     );
 
+    /// <summary>Reads audio samples as 16-bit integers from an Opus file</summary>
+    /// <param name="opusFile">Opened Opus audio file to read audio data from</param>
+    /// <param name="buffer">Buffer that will receive the decoded audio samples</param>
+    /// <param name="bufferSize">Amount of space inthe buffer to fill with audio data</param>
+    /// <param name="linkIndex">
+    ///   Index of the link whose audio datato decode, -1 for the current link.
+    ///   These are *not* the same as tracks in a Matroska or MP4 container,
+    ///   links are used to chain audio streams sequentially, not interleave them.
+    /// </param>
     public: static std::size_t Read(
       const std::shared_ptr<::OggOpusFile> &opusFile,
-      std::int16_t *buffer, std::size_t bufferSize,
+      std::int16_t *buffer, int bufferSize,
       int linkIndex = -1
     );
 
+    /// <summary>Reads audio samples as floating point values from an Opus file</summary>
+    /// <param name="opusFile">Opened Opus audio file to read audio data from</param>
+    /// <param name="buffer">Buffer that will receive the decoded audio samples</param>
+    /// <param name="bufferSize">Amount of space inthe buffer to fill with audio data</param>
+    /// <param name="linkIndex">
+    ///   Index of the link whose audio datato decode, -1 for the current link.
+    ///   These are *not* the same as tracks in a Matroska or MP4 container,
+    ///   links are used to chain audio streams sequentially, not interleave them.
+    /// </param>
     public: static std::size_t ReadFloat(
       const std::shared_ptr<::OggOpusFile> &opusFile,
-      float *buffer, std::size_t bufferSize,
+      float *buffer, int bufferSize,
       int linkIndex = -1
     );
 

@@ -130,7 +130,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
 
   void FlacApi::Finish(const std::shared_ptr<::FLAC__StreamDecoder> &decoder) {
     ::FLAC__bool result = ::FLAC__stream_decoder_finish(decoder.get());
-    assert((result == true) && u8"Flac stream decoder is successfully shut down");
+    assert((result != 0) && u8"Flac stream decoder is successfully shut down");
     NUCLEX_AUDIO_NDEBUG_UNUSED(result);
   }
 

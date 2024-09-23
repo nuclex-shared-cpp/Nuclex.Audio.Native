@@ -31,6 +31,7 @@ limitations under the License.
 
 #include <stdexcept> // for std::runtime_error
 #include <cassert> // for assert()
+#include <cmath>
 
 namespace {
 
@@ -225,7 +226,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     //   automate things - if it just switches to the next link, what if the channel count
     //   suddenly changes? Will libopusfile upmix and downmix? Leave it all to us?
     //
-    std::size_t linkCount = Platform::OpusApi::CountLinks(opusFile);
+    std::size_t linkCount = Platform::OpusApi::CountLinks(this->opusFile);
     if(linkCount != 1) {
       throw std::runtime_error(u8"Multi-link Opus files are not supported");
     }
@@ -312,6 +313,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   // ------------------------------------------------------------------------------------------- //
 
   void OpusReader::Seek(std::uint64_t frameIndex) {
+
     // CHECK: Could PCM offset mean interleaved sample index or is it a frame index?
     Platform::OpusApi::PcmSeek(this->opusFile, frameIndex);
     this->frameCursor = frameIndex;
@@ -332,7 +334,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
       this->frameCursor += decodedFrameCount;
 
-      buffer += decodedFrameCount;
+      buffer += decodedFrameCount * this->channelCount;
       if(decodedFrameCount > frameCount) {
         assert((frameCount >= decodedFrameCount) && u8"Read stays within buffer bounds");
         break;

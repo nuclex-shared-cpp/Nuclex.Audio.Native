@@ -79,7 +79,7 @@ namespace {
       return -1;
     }
 
-    state.FileCursor += byteCount;
+    state.FileCursor += byteCountToRead;
 
     return static_cast<int>(byteCountToRead);
   }

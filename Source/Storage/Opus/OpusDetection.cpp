@@ -154,14 +154,14 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
       (fileHeader[5] == 0x2) &&   //  - 2 = first page of logical bitstream (= file start intact)
       (encodedSampleCount < 0x691200000ULL) && // total samples encoded at this point, ideally 0
       (pageSequenceNumber == 0) &&
-      (fileHeader[28] == 0x4f) && //  1 OpusHead (magic header)
-      (fileHeader[29] == 0x70) && //  2
-      (fileHeader[30] == 0x75) && //  3
-      (fileHeader[31] == 0x73) && //  4
-      (fileHeader[32] == 0x48) && //  5
-      (fileHeader[33] == 0x65) && //  6
-      (fileHeader[34] == 0x61) && //  7
-      (fileHeader[35] == 0x64) && //  8
+      (fileHeader[28] == 0x4f) && //  1 O | OpusHead (magic header)
+      (fileHeader[29] == 0x70) && //  2 p |
+      (fileHeader[30] == 0x75) && //  3 u |
+      (fileHeader[31] == 0x73) && //  4 s |
+      (fileHeader[32] == 0x48) && //  5 H |
+      (fileHeader[33] == 0x65) && //  6 e |
+      (fileHeader[34] == 0x61) && //  7 a |
+      (fileHeader[35] == 0x64) && //  8 d |
       (fileHeader[36] == 0x01)    //  - version
     );
   }

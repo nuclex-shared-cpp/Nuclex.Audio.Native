@@ -44,7 +44,7 @@ namespace {
       case OP_EFAULT: { return u8"Internal library error, out of memory or null pointer"; }
       case OP_EIMPL: { return u8"Stream is using an unsupported feature"; }
       case OP_EINVAL: { return u8"Function called with invalid parameters"; }
-      case OP_ENOTFORMAT: { return u8"Stream did not contain OGG/OPus data"; }
+      case OP_ENOTFORMAT: { return u8"Stream did not contain OGG/Opus data"; }
       case OP_EBADHEADER: { return u8"Required header missing or format violation"; }
       case OP_EVERSION: { return u8"Unsupported stream version"; }
       case OP_ENOTAUDIO: { return u8"OGG stream did not contain Opus audio data"; }
@@ -75,7 +75,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
     ::OggOpusFile *opusFile = ::op_open_callbacks(
       state, callbacks, initialBytes, initialByteCount, &errorCode
     );
-    if(opusFile == nullptr) {
+    if(unlikely(opusFile == nullptr)) {
 
       // If something happened reading from the virtual file, that is the root cause
       // exception and will be reported above whatever consequences it had inside libwavpack.
@@ -174,7 +174,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
 
   std::size_t OpusApi::Read(
     const std::shared_ptr<::OggOpusFile> &opusFile,
-    std::int16_t *buffer, std::size_t bufferSize,
+    std::int16_t *buffer, int bufferSize,
     int linkIndex /* = -1 */
   ) {
     int result;
@@ -196,7 +196,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
 
   std::size_t OpusApi::ReadFloat(
     const std::shared_ptr<::OggOpusFile> &opusFile,
-    float *buffer, std::size_t bufferSize,
+    float *buffer, int bufferSize,
     int linkIndex /* = -1 */
   ) {
     int result;

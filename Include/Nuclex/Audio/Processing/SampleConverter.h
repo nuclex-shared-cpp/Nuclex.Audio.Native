@@ -344,7 +344,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
       std::size_t shift = ((sizeof(TSourceSample) - sizeof(TTargetSample)) * 8);
       for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
-        TSourceSample sourceSample = source[sampleIndex];
+        //TSourceSample sourceSample = source[sampleIndex];
         target[sampleIndex] = static_cast<TTargetSample>(
           source[sampleIndex] >> shift
         ) & targetMask; // truncation
@@ -400,6 +400,6 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
-}}} // namespace Nuclex::Audio::Storage
+}}} // namespace Nuclex::Audio::Processing
 
-#endif // NUCLEX_AUDIO_STORAGE_AUDIOCODEC_H
+#endif // NUCLEX_AUDIO_PROCESSING_SAMPLECONVERTER_H

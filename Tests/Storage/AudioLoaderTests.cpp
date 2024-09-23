@@ -62,6 +62,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
         GetResourcesDirectory() + u8"flac-stereo-int16-v143.flac"
       )
     );
+
     #if defined(NUCLEX_AUDIO_HAVE_FLAC)
     EXPECT_TRUE(info.has_value());
     #else
