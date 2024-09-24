@@ -1,4 +1,4 @@
-Nuclex.Audio.Native ![Developed on Linux, should work on Windows](./Documents/images/platforms-linux-windows-badge.svg) ![Brainstorming, studying the problem space, API slowly taking shape](./Documents/images/status-early-planning-badge.svg)
+Nuclex.Audio.Native ![Developed on Linux, should work on Windows](./Documents/images/platforms-linux-windows-badge.svg) ![Design is not final and some parts of the code are still work in progress](./Documents/images/status-design-still-settling-badge.svg)
 ===================
 
 This library encodes and decodes common audio file formats. It is intended
@@ -57,8 +57,8 @@ AudioLoader loader;
 // way supported by a codec and without reading the entire audio file.
 std::optional<ContainerInfo> info = loader.TryReadInfo("example.flac");
 
-// It soft-fails if the file format is not recognized. If the result is
-// non-empty, you get the full set of information about the audio file.
+// The above soft-fails if the file format is not recognized. If the result
+// is there, you get the full set of informations about your audio file.
 if(info.has_value()) {
   TrackInfo &trackInfo = info.value().Tracks[0];
 
@@ -91,10 +91,10 @@ std::shared_ptr<AudioTrackDecoder> decoder = loader.OpenDecoder("example.opus");
 AudioDataFormat nativeFormat = decoder->GetNativeSampleFormat();
 bool isInterleaved = decoder->IsNativelyInterleaved();
 
-// But the internal conversion is as efficient as it can be, so just request
-// them in the format you need them in:
+// But the internal conversion is as efficient as it can be,
+// so maybe just request them in the format you need them in :)
 std::vector<float> samples;
-samples.resize(44100 * 2); // two channels, 1 second at 44100 Hz
+samples.resize(48000 * 2); // two channels, 1 second at 48000 Hz
 
 // Request 48000 interleaved samples as floating point
 decoder->DecodeInterleaved<float>(samples.data(), 0, 48000);
