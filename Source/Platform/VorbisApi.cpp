@@ -163,7 +163,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
 
   // ------------------------------------------------------------------------------------------- //
 
-  std::size_t VorbisApi::ReadSeparated(
+  std::size_t VorbisApi::ReadFloat(
     const std::exception_ptr &rootCauseException,
     const std::shared_ptr<::OggVorbis_File> &vorbisFile,
     float **&channelBuffers,

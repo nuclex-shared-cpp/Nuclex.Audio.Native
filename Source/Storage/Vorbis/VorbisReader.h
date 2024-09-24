@@ -130,6 +130,11 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
     /// <param name="frameCount">Number of frame that should be decoded</param>
     public: void DecodeSeparated(float **&buffer, std::size_t frameCount);
 
+    /// <summary>Decodes sample from the audio file in interleaved format</summary>
+    /// <param name="buffer">Buffer into which the samples will be written</param>
+    /// <param name="frameCount">Number of frame that should be decoded</param>
+    public: void DecodeInterleaved(float *buffer, std::size_t frameCount);
+
     /// <summary>File the reader is accessing</summary>
     private: std::shared_ptr<const VirtualFile> file;
     /// <summary>Holds the function pointers to the file I/O functions</summary>

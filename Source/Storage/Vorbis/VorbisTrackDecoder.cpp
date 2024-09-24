@@ -154,8 +154,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
         this->reader.Seek(startFrame);
       }
 
-      //this->reader.DecodeInterleaved(buffer, frameCount);
-
+      this->reader.DecodeInterleaved(buffer, frameCount);
     } // mutex lock scope
   }
 

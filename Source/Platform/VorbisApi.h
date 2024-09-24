@@ -129,7 +129,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
     ///   Recevies the index of the stream that is being decoded
     /// </param>
     /// <returns>The number of samples that have been decoded</returns>
-    public: static std::size_t ReadSeparated(
+    public: static std::size_t ReadFloat(
       const std::exception_ptr &rootCauseException,
       const std::shared_ptr<::OggVorbis_File> &vorbisFile,
       float **&channelBuffers,

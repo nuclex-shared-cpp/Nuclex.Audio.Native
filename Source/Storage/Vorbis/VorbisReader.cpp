@@ -28,6 +28,8 @@ limitations under the License.
 #include "../Shared/ChannelOrderFactory.h"
 #include "../../Platform/VorbisApi.h" // for VorbisApi
 
+#include "Nuclex/Audio/Errors/CorruptedFileError.h"
+
 #include "Nuclex/Audio/TrackInfo.h"
 
 #include <stdexcept> // for std::runtime_error
@@ -81,6 +83,9 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
     if(streamCount != 1) {
       throw std::runtime_error(u8"Multi-stream Vorbis files are not supported");
     }
+
+    const ::vorbis_info &info = Platform::VorbisApi::GetStreamInformation(this->vorbisFile);
+    this->channelCount = info.channels;
 
   }
 
@@ -149,8 +154,80 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
   // ------------------------------------------------------------------------------------------- //
 
   void VorbisReader::DecodeSeparated(float **&buffer, std::size_t frameCount) {
+    while(frameCount >= 1) {
 
-    throw std::runtime_error(u8"Not implemented yet");
+      int streamIndex = -1;
+      std::size_t decodedFrameCount = (
+        Platform::VorbisApi::ReadFloat(
+          this->state->Error,
+          this->vorbisFile,
+          buffer,
+          frameCount, // * this->channelCount,
+          streamIndex
+        )
+      );
+      if(decodedFrameCount == 0) {
+        throw Errors::CorruptedFileError(
+          u8"Unexpected end of audio stream decoding Vorbis file. File truncated?"
+        );
+      }
+      if(streamIndex != 0) {
+        throw std::runtime_error(
+          u8"Vorbis playback encountered a second stream. Multi-stream files are not supported."
+        );
+      }
+
+      //float *left = samples[0];
+      //float *right = samples[1];
+
+      this->frameCursor += decodedFrameCount;
+
+      buffer += decodedFrameCount * this->channelCount;
+      if(decodedFrameCount > frameCount) {
+        assert((frameCount >= decodedFrameCount) && u8"Read stays within buffer bounds");
+        break;
+      }
+      frameCount -= decodedFrameCount;
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void VorbisReader::DecodeInterleaved(float *buffer, std::size_t frameCount) {
+    while(frameCount >= 1) {
+
+      float **samples = nullptr;
+      int streamIndex = -1;
+      std::size_t decodedFrameCount = (
+        Platform::VorbisApi::ReadFloat(
+          this->state->Error,
+          this->vorbisFile,
+          samples,
+          frameCount, // * this->channelCount,
+          streamIndex
+        )
+      );
+      if(decodedFrameCount == 0) {
+        throw Errors::CorruptedFileError(
+          u8"Unexpected end of audio stream decoding Vorbis file. File truncated?"
+        );
+      }
+      if(streamIndex != 0) {
+        throw std::runtime_error(
+          u8"Vorbis playback encountered a second stream. Multi-stream files are not supported."
+        );
+      }
+
+      for(std::size_t frameIndex = 0; frameIndex < decodedFrameCount; ++frameIndex) {
+        for(std::size_t channelIndex = 0; channelIndex < this->channelCount; ++channelIndex) {
+          *buffer = samples[channelIndex][frameIndex];
+          ++buffer;
+        }
+      }
+
+      this->frameCursor += decodedFrameCount;
+      frameCount -= decodedFrameCount;
+    }
   }
 
   // ------------------------------------------------------------------------------------------- //
