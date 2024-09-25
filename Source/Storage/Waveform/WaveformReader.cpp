@@ -24,6 +24,13 @@ limitations under the License.
 
 #include "Nuclex/Audio/Errors/CorruptedFileError.h"
 #include "Nuclex/Audio/Errors/UnsupportedFormatError.h"
+#include "Nuclex/Audio/ContainerInfo.h"
+#include "Nuclex/Audio/Storage/VirtualFile.h"
+
+#include "../Shared/ChannelOrderFactory.h"
+
+#include "./WaveformParser.h"
+#include "./WaveformDetection.h"
 
 #include <array> // for std::array, used a 'Guid'
 #include <algorithm> // for std::copy_n()
@@ -33,31 +40,221 @@ namespace {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>A UUID is just a very long ID value with 128 bits / or 16 bytes</summary>
-  typedef std::array<std::uint8_t, 16> Guid;
+  /// <summary>Size of the read buffer when loading audio data from a Waveform file</summary>
+  constexpr std::size_t ReadBufferSize = 16384;
+
+  /// <summary>Bytes to read initially to get the 'fmt ' chunk in the best case</summary>
+  /// <remarks>
+  ///   The RIFF (WAVE) format is chunked. According to the specification, the 'fmt ' chunk
+  ///   should be the first chunk (with room for interpretation), so we'll try to read enough
+  ///   data to grab the whole 'fmt ' chunk without having to issue a second read call,
+  ///   if said chunk is indeed at the promised location.
+  /// </remarks>
+  constexpr std::size_t OptimistcInitialByteCount = 60;
+
+  /// <summary>Length of the (ancient) legacy WAVEFORMAT chunk</summary>
+  constexpr std::size_t WaveFormatChunkLengthWithHeader = 22;
+
+  /// <summary>Length of the WAVEFORMATEXTENSIBLE chunk</summary>
+  /// <remarks>
+  ///   Unless the audio file uses WAVEFORMATEX with its variable-length field (in which case
+  ///   we're not interested in the extra data since we can't interpret it), this is
+  ///   the maximum size of the 'fmt ' chunk. Note that WAVEFORMATEXTENSIBLE does away with
+  ///   the variable-length field again by stating that it has to have a length of exactly
+  ///   22 bytes.
+  /// </remarks>
+  constexpr std::size_t WaveFormatExtensibleChunkLengthWithHeader = 48;
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Audio format that indicates uncompressed PCM audio</summary>
-  constexpr std::uint16_t WaveFormatPcm = 1;
-  /// <summary>Audio format that indicates uncompressed floating point PCM audio</summary>
-  constexpr std::uint16_t WaveFormatFloatPcm = 3;
-  /// <summary>Audio format tag that indicates a WAVEFORMATEXTENSIBLe header</summary>
-  constexpr std::uint16_t WaveFormatExtensible = 65534;
+  /// <summary>FourCCs used in Waveform files</summary>
+  enum class FourCC {
+
+    /// <summary>File started with other characters, not a Waveform file</summary>
+    Other = 0,
+    /// <summary>RIFF header, original little endian Waveform format</summary>
+    Riff = 1,
+    /// <summary>RIFX header, big endian Waveform file with identical structure</summary>
+    Rifx = 2,
+    /// <summary>FFIR header, big endian Waveform file with identical structure</summary>
+    Ffir = 3,
+    /// <summary>XFIR header, little endian Waveform file with identical structure</summary>
+    Xfir = 4
+
+  };
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>GUID for the integer PCM audio subformat in WAVEFORMATEXTENSIBLE</summary>
-  const Guid WaveFormatSubTypePcm = {
-    0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00,
-    0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71
-  };
+  /// <summary>Checks the FourCC on a file for the codes relevant to Waveform files</summary>
+  /// <param name="fileHeader">Array containing the bytes in the file header</param>
+  /// <returns>The FourCC found in the file header</returns>
+  FourCC checkFourCC(const std::uint8_t *fileHeader/*[4]*/) {
+    if(
+      (fileHeader[0] == 0x52) &&
+      (fileHeader[1] == 0x49) &&
+      (fileHeader[2] == 0x46)
+    ) {
+      if(fileHeader[3] == 0x46) {
+        return FourCC::Riff;
+      } else if(fileHeader[3] == 0x58) {
+        return FourCC::Rifx;
+      }
+    } else if(
+      (fileHeader[0] == 0x46) &&
+      (fileHeader[1] == 0x46) &&
+      (fileHeader[2] == 0x49) &&
+      (fileHeader[3] == 0x52)
+    ) {
+      return FourCC::Ffir;
+    } else if(
+      (fileHeader[0] == 0x58) &&
+      (fileHeader[1] == 0x46) &&
+      (fileHeader[2] == 0x49) &&
+      (fileHeader[3] == 0x52)
+    ) {
+      return FourCC::Xfir;
+    }
 
-  /// <summary>GUID for the float PCM audio subformat in WAVEFORMATEXTENSIBLE</summary>
-  const Guid WaveFormatSubTypeIeeeFloat = {
-    0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00,
-    0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71
-  };
+    return FourCC::Other;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Throws an exception if a chunk in the Waveform audio file is too short</summary>
+  /// <param name="recordedChunkLengthWithHeader">Chunk length the file has recorded</param>
+  /// <param name="minimumChunkLengthWithHeader">Smallest valid chunk length</param>
+  /// <param name="readByteCount">Chunk length we were actually able to read</param>
+  /// <param name="chunkName">Name of the chunk, used in the potential exception message</param>
+  void requireChunkLength(
+    std::size_t recordedChunkLengthWithHeader,
+    std::size_t minimumChunkLengthWithHeader,
+    std::size_t readByteCount,
+    const std::string_view &chunkName
+  ) {
+    if(recordedChunkLengthWithHeader < minimumChunkLengthWithHeader) {
+      std::string message(u8"Waveform audio file contains too short ", 39);
+      message.append(chunkName);
+      throw Nuclex::Audio::Errors::CorruptedFileError(message);
+    }
+    if(readByteCount < recordedChunkLengthWithHeader) {
+      std::string message(u8"Waveform audio file truncated, ", 31);
+      message.append(chunkName);
+      message.append(u8" is truncated", 13);
+      throw Nuclex::Audio::Errors::CorruptedFileError(message);
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Reads chunks from the file until locating the 'fmt ' chunk</summary>
+  /// <typeparam name="TReader">Endian-specific data Reader matching the file</typeparam>
+  /// <param name="parser">Parser used to decode the Waveform file structure</param>
+  /// <param name="source">File from which the data will be read</param>
+  /// <param name="fileSize">Size of the input file in bytes</param>
+  /// <param name="buffer">Buffer large enough to hold the format chunk</param>
+  /// <param name="readByteCount">Number of bytes in the buffer and buffer size</param>
+  template<typename TReader>
+  bool scanChunks(
+    Nuclex::Audio::Storage::Waveform::WaveformParser &parser,
+    const std::shared_ptr<const Nuclex::Audio::Storage::VirtualFile> &source,
+    std::uint64_t fileSize,
+    std::uint8_t *buffer /*[OptimistcInitialByteCount]*/,
+    std::size_t readByteCount
+  ) {
+    using Nuclex::Audio::Storage::Waveform::WaveformParser;
+    assert(
+      (readByteCount >= (WaveFormatChunkLengthWithHeader + 12)) &&
+      u8"Call to scanChunks() starts with enough data for one chunk header"
+    );
+
+    // The RIFF format states the size of the whole file (minus the 8 bytes from the four-cc
+    // and the length field itself). It's probably not a good idea to require it to match
+    // the precise, actual file size because some tool might have appended tagging information
+    // or the file could be truncated, so we just use it to ignore any data trailing the file.
+    {
+      std::uint32_t expectedFileSize = TReader::ReadUInt32(buffer + 4);
+      //if(expectedFileSize >= 0x8000000) { // Waveform files are limited to 2 GiB. Or not?
+      //  return std::optional<Nuclex::Audio::ContainerInfo>();
+      //}
+      if(static_cast<std::uint64_t>(expectedFileSize) + 8 < fileSize) {
+        fileSize = static_cast<std::uint64_t>(expectedFileSize) + 8;
+      }
+    }
+
+    // Next is the format id. RIFF containers are also used for video data (.avi) and some
+    // other things, so we need to make sure ours says 'WAVE' for Waveform audio.
+    {
+      bool formatIsWaveform = (
+        (buffer[8] == 0x57) &&  //  1 W | WAVE (format id)
+        (buffer[9] == 0x41) &&  //  2 A |
+        (buffer[10] == 0x56) && //  3 V | RIFF is a chunked format for many purposes,
+        (buffer[11] == 0x45)    //  4 E | we're looking for a RIFF file with audio data.
+      );
+      if(!formatIsWaveform) {
+        return false;
+      }
+    }
+
+    // Advance to the first chunk start. On the downside, we lose 12 bytes from the buffer,
+    // on the upside, we don't need them (since the buffer is guaranteed to still cover
+    // one WAVEFORMATEXTENSIBLE) and it saves us from using a secondary buffer pointer.
+    std::uint64_t readOffset = 12;
+    {
+      buffer += readOffset;
+      readByteCount -= readOffset;
+    }
+
+    // Scan for the 'fmt ' (format; metadata) chunk, 'fact' and 'data' chunk to determine
+    // channel count, sample rate, data format and (from the latter two) duration.
+    for(;;) {
+      std::uint32_t chunkLength = TReader::ReadUInt32(buffer + 4);
+      std::size_t chunkLengthWithHeader = chunkLength + 8;
+
+      // For the 'fmt ' chunk, we require the entire chunk to be present, up to the length
+      // of its WaveFormatExtensible variant (which is the maximum length we'll ever read)
+      if(WaveformParser::IsFormatChunk(buffer)) {
+        if(WaveFormatExtensibleChunkLengthWithHeader < chunkLengthWithHeader) {
+          chunkLengthWithHeader = WaveFormatExtensibleChunkLengthWithHeader;
+        }
+        requireChunkLength(
+          chunkLengthWithHeader,
+          WaveFormatChunkLengthWithHeader,
+          readByteCount,
+          std::string_view(u8"'fmt ' (metadata) chunk", 23)
+        );
+        parser.ParseFormatChunk<TReader>(buffer, chunkLength);
+      } else if(WaveformParser::IsFactChunk(buffer)) {
+        requireChunkLength(
+          chunkLengthWithHeader, 8 + 4, readByteCount,
+          std::string_view(u8"'fact' (extra meatdata) chunk", 29)
+        );
+        parser.ParseFactChunk<TReader>(buffer);
+      } else if(WaveformParser::IsDataChunk(buffer)) {
+        parser.SetDataChunkStart(
+          readOffset, std::min<std::uint64_t>(chunkLengthWithHeader, fileSize - readOffset)
+        );
+      }
+
+      // Skip to the next chunk. Chunks are 16-bit aligned, but this alignment is not recorded
+      // in the chunk length field inside the chunk itself. Thus, if the chunk length is
+      // an odd number of bytes, it will be padded with a zero byte, requiring adjustment.
+      readOffset += chunkLengthWithHeader + (chunkLength & 1);
+      if(fileSize < readOffset + WaveFormatChunkLengthWithHeader) {
+        break; // File would end before a (complete) 'fmt ' chunk can arrive
+      }
+
+      // Figure out how many bytes to read next. We'll try to read enough bytes to
+      // grab a potential WAVEFORMATEXTENSIBLE chunk in one go, but will be happy
+      // with fewer bytes if the file ends earlier.
+      readByteCount = WaveFormatExtensibleChunkLengthWithHeader;
+      if(fileSize < readOffset + readByteCount) {
+        readByteCount = fileSize - readOffset;
+      }
+      source->ReadAt(readOffset, readByteCount, buffer);
+    }
+
+    return true;
+  }
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -67,323 +264,166 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
   // ------------------------------------------------------------------------------------------- //
 
-  ChannelPlacement WaveformReader::GuessChannelPlacement(std::size_t channelCount) {
-    if(channelCount == 8) {
-      return (
-        ChannelPlacement::FrontLeft | ChannelPlacement::FrontRight |
-        ChannelPlacement::FrontCenter | ChannelPlacement::LowFrequencyEffects |
-        ChannelPlacement::SideLeft | ChannelPlacement::SideRight |
-        ChannelPlacement::BackLeft | ChannelPlacement::BackRight
-      );
-    } else if(channelCount == 6) {
-      return (
-        ChannelPlacement::FrontLeft | ChannelPlacement::FrontRight |
-        ChannelPlacement::FrontCenter | ChannelPlacement::LowFrequencyEffects |
-        ChannelPlacement::BackLeft | ChannelPlacement::BackRight
-      );
-    } else if(channelCount == 5) {
-      return (
-        ChannelPlacement::FrontLeft | ChannelPlacement::FrontRight |
-        ChannelPlacement::BackLeft | ChannelPlacement::BackRight |
-        ChannelPlacement::LowFrequencyEffects
-      );
-    } else if(channelCount == 4) {
-      return (
-        ChannelPlacement::FrontLeft | ChannelPlacement::FrontRight |
-        ChannelPlacement::BackLeft | ChannelPlacement::BackRight
-      );
-    } else if(channelCount == 3) {
-      return (
-        ChannelPlacement::FrontLeft | ChannelPlacement::FrontRight |
-        ChannelPlacement::LowFrequencyEffects
-      );
-    } else if(channelCount == 2) {
-      return (
-        ChannelPlacement::FrontLeft | ChannelPlacement::FrontRight
-      );
-    } else if(channelCount == 1) {
-      return ChannelPlacement::FrontCenter;
-    } else {
-      return ChannelPlacement::Unknown;
-    }
+  std::optional<ContainerInfo> WaveformReader::TryReadMetadata(
+    const std::shared_ptr<const VirtualFile> &source
+  ) {
+    ContainerInfo containerInfo;
+    containerInfo.DefaultTrackIndex = 0;
+    {
+      WaveformParser parser(containerInfo.Tracks.emplace_back());
+
+      // At this point, we don't know yet if this is a Waveform file (we'll check
+      // its header below and only then know if the header matches and if it is
+      // a big endian or little endian file).
+      bool isWaveform;
+      {
+
+        // First, check the size of the file. We need this to avoid going outside the file
+        // bounds during our scan and if the file is too small, we can exit early.
+        std::uint64_t fileSize = source->GetSize();
+        if(fileSize < SmallestPossibleWaveformSize) {
+          return std::optional<ContainerInfo>(); // This cannot be a Waveform file
+        }
+
+        // Calculate the number of bytes for the initial read in which we will check
+        // the FourCC and RIFF / Waveform header before going on the hunt for sub-chunks.
+        std::size_t readByteCount;
+        if(fileSize < OptimistcInitialByteCount) {
+          readByteCount = static_cast<std::size_t>(fileSize);
+        } else {
+          readByteCount = OptimistcInitialByteCount;
+        }
+
+        std::vector<std::uint8_t> buffer(readByteCount);
+        source->ReadAt(0, readByteCount, buffer.data());
+
+        // Figure out what kind of file we're dealing with
+        FourCC fourCC = checkFourCC(buffer.data());
+        if((fourCC == FourCC::Riff) || (fourCC == FourCC::Xfir)) {
+          isWaveform = scanChunks<LittleEndianReader>(
+            parser, source, fileSize, buffer.data(), readByteCount
+          );
+        } else if((fourCC == FourCC::Rifx) || (fourCC == FourCC::Ffir)) {
+          isWaveform = scanChunks<BigEndianReader>(
+            parser, source, fileSize, buffer.data(), readByteCount
+          );
+        } else {
+          isWaveform = false; // unknown FourCC tag means it's not a Waveform file
+        }
+
+      } // chunk buffer and virtual file access scope
+
+      // If the file, upon reading, didn't look like a Waveform file after all,
+      // just return an empty result (because this is not an error).
+      if(!isWaveform) {
+        return std::optional<ContainerInfo>();
+      }
+
+      // If all required chunks have been found, we have the needed data and
+      // can provide to the caller. Otherwise, at least one of the needed chunks
+      // was missing and the file is considered broken. We only check this here
+      // so that our behavior regarding duplicate chunks is consistent and not
+      // dependent on their appearance in a certain order.
+      if(!parser.IsComplete()) {
+        throw Nuclex::Audio::Errors::CorruptedFileError(
+          u8"Waveform audio file was missing one ore more mandatory information chunks"
+        );
+      }
+
+    } // WaveformParser scope
+
+    return containerInfo;
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-  WaveformReader::WaveformReader(Nuclex::Audio::TrackInfo &target) :
-    target(target),
-    formatChunkParsed(false),
-    factChunkParsed(false),
-    storedBitsPerSample(0),
-    blockAlignment(0),
+  WaveformReader::WaveformReader(const std::shared_ptr<const VirtualFile> & source) :
+    file(file),
+    isLittleEndian(true),
+    trackInfo(),
     firstSampleOffset(std::uint64_t(-1)),
-    afterLastSampleOffset(std::uint64_t(-1)) {}
+    totalFrameCount(0),
+    bytesPerFrame(0) {
 
-  // ------------------------------------------------------------------------------------------- //
+    WaveformParser parser(this->trackInfo);
 
-  template<>
-  void WaveformReader::ParseFormatChunk<LittleEndianReader>(
-    const std::uint8_t *buffer, std::size_t chunkLength
-  ) {
-    parseFormatChunkInternal<LittleEndianReader>(buffer, chunkLength);
-  }
+    // At this point, we don't know yet if this is a Waveform file (we'll check
+    // its header below and only then know if the header matches and if it is
+    // a big endian or little endian file).
+    bool isWaveform;
+    {
 
-  // ------------------------------------------------------------------------------------------- //
-
-  template<>
-  void WaveformReader::ParseFormatChunk<BigEndianReader>(
-    const std::uint8_t *buffer, std::size_t chunkLength
-  ) {
-    parseFormatChunkInternal<BigEndianReader>(buffer, chunkLength);
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  template<>
-  void WaveformReader::ParseFactChunk<LittleEndianReader>(const std::uint8_t *buffer) {
-    parseFactChunkInternal<LittleEndianReader>(buffer);
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  template<>
-  void WaveformReader::ParseFactChunk<BigEndianReader>(const std::uint8_t *buffer) {
-    parseFactChunkInternal<BigEndianReader>(buffer);
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  void WaveformReader::SetDataChunkStart(
-    std::uint64_t startOffset, std::uint64_t remainingByteCount
-  ) {
-    if(this->firstSampleOffset != std::uint64_t(-1)) {
-      throw Errors::CorruptedFileError(
-        u8"Waveform audio file contains more than one 'data' (audio data) chunk"
-      );
-    }
-
-    this->firstSampleOffset = startOffset + 8;
-    this->afterLastSampleOffset = startOffset + remainingByteCount;
-
-    if(this->formatChunkParsed) {
-      calculateDuration();
-    }
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  template<typename TReader>
-  void WaveformReader::parseFormatChunkInternal(
-    const std::uint8_t *chunk, std::size_t chunkLength
-  ) {
-    if(this->formatChunkParsed) {
-      throw Errors::CorruptedFileError(
-        u8"Waveform audio file contains more than one 'fmt ' (metadata) chunk"
-      );
-    }
-
-    // These fields are safe to read without checking the length since this method is only
-    // ever invoked if there are at least enough bytes for one full WAVEFORMAT header.
-    std::uint16_t formatTag = TReader::ReadUInt16(chunk + 8);
-    this->target.ChannelCount = static_cast<std::size_t>(
-      TReader::ReadUInt16(chunk + 10)
-    );
-    this->target.SampleRate = static_cast<std::size_t>(
-      TReader::ReadUInt32(chunk + 12)
-    );
-    //std::uint32_t bytesPerSecond = TReader::ReadUInt32(chunk + 16);
-    this->blockAlignment = static_cast<std::size_t>(
-      TReader::ReadUInt16(chunk + 20)
-    );
-
-    // Any further data in the 'fmt ' chunk depends on the format tag. In the earliest
-    // revisions, 'WAVEFORMAT' only had the 'wBitsPerSample' field if the 'wFormatTag'
-    // was set to 'WAVE_FORMAT_PCM', but this was later retconned to be 'WAVEFORMATEX'
-    // and made mandatory for all present and future format tags.
-    if((formatTag == WaveFormatPcm) || (formatTag == WaveFormatFloatPcm)) {
-
-      if(chunkLength < 22 - 8) {
-        throw Nuclex::Audio::Errors::CorruptedFileError(
-          u8"Waveform audio file claims PCMWAVEFORMAT or WAVEFORMATEX header, "
-          u8"but 'fmt ' (metadata) chunk size is too small"
-        );
+      // First, check the size of the file. We need this to avoid going outside the file
+      // bounds during our scan and if the file is too small, we can exit early.
+      std::uint64_t fileSize = source->GetSize();
+      if(fileSize < SmallestPossibleWaveformSize) {
+        throw Errors::UnsupportedFormatError(u8"File too small to be a Waveform audio file");
       }
 
-      // We've got a PCMWAVEFORMAT or WAVEFORMATEX header, so bits per sample must be
-      // a multiple of 8. To be safe, we'll still parse it expecting nonconformant values.
-      this->target.BitsPerSample = static_cast<std::size_t>(
-        TReader::ReadUInt16(chunk + 22)
-      );
-      if(this->target.BitsPerSample >= 33) {
-        this->target.SampleFormat = Nuclex::Audio::AudioSampleFormat::Float_64;
-      } else if(formatTag == WaveFormatFloatPcm) { // Float and not 64 bits? Must be 32.
-        this->target.SampleFormat = Nuclex::Audio::AudioSampleFormat::Float_32;
-      } else if(this->target.BitsPerSample >= 25) {
-        this->target.SampleFormat = Nuclex::Audio::AudioSampleFormat::SignedInteger_32;
-      } else if(this->target.BitsPerSample >= 17) {
-        this->target.SampleFormat = Nuclex::Audio::AudioSampleFormat::SignedInteger_24;
-      } else if(this->target.BitsPerSample >= 9) {
-        this->target.SampleFormat = Nuclex::Audio::AudioSampleFormat::SignedInteger_16;
+      // Calculate the number of bytes for the initial read in which we will check
+      // the FourCC and RIFF / Waveform header before going on the hunt for sub-chunks.
+      std::size_t readByteCount;
+      if(fileSize < OptimistcInitialByteCount) {
+        readByteCount = static_cast<std::size_t>(fileSize);
       } else {
-        this->target.SampleFormat = Nuclex::Audio::AudioSampleFormat::UnsignedInteger_8;
+        readByteCount = OptimistcInitialByteCount;
       }
 
-      // In the original Waveform audio format specification, only 1 or 2 channels
-      // were mentioned (without explicitly stating that more would be in violation).
-      // Either way, nobody cares, our only problem with more channels is that their
-      // placements are unknown, so we have to guess them.
-      this->target.ChannelPlacements = (
-        WaveformReader::GuessChannelPlacement(this->target.ChannelCount)
-      );
+      std::vector<std::uint8_t> buffer(readByteCount);
+      source->ReadAt(0, readByteCount, buffer.data());
 
-    } else if(formatTag == WaveFormatExtensible) {
-
-      if(chunkLength != 40) {
-        throw Nuclex::Audio::Errors::CorruptedFileError(
-          u8"Waveform audio file claims WAVEFORMATEXTENSIBLE header, "
-          u8"but 'fmt ' (metadata) chunk size doesn't match"
+      // Figure out what kind of file we're dealing with
+      FourCC fourCC = checkFourCC(buffer.data());
+      if((fourCC == FourCC::Riff) || (fourCC == FourCC::Xfir)) {
+        this->isLittleEndian = true;
+        isWaveform = scanChunks<LittleEndianReader>(
+          parser, source, fileSize, buffer.data(), readByteCount
         );
-      }
-
-      // This offset holds the number of *stored* bits per sample (whereas the next
-      // bits per sample value, below, is the number of *used* bits per sample).
-      this->storedBitsPerSample = static_cast<std::size_t>(
-        TReader::ReadUInt16(chunk + 22)
-      );
-
-      // According to Microsoft:
-      //
-      //   "For the WAVEFORMATEXTENSIBLE structure, the Format.cbSize field must be set
-      //   to 22 and the SubFormat field must be set to KSDATAFORMAT_SUBTYPE_PCM."
-      //
-      std::uint16_t extraParameterLength = TReader::ReadUInt16(chunk + 24);
-      if(extraParameterLength != 22) {
-        throw Nuclex::Audio::Errors::CorruptedFileError(
-          u8"Waveform audio file claims WAVEFORMATEXTENSIBLE header, "
-          u8"but extra parameter size violates file format specification"
+      } else if((fourCC == FourCC::Rifx) || (fourCC == FourCC::Ffir)) {
+        this->isLittleEndian = false;
+        isWaveform = scanChunks<BigEndianReader>(
+          parser, source, fileSize, buffer.data(), readByteCount
         );
-      }
-
-      // This field holds the *used* bits per sample (which can be any number,
-      // the remaining bits up to the next byte are zero-padded in each sample).
-      this->target.BitsPerSample = static_cast<std::size_t>(
-        TReader::ReadUInt16(chunk + 26)
-      );
-      this->target.ChannelPlacements = static_cast<Nuclex::Audio::ChannelPlacement>(
-        TReader::ReadUInt32(chunk + 28)
-      );
-
-      Guid audioFormatSubType;
-      std::copy_n(chunk + 32, 16, audioFormatSubType.data());
-
-      if(audioFormatSubType == WaveFormatSubTypePcm) {
-        if(this->target.BitsPerSample >= 25) {
-          this->target.SampleFormat = Nuclex::Audio::AudioSampleFormat::SignedInteger_32;
-        } else if(this->target.BitsPerSample >= 17) {
-          this->target.SampleFormat = Nuclex::Audio::AudioSampleFormat::SignedInteger_24;
-        } else if(this->target.BitsPerSample >= 9) {
-          this->target.SampleFormat = Nuclex::Audio::AudioSampleFormat::SignedInteger_16;
-        } else {
-          this->target.SampleFormat = Nuclex::Audio::AudioSampleFormat::UnsignedInteger_8;
-        }
-      } else if(audioFormatSubType == WaveFormatSubTypeIeeeFloat) {
-        if(this->target.BitsPerSample >= 33) {
-          this->target.SampleFormat = Nuclex::Audio::AudioSampleFormat::Float_64;
-        } else {
-          this->target.SampleFormat = Nuclex::Audio::AudioSampleFormat::Float_32;
-        }
       } else {
-        throw Nuclex::Audio::Errors::UnsupportedFormatError(
-          u8"Waveform audio file uses WAVEFORMATEXTENSIBLE with a format "
-          u8"sub-type that isn't supported (only PCM and float are supported)."
-        );
+        isWaveform = false; // unknown FourCC tag means it's not a Waveform file
       }
 
-    } else {
-      throw Nuclex::Audio::Errors::UnsupportedFormatError(
-        u8"Waveform audio file contains data in an unsupported format. "
-        u8"Only PCM and floating point PCM data formats are supported."
-      );
+    } // chunk buffer and virtual file access scope
+
+    // If the FourCC didn't match or the internal headers weren't for a Waveform file
+    // (after all 'RIFF' files are used for .avi and other formats, too), fail hard.
+    // At this point, the caller wants to read the file as a Waveform audio file,
+    // so if it is something else, that's an error.
+    if(!isWaveform) {
+      throw Errors::UnsupportedFormatError(u8"File is not a Waveform audio file");
     }
 
-    this->formatChunkParsed = true;
-
-    if(this->firstSampleOffset != std::uint64_t(-1)) {
-      calculateDuration();
-    }
+    this->firstSampleOffset = parser.GetAudioDataOffset();
+    this->bytesPerFrame = parser.CountBytesPerFrame();
+    this->totalFrameCount = parser.CountFrames();
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-  template<typename TReader>
-  void WaveformReader::parseFactChunkInternal(const std::uint8_t *chunk) {
-    if(this->factChunkParsed) {
-      throw Errors::CorruptedFileError(
-        u8"Waveform audio file contains more than one 'fact' (extra metadata) chunk"
-      );
-    }
+  WaveformReader::~WaveformReader() {}
 
-    // Our dilemma:
-    //
-    // This chunk became mandatory for the "new wave format," aka the format everyone is
-    // one since 1994. Except that almost no application respects this.
-    //
-    // It's also only useful for validation, but to know the actual (playable) length of
-    // the Waveform audio file, we have to look at the data chunk and the number of bytes
-    // that come after it.
-    std::uint32_t sampleCount = TReader::ReadUInt32(chunk + 8);
-    (void)sampleCount;
+  // ------------------------------------------------------------------------------------------- //
 
-    this->factChunkParsed = true;
+  void WaveformReader::ReadMetadata(TrackInfo &target) {
+    target = this->trackInfo;
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-  void WaveformReader::calculateDuration() {
-    assert(
-      this->formatChunkParsed &&
-      u8"calculateDuration() is called with the format chunk already parsed"
-    );
-    assert(
-      (this->firstSampleOffset != std::uint64_t(-1)) &&
-      u8"calculateDuration() is called with the data chunk extents known"
-    );
+  std::uint64_t WaveformReader::CountTotalFrames() const {
+    return this->totalFrameCount;
+  }
 
-    // We have 'storedBitsPerSample' which already specifies the number of bytes one frame
-    // should use, but the Waveform audio file format provides a 'blockAlignment' field.
-    // The specification is rather muddy about this:
-    //
-    //   "Playback software needs to process a multiple of wBlockAlign bytes of data at
-    //   a time, so the value of wBlockAlign can be used for buffer alignment"
-    //
-    // That leaves room for 'wBlockAlign' to be one frame, two frames, the whole file even.
-    // The "ADPCM" format, for example mandates bigger, power-of-two block alignments
-    // (but it has an actual concept of blocks), other formats use values of '0' or '1' to
-    // indicate that data is not aligned to blocks.
-    //
-    // Regarding plain PCM or FLOAT audio files, here is what 5 randomly sampled libraries do:
-    //
-    //   mhroth/tinywav:  .BlockAlign = numChannels * tw->sampFmt;
-    //   adamstark/AudioFile:  numBytesPerBlock = getNumChannels() * (bitDepth / 8);
-    //   evpobr/libsndwave:  ..._writef (psf, "22", BHW2 (psf->bytewidth * psf->sf.channels)
-    //   audionamix/wave:  header.fmt.byte_per_block = bytes_per_sample * channel_number;
-    //   Signalsmith-Audio/audio-wav-example:  write16(file, channels*bytesPerSample);
-    //
-    // So the assumption that 'wBlockAlign' is (bytesPerSample x channelCount) is relatively
-    // safe. We'll still be a little bit defensive and use a fallback for invalid values:
-    //
-    std::size_t bytesPerFrame = (
-      (this->storedBitsPerSample + 7) / 8 * this->target.ChannelCount
-    );
-    if(this->blockAlignment >= bytesPerFrame) {
-      bytesPerFrame = this->blockAlignment;
-    }
+  // ------------------------------------------------------------------------------------------- //
 
-    std::uint64_t totalSampleCount = (
-      (this->afterLastSampleOffset - this->firstSampleOffset) / bytesPerFrame
-    );
-    this->target.Duration = std::chrono::microseconds(
-      totalSampleCount * 1'000'000 / this->target.SampleRate
+  std::vector<ChannelPlacement> WaveformReader::GetChannelOrder() const {
+    return Shared::ChannelOrderFactory::FromWaveformatExtensibleLayout(
+      this->trackInfo.ChannelCount, this->trackInfo.ChannelPlacements
     );
   }
 
