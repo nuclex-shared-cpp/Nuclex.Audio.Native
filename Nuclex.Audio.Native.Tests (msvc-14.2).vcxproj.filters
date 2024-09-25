@@ -75,6 +75,15 @@
     <Filter Include="Source\Storage\Vorbis">
       <UniqueIdentifier>{9c196f04-b7a9-4be2-89f3-2389e9794f17}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Tests\Storage\Vorbis">
+      <UniqueIdentifier>{ad789b0f-6587-4c5e-ab98-3f9668253bd7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Processing">
+      <UniqueIdentifier>{0345cecb-2968-452e-a80b-3978883e2d3e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Processing">
+      <UniqueIdentifier>{6df7271a-d543-4326-8809-4fcbff3a6c7d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Nuclex\Audio\Errors\UnsupportedFormatError.h">
@@ -142,6 +151,24 @@
     </ClInclude>
     <ClInclude Include="Source\Platform\VorbisApi.h">
       <Filter>Source\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Storage\Waveform\WaveformTrackDecoder.h">
+      <Filter>Source\Storage\Waveform</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Storage\Waveform\WaveformParser.h">
+      <Filter>Source\Storage\Waveform</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\Processing\SampleConverter.h">
+      <Filter>Include\Processing</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\Processing\VolumeDetector.h">
+      <Filter>Include\Processing</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\Processing\DecibelConverter.h">
+      <Filter>Include\Processing</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\Processing\Rounding.h">
+      <Filter>Include\Processing</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -381,6 +408,36 @@
     </ClCompile>
     <ClCompile Include="Source\Platform\VorbisApi.cpp">
       <Filter>Source\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Tests\Storage\Vorbis\VorbisAudioCodecTests.cpp">
+      <Filter>Tests\Storage\Vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="Tests\Storage\Vorbis\VorbisDetectionTests.cpp">
+      <Filter>Tests\Storage\Vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="Tests\Storage\Vorbis\VorbisTrackDecoderTests.cpp">
+      <Filter>Tests\Storage\Vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\Waveform\WaveformTrackDecoder.cpp">
+      <Filter>Source\Storage\Waveform</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\Waveform\WaveformParser.cpp">
+      <Filter>Source\Storage\Waveform</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Processing\SampleConverter.cpp">
+      <Filter>Source\Processing</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Processing\VolumeDetector.cpp">
+      <Filter>Source\Processing</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Processing\DecibelConverter.cpp">
+      <Filter>Source\Processing</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Processing\Rounding.cpp">
+      <Filter>Source\Processing</Filter>
+    </ClCompile>
+    <ClCompile Include="Tests\Processing\RoundingTests.cpp">
+      <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

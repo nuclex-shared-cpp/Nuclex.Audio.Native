@@ -1,4 +1,3 @@
-#pragma once
 #pragma region Apache License 2.0
 /*
 Nuclex Native Framework
@@ -18,19 +17,14 @@ limitations under the License.
 */
 #pragma endregion // Apache License 2.0
 
-#ifndef NUCLEX_AUDIO_PROCESSING_VOLUMEDETECTOR_H
-#define NUCLEX_AUDIO_PROCESSING_VOLUMEDETECTOR_H
+// If the library is compiled as a DLL, this ensures symbols are exported
+#define NUCLEX_AUDIO_SOURCE 1
 
-#include "Nuclex/Audio/Config.h"
+#include "Nuclex/Audio/Processing/VolumeDetector.h"
 
-#include <cstdint> // for std::int32_t
-#include <cmath> // for std::sgn
+// --------------------------------------------------------------------------------------------- //
 
-namespace Nuclex { namespace Audio { namespace Processing {
+// This file is only here to guarantee that its associated header has no hidden
+// dependencies and can be included on its own
 
-  // ------------------------------------------------------------------------------------------- //
-  // ------------------------------------------------------------------------------------------- //
-
-}}} // namespace Nuclex::Audio::Processing
-
-#endif // NUCLEX_AUDIO_PROCESSING_VOLUMEDETECTOR_H
+// --------------------------------------------------------------------------------------------- //

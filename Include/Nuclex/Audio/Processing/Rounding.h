@@ -66,6 +66,22 @@ namespace Nuclex { namespace Audio { namespace Processing {
     /// <returns>The nearest 32-bit integer to the floating point value</returns>
     public: static inline std::int32_t NearestInt32(double value);
 
+#if 0
+    /// <summary>Rounds 4 floating point values to the nearest integers</summary>
+    /// <param name="values">Array of 4 floating point values that will be rounded</param>
+    /// <returns>Array of 4 nearest 32-bit integers to the floating point values</returns>
+    public: static inline void NearestInt32x4(
+      float *values/*[4]*/, std::int32_t *results/*[4]*/
+    );
+
+    /// <summary>Rounds 4 floating point values to the nearest integers</summary>
+    /// <param name="values">Array of 4 floating point values that will be rounded</param>
+    /// <returns>Array of 4 nearest 32-bit integers to the floating point values</returns>
+    public: static inline void NearestInt32x4(
+      double *values/*[4]*/, std::int32_t *results/*[4]*/
+    );
+#endif
+
   };
 
   // ------------------------------------------------------------------------------------------- //
@@ -92,6 +108,47 @@ namespace Nuclex { namespace Audio { namespace Processing {
 #endif
   }
 
+  // ------------------------------------------------------------------------------------------- //
+#if 0
+  inline void Rounding::NearestInt32x4(float *values/*[4]*/, std::int32_t *results/*[4]*/) {
+#if defined(__SSE__)
+    __m128 v = _mm_loadu_ps(values);
+    __m128i r = _mm_cvtps_epi32(v);
+    _mm_storeu_si128(reinterpret_cast<__m128i*>(results), r);
+#elif defined(__ARM_NEON)
+    float32x4_t v = vld1q_f32(values);
+    int32x4_t r = vcvtq_s32_f32(v);
+    vst1q_s32(results, r);
+#else
+    for(std::size_t index = 0; index < 4; ++index) {
+      results[index] = static_cast<std::int32_t>(
+        values[index] + std::copysign(0.5f, values[index])
+      );
+    }
+#endif
+  }
+#endif
+  // ------------------------------------------------------------------------------------------- //
+#if 0
+  inline void Rounding::NearestInt32x4(double *values/*[4]*/, std::int32_t *results/*[4]*/) {
+#if defined(__SSE2__)
+    __m256d v = _mm256_loadu_pd(values);
+    __m128i r = _mm256_cvtpd_epi32(v);
+    _mm_storeu_si128(reinterpret_cast<__m128i*>(results), r);
+#elif defined(__ARM_NEON)
+    float64x2_t v_low = vld1q_f64(&values[0]);
+    float64x2_t v_high = vld1q_f64(&values[2]);
+    int32x4_t r = vcombine_s32(vcvtq_s32_f64(v_low), vcvtq_s32_f64(v_high));
+    vst1q_s32(results, r);
+#else
+    for(std::size_t index = 0; index < 4; ++index) {
+      results[index] = static_cast<std::int32_t>(
+        values[index] + std::copysign(0.5, values[index])
+      );
+    }
+#endif
+  }
+#endif
   // ------------------------------------------------------------------------------------------- //
 
 }}} // namespace Nuclex::Audio::Processing

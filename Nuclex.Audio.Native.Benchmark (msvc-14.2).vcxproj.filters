@@ -50,6 +50,12 @@
     <Filter Include="Source\Storage\Vorbis">
       <UniqueIdentifier>{d46cbae5-8987-43ed-ae6f-02e4a5164b10}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Include\Processing">
+      <UniqueIdentifier>{6fb9686d-f60f-4e03-9489-c072dc911ef8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Processing">
+      <UniqueIdentifier>{30bb1763-8b87-44b8-a4d4-ab68b55c0120}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Nuclex\Audio\Errors\UnsupportedFormatError.h">
@@ -117,6 +123,24 @@
     </ClInclude>
     <ClInclude Include="Source\Platform\VorbisApi.h">
       <Filter>Source\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Storage\Waveform\WaveformParser.h">
+      <Filter>Source\Storage\Waveform</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Storage\Waveform\WaveformTrackDecoder.h">
+      <Filter>Source\Storage\Waveform</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\Processing\DecibelConverter.h">
+      <Filter>Include\Processing</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\Processing\Rounding.h">
+      <Filter>Include\Processing</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\Processing\SampleConverter.h">
+      <Filter>Include\Processing</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\Processing\VolumeDetector.h">
+      <Filter>Include\Processing</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -341,6 +365,24 @@
     </ClCompile>
     <ClCompile Include="Source\Platform\VorbisApi.cpp">
       <Filter>Source\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\Waveform\WaveformParser.cpp">
+      <Filter>Source\Storage\Waveform</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\Waveform\WaveformTrackDecoder.cpp">
+      <Filter>Source\Storage\Waveform</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Processing\DecibelConverter.cpp">
+      <Filter>Source\Processing</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Processing\Rounding.cpp">
+      <Filter>Source\Processing</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Processing\SampleConverter.cpp">
+      <Filter>Source\Processing</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Processing\VolumeDetector.cpp">
+      <Filter>Source\Processing</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
