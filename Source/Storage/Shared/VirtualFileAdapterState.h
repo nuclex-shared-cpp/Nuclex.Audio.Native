@@ -39,7 +39,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Shared {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Stores informations processed by the Opus stream adapters</summary>
+  /// <summary>Stores informations processed by the audio stream adapters</summary>
   struct VirtualFileAdapterState {
 
     /// <summary>

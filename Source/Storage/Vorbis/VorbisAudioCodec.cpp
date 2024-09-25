@@ -75,7 +75,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
 
     VorbisReader reader(source);
 
-    // WavPack file is now opened, extract the informations the caller requested.
+    // Ogg Vorbis file is now opened, extract the informations the caller requested.
     ContainerInfo containerInfo;
     containerInfo.DefaultTrackIndex = 0;
 

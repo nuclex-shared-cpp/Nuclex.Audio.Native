@@ -37,7 +37,7 @@ namespace Nuclex { namespace Audio {
 
   // ------------------------------------------------------------------------------------------- //
 
-  class TrackInfo;
+  struct TrackInfo;
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -67,7 +67,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Utility class with intermediate methods used to decode FLAC files</summary>
+  /// <summary>Utility class with intermediate methods used to decode WavPack files</summary>
   /// <remarks>
   ///   <para>
   ///     This wrapper handles most of the interfacing with libwavpack, allowing other
@@ -96,7 +96,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     /// <summary>Frees all resources owned by the instance</summary>
     public: ~WavPackReader();
 
-    /// <summary>Reads the FLAC file's metadata</summary>
+    /// <summary>Reads the WavPack file's metadata</summary>
     /// <param name="target">Track information container that will receive the metadata</param>
     public: void ReadMetadata(TrackInfo &target);
 

@@ -95,7 +95,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   ) const {
     (void)extensionHint;
 
-    // As the AudioCodec interface promises, if the file is not an Opus audio file,
+    // As the AudioCodec interface promises, if the file is not a WavPack audio file,
     // we'll return an empty result to indicate that we couldn't read it.
     if(!Detection::CheckIfWavPackHeaderPresent(*source)) {
       return std::shared_ptr<AudioTrackDecoder>();

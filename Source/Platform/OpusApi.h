@@ -54,8 +54,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
     /// </returns>
     /// <remarks>
     ///   The returned shared pointer has a custom deleter set up, so this is fully RAII
-    ///   compatible and once the pointer goes out of scope, the WavPack context is
-    ///   closed again.
+    ///   compatible and once the pointer goes out of scope, the Opus file is closed again.
     /// </remarks>
     public: static std::shared_ptr<::OggOpusFile> OpenFromCallbacks(
       const std::exception_ptr &rootCauseException,

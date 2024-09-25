@@ -114,7 +114,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
     if(unlikely(result != FLAC__STREAM_DECODER_INIT_STATUS_OK)) {
 
       // If something happened reading from the virtual file, that is the root cause
-      // exception and will be reported above whatever consequences it had inside libwavpack.
+      // exception and will be reported above whatever error it caused in libflac.
       if(unlikely(static_cast<bool>(rootCauseException))) {
         std::rethrow_exception(rootCauseException);
       }

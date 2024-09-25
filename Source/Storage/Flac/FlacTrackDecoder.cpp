@@ -144,7 +144,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
     this->reader.ReadMetadata(this->trackInfo);
 
-    // Just like Waveform, in WavPack the channel order matches the order of the flag bits.
+    // FLAC uses a channel mask matching the Waveform file format, as well as the same
+    // channel order which can be deduced from the channel count this way.
     this->channelOrder = Shared::ChannelOrderFactory::FromWaveformatExtensibleLayout(
       static_cast<std::size_t>(this->trackInfo.ChannelCount),
       static_cast<ChannelPlacement>(this->trackInfo.ChannelPlacements)

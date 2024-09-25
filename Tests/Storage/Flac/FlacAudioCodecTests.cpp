@@ -52,7 +52,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
     // If the error is forwarded correctly, the domain_error will resurface from the call.
     // Should a plain runtime_error surface here, then error checking was happening but
-    // the libwavpack error return took precedence over the VirtualFile exception, which is
+    // the libflac error return took precedence over the VirtualFile exception, which is
     // not what we want because it obscures the root cause of the error.
     FlacAudioCodec codec;
     EXPECT_THROW(

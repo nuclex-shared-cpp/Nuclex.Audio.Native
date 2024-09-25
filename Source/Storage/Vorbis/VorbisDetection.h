@@ -43,7 +43,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
 
   /// <summary>Size of the smallest valid Vorbis file possible</summary>
   /// <remarks>
-  ///   Unknown. The smallest file I can produce with opusenc is way over 4 kilobytes.
+  ///   Unknown. The smallest file I can produce with oggenc is way over 4 kilobytes.
   ///   Some cursory research seems to indicate that Vorbis uses dynamic code tables,
   ///   which give it a base footprint even for very short audio streams.
   /// </remarks>
@@ -51,7 +51,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Helper class for reading VORBIS files using libopus</summary>
+  /// <summary>Helper class for detecting the header of Ogg Vorbis files</summary>
   class Detection {
 
     /// <summary>Checks if the specified file extension indicates an .ogg file</summary>

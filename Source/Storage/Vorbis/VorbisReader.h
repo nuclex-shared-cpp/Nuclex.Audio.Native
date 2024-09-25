@@ -38,7 +38,7 @@ namespace Nuclex { namespace Audio {
 
   // ------------------------------------------------------------------------------------------- //
 
-  class TrackInfo;
+  struct TrackInfo;
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -68,33 +68,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Helper class for reading VORBIS files using libopus</summary>
+  /// <summary>Helper class for reading Ogg Vorbis files using libvorbisfile</summary>
   class VorbisReader {
-
-    // TODO: When I implement Vorbis, the next two methods should be shared with it.
-    /// <summary>
-    ///   Determines the channel placement from the mapping family and channel count
-    /// </summary>
-    /// <param name="mappingFamily">Vorbis mapping family the channels conform to</param>
-    /// <param name="channelCount">Number of audio channels in the FLAC file</param>
-    /// <returns>The equivalent ChannelPlacement flag combination</returns>
-    /// <remarks>
-    ///   Vorbis shares the channel layouts and channel order with its predecessor codec,
-    ///   Vorbis. There is a choice of mapping families (with only one actually being
-    ///   really used so far) and the channel layout is fixed for each channel count.
-    ///   The channel placements are all in section 4.3.9 of the Vorbis 1 Specification.
-    /// </remarks>
-    public: static ChannelPlacement ChannelPlacementFromMappingFamilyAndChannelCount(
-      int mappingFamily, std::size_t channelCount
-    );
-
-    /// <summary>Returns the order in which decoded channels will be interleaved</summary>
-    /// <param name="mappingFamily">Vorbis mapping family the channels conform to</param>
-    /// <param name="channelCount">Number of audio channels in the FLAC file</param>
-    /// <returns>A list of channels in the order in which they will be interleaved</returns>
-    public: static std::vector<ChannelPlacement> ChannelOrderFromMappingFamilyAndChannelCount(
-      int mappingFamily, std::size_t channelCount
-    );
 
     /// <summary>Initializes a new Vorbis reader on the specified file</summary>
     /// <param name="file">File the reader will access</param>
@@ -139,8 +114,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
     private: std::shared_ptr<const VirtualFile> file;
     /// <summary>Holds the function pointers to the file I/O functions</summary>
     /// <remarks>
-    ///   libopusfile takes a pointer to these, so we try to err on the side of caution
-    ///   and keep the structure around for as long as the opus file is opened.
+    ///   libvorbisfile takes a pointer to these, so we try to err on the side of caution
+    ///   and keep the structure around for as long as the Vorbis file is opened.
     /// </remarks>
     private: ::ov_callbacks fileCallbacks;
     /// <summary>State (emulated file cursor, errors) of the virtual file adapter</summary>

@@ -51,7 +51,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
     this->reader.ReadMetadata(this->trackInfo);
 
-    // Just like Waveform, in WavPack the channel order matches the order of the flag bits.
+    // Opus uses the same custom channel order as Vorbis, which the OpusReader will
+    // correctly determine for us here
     this->channelOrder = this->reader.GetChannelOrder();
 
     this->totalFrameCount = this->reader.CountTotalFrames();
@@ -94,7 +95,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   // ------------------------------------------------------------------------------------------- //
 
   bool OpusTrackDecoder::IsNativelyInterleaved() const {
-    return false; // FLAC actually separates the audio channels
+    return true; // All exposed Opus read methods provide interleaved samples
   }
 
   // ------------------------------------------------------------------------------------------- //

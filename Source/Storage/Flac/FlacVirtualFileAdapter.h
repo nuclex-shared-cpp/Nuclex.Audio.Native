@@ -65,7 +65,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Stores informations processed by the Opus stream adapters</summary>
+  /// <summary>Stores informations processed by the FLAC stream adapters</summary>
   struct FileAdapterState : public Shared::VirtualFileAdapterState {
 
     /// <summary>Receives decoded samples, metadata and error reports</summary>
@@ -75,7 +75,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Stores informations processed by the Opus stream reader adapter</summary>
+  /// <summary>Stores informations processed by the FLAC stream reader adapter</summary>
   struct ReadOnlyFileAdapterState : public FileAdapterState {
 
     /// <summary>Virtual file this adapter is forwarding calls to</summary>
@@ -85,7 +85,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Stores informations processed by the Opus stream writer adapter</summary>
+  /// <summary>Stores informations processed by the FLAC stream writer adapter</summary>
   struct WritableFileAdapterState : public FileAdapterState {
 
     /// <summary>Virtual file this adapter is forwarding calls to</summary>

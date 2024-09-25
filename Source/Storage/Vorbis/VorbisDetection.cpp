@@ -27,9 +27,6 @@ limitations under the License.
 #include "Nuclex/Audio/Storage/VirtualFile.h"
 #include "./VorbisVirtualFileAdapter.h"
 
-// This header is in /usr/include/opus/opusfile.h on my Linux system,
-// But directly under libopusfile/include/ in the libopus sources,
-// which we use, so this #include statement may differ from other code examples.
 #include <vorbis/vorbisfile.h>
 
 namespace {
@@ -81,7 +78,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
   bool Detection::CheckIfVorbisHeaderPresent(const VirtualFile &source) {
     std::uint64_t size = source.GetSize();
     if(size < SmallestPossibleVorbisSize) {
-      return false; // File is too small to be an .opus file
+      return false; // File is too small to be an Ogg Vorbis file
     }
 
     // The ::ov_test_callbacks() method needs a complete setup of I/O callbacks
@@ -113,24 +110,25 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
 
   bool Detection::CheckIfVorbisHeaderPresentLite(const VirtualFile &source) {
     if(source.GetSize() < SmallestPossibleVorbisSize) {
-      return false; // File is too small to be a .opus file
+      return false; // File is too small to be an Ogg Vorbis file
     }
 
     std::uint8_t fileHeader[48];
     source.ReadAt(0, 48, fileHeader);
 
-    // VORBIS files, even those produced by the standalone opusenc executable,
-    // are .ogg files with an VORBIS stream inside.
+    // Ogg containers can contain multiple streams, potentially mixing multiple audio
+    // track and even video tracks. Theoretically, the packets identifying a Vorbis
+    // stream could be buried later in the file.
     //
-    // Now this library has two paths, either via libopus and its built-in .ogg streaming
-    // facilities or via the (as of yet unwritten) container support that will provide
-    // the VORBIS stream directly out of the .mpa, .mka or .ogg container.
+    // We only deal with standalone Ogg Vorbis files and it seems we have a guarantee
+    // that, within the Vorbis stream, the identification packet is mandatory:
     //
     // But:
-    //   "The first packet in the logical Ogg stream MUST contain the identification header,
-    //   which uniquely identifies a stream as Vorbis audio. It MUST begin with
-    //   the 8 bytes "VorbisHead". It MUST be placed alone in the first page of the logical
-    //   Ogg stream. This page MUST have the ’beginning of stream’ flag set.""
+    //   "A Vorbis bitstream begins with three header packets. The header packets are,
+    //   in order, the identification header, the comments header, and the setup header.
+    //   All are required for decode compliance. An end-of-packet condition during decoding
+    //   the first or third header packet renders the stream undecodable.
+    //   End-of-packet decoding the comment header is a non-fatal error condition."
     //
     // Ogg frame: https://www.xiph.org/ogg/doc/framing.html
     // Vorbis packet: https://xiph.org/vorbis/doc/Vorbis_I_spec.html#x1-590004

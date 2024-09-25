@@ -78,7 +78,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
     if(unlikely(errorCode != 0)) {
 
       // If something happened reading from the virtual file, that is the root cause
-      // exception and will be reported above whatever consequences it had inside libwavpack.
+      // exception and will be reported above whatever error it caused in libvorbisfile.
       if(unlikely(static_cast<bool>(rootCauseException))) {
         std::rethrow_exception(rootCauseException);
       }
@@ -149,7 +149,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
     if(unlikely(result != 0)) {
 
       // If something happened reading from the virtual file, that is the root cause
-      // exception and will be reported above whatever consequences it had inside libwavpack.
+      // exception and will be reported above whatever error it caused in libvorbisfile.
       if(unlikely(static_cast<bool>(rootCauseException))) {
         std::rethrow_exception(rootCauseException);
       }
@@ -176,7 +176,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
     if(unlikely(result < 0)) {
 
       // If something happened reading from the virtual file, that is the root cause
-      // exception and will be reported above whatever consequences it had inside libwavpack.
+      // exception and will be reported above whatever error it caused in libvorbisfile.
       if(unlikely(static_cast<bool>(rootCauseException))) {
         std::rethrow_exception(rootCauseException);
       }

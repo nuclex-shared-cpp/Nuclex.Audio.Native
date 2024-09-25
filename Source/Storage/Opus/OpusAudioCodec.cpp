@@ -76,7 +76,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
     OpusReader reader(source);
 
-    // WavPack file is now opened, extract the informations the caller requested.
+    // Opus file is now opened, extract the informations the caller requested.
     ContainerInfo containerInfo;
     containerInfo.DefaultTrackIndex = 0;
 

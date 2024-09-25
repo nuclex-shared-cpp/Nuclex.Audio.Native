@@ -51,7 +51,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
 
     this->reader.ReadMetadata(this->trackInfo);
 
-    // Just like Waveform, in WavPack the channel order matches the order of the flag bits.
+    // Vorbis uses its own channel order that the reader will correctly determine for us
     this->channelOrder = this->reader.GetChannelOrder();
 
     this->totalFrameCount = this->reader.CountTotalFrames();

@@ -51,8 +51,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
 
     // If the error is forwarded correctly, the domain_error will resurface from the call.
     // Should a plain runtime_error surface here, then error checking was happening but
-    // the libwavpack error return took precedence over the VirtualFile exception, which is
-    // not what we want because it obscures the root cause of the error.
+    // the libvorbisfile error return took precedence over the VirtualFile exception,
+    // which is not what we want because it obscures the root cause of the error.
     EXPECT_THROW(
       VorbisTrackDecoder decoder(failingFile),
       std::domain_error
@@ -68,8 +68,6 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
 
     VorbisTrackDecoder decoder(file);
 
-    // This will match the Vorbis channel order rather than the one found in Waveform and
-    // WavPack files (which is based on the WaveFormatExtensible channel mask)
     const std::vector<ChannelPlacement> &order = decoder.GetChannelOrder();
     ASSERT_EQ(order.size(), 6U);
     EXPECT_EQ(order[0], ChannelPlacement::FrontLeft);

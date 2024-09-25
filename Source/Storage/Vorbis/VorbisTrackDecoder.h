@@ -37,7 +37,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
   /// <summary>Decodes Vorbis audio tracks</summary>
   class VorbisTrackDecoder : public AudioTrackDecoder {
 
-    /// <summary>Initializes a new Flac track decoder on the specified file</summary>
+    /// <summary>Initializes a new Vorbis track decoder on the specified file</summary>
     /// <param name="file">File that will be opened and decoded</param>
     public: VorbisTrackDecoder(const std::shared_ptr<const VirtualFile> &file);
     /// <summary>Frees all resources owned by the instance</summary>
@@ -116,11 +116,11 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
     private: TrackInfo trackInfo;
     /// <summary>Order in which audio channels appear</summary>
     private: std::vector<ChannelPlacement> channelOrder;
-    /// <summary>Total number of samples in the Flac file</summary>
+    /// <summary>Total number of frames in the Vorbis stream</summary>
     /// <remarks>
-    ///   This can be unknown if the Flac file is being streamed, was truncated and
-    ///   perhaps some other cases, but this library is designed for usage with plain
-    ///   and complete Flac files, at most wrapped in a media container or archive.
+    ///   This can be unknown if the Ogg Vorbis file is being cut off at the beginning,
+    ///   but this library is designed for usage with plain and complete files,
+    ///   at most wrapped in a media container or archive.
     /// </remarks>
     private: std::uint64_t totalFrameCount;
     /// <summary>Must be held while decoding</summary>

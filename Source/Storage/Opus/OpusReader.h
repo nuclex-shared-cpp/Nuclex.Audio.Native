@@ -26,7 +26,6 @@ limitations under the License.
 
 #include "Nuclex/Audio/ChannelPlacement.h"
 
-#include <string> // for std::string
 #include <cstddef> // for std::size_t
 #include <cstdint> // for std::uint64_t
 #include <memory> // for std::unique_ptr
@@ -38,7 +37,7 @@ namespace Nuclex { namespace Audio {
 
   // ------------------------------------------------------------------------------------------- //
 
-  class TrackInfo;
+  struct TrackInfo;
 
   // ------------------------------------------------------------------------------------------- //
 

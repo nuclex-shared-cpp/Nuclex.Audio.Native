@@ -104,7 +104,7 @@ namespace {
     // fseek() on POSIX does in fact allow the file cursor to be placed beyond the end of
     // a file. We could emulate this behavior (by simply inserting zero bytes here or doing
     // some acrobatics for read-only streams), but let's, for now, go by the unproven
-    // assumption that libwavpack will *not* place the file cursor beyond the end of the file.
+    // assumption that libvorbisfile will *not* place the file cursor beyond the file end.
     std::uint64_t newPosition = state.FileCursor;
     {
       std::uint64_t fileLength = state.File->GetSize();
@@ -173,7 +173,7 @@ namespace {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Closes the virtual file after the opusfile library is done with it</summary>
+  /// <summary>Closes the virtual file after the vorbisfile library is done with it</summary>
   /// <typeparam name="TAdapterState">
   ///   Type of state the close is done on (because we don't want to const_cast here)
   /// </typeparam>

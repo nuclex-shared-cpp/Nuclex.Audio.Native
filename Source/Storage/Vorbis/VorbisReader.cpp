@@ -54,7 +54,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
     channelCount(0),
     frameCursor(0) {
 
-    // Set up the libopusfile callbacks with adapter methods that will perform all reads
+    // Set up the libvorbisfile callbacks with adapter methods that will perform all reads
     // on the user-provided virtual file.
     this->state = (
       FileAdapterFactory::CreateAdapterForReading(file, this->fileCallbacks)
@@ -62,7 +62,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
 
     // Open the Vorbis file, obtaining a OggVorbisFile instance. Everything inside
     // this scope is just error plumbing code, ensuring that the right exception
-    // surfaces if either libopusfile reports an error or the virtual file throws.
+    // surfaces if either libvorbisfile reports an error or the virtual file throws.
     this->vorbisFile = Platform::VorbisApi::OpenFromCallbacks(
       state->Error,
       state.get(),
@@ -70,7 +70,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
     );
 
     // The OpenFromCallbacks() method will already have checked for errors,
-    // but if some file access error happened that libopusfile deemed non-fatal,
+    // but if some file access error happened that libvorbisfile deemed non-fatal,
     // we still want to throw it - an exception in VirtualFile should always surface.
     FileAdapterState::RethrowPotentialException(*state);
 

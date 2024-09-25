@@ -44,7 +44,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Encodes and decodes Vorbis audio files using libopus / libopusfile</summary>
+  /// <summary>Encodes and decodes Vorbis audio files using libvorbisfile</summary>
   class VorbisAudioCodec : public AudioCodec {
 
     /// <summary>Initializes a new audio codec</summary>
