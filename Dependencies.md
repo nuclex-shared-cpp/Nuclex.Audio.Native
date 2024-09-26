@@ -28,6 +28,10 @@ the following directory layout:
                 CMakeLists.txt
             nuclex-opusfile/        <-- Git: nuclex-builds/nuclex-opusfile
                 CMakeLists.txt
+            nuclex-opusenc/         <-- Git: nuclex-builds/nuclex-opusenc
+                CMakeLists.txt
+            nuclex-vorbis/          <-- Git: nuclex-builds/nuclex-vorbis
+                CMakeLists.txt
             nuclex-wavpack/         <-- Git: nuclex-builds/nuclex-wavpack
                 CMakeLists.txt
             nuclex-googletest/      <-- Git: nuclex-builds/nuclex-googletest
@@ -41,12 +45,15 @@ or another application that uses this library to get that directory tree.
 The dependencies of the code itself involve all of the popular audio libraris:
 
   * Nuclex.Support.Native
-  * ogg (optional, if the vorbis or opus codecs are enabled)
-  * vorbis (optional, if the vorbis codec is enabled)
-  * opus (optional, if the opus codec is enabled)
-  * opusfile (optional, if the opus codec is enabled)
-  * flac (optional, if the flac codec is enabled)
-  * wavpack (optional, if the wavpack codec is enabled)
+  * libogg (optional, if the vorbis or opus codecs are enabled)
+  * libvorbis (optional, if the vorbis codec is enabled)
+  * libvorbisfile (optional, if the vorbis codec is enabled)
+  * libvorbisenc (optional, if the vorbis codec is enabled)
+  * libopus (optional, if the opus codec is enabled)
+  * libopusfile (optional, if the opus codec is enabled)
+  * libopusenc (optional, if the opus codec is enabled)
+  * libflac (optional, if the flac codec is enabled)
+  * libwavpack (optional, if the wavpack codec is enabled)
   * gtest (optional, if unit tests are built)
   * celero (optional, if benchmarks are built)
 

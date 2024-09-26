@@ -22,10 +22,11 @@ limitations under the License.
 
 #include "Nuclex/Audio/Config.h"
 
-#include <cstddef>
-#include <cstdint>
-#include <stdexcept>
-#include <type_traits>
+#include "Nuclex/Audio/Processing/Rounding.h"
+
+#include <cstddef> // for stdf::size_t
+#include <stdexcept> // for std::runtime_error
+#include <type_traits> // for std::is_same<>
 
 // Does adding a 'stride' parameter make sense here?
 //
@@ -206,10 +207,24 @@ namespace Nuclex { namespace Audio { namespace Processing {
         (midpoint - 1) << (8 - targetBitCount)
       );
       midpoint <<= (8 - targetBitCount);
-      for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
-        target[sampleIndex] = (
-          static_cast<TTargetSample>(source[sampleIndex] * limit) + midpoint
+      while(4 < sampleCount) {
+        std::int32_t scaled[4];
+        Rounding::MultiplyToNearestInt32x4(source, limit, scaled);
+        target[0] = static_cast<TTargetSample>(scaled[0] + midpoint);
+        target[1] = static_cast<TTargetSample>(scaled[1] + midpoint);
+        target[2] = static_cast<TTargetSample>(scaled[2] + midpoint);
+        target[3] = static_cast<TTargetSample>(scaled[3] + midpoint);
+        source += 4;
+        target += 4;
+        sampleCount -= 4;
+      }
+      while(0 < sampleCount) {
+        target[0] = static_cast<TTargetSample>(
+          Rounding::NearestInt32(source[0] * limit) + midpoint
         );
+        ++source;
+        ++target;
+        --sampleCount;
       }
     } else { // float -> int16 and int32
       if(targetBitCount < 17) {
