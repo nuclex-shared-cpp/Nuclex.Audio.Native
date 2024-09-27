@@ -170,6 +170,9 @@
     <ClInclude Include="Include\Nuclex\Audio\Processing\Rounding.h">
       <Filter>Include\Processing</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\Processing\Normalization.h">
+      <Filter>Include\Processing</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Errors\CorruptedFileError.cpp">
@@ -438,6 +441,12 @@
     </ClCompile>
     <ClCompile Include="Tests\Processing\RoundingTests.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Processing\Normalization.cpp">
+      <Filter>Source\Processing</Filter>
+    </ClCompile>
+    <ClCompile Include="Tests\Processing\NormalizationTests.cpp">
+      <Filter>Tests\Processing</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

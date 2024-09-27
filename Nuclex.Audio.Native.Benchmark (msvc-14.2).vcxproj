@@ -203,6 +203,7 @@
     <ClInclude Include="Include\Nuclex\Audio\Errors\CorruptedFileError.h" />
     <ClInclude Include="Include\Nuclex\Audio\Errors\UnsupportedFormatError.h" />
     <ClInclude Include="Include\Nuclex\Audio\Processing\DecibelConverter.h" />
+    <ClInclude Include="Include\Nuclex\Audio\Processing\Normalization.h" />
     <ClInclude Include="Include\Nuclex\Audio\Processing\Rounding.h" />
     <ClInclude Include="Include\Nuclex\Audio\Processing\SampleConverter.h" />
     <ClInclude Include="Include\Nuclex\Audio\Processing\VolumeDetector.h" />
@@ -240,6 +241,7 @@
     <ClCompile Include="Source\Platform\WindowsFileApi.cpp" />
     <ClInclude Include="Source\Platform\WindowsFileApi.h" />
     <ClCompile Include="Source\Processing\DecibelConverter.cpp" />
+    <ClCompile Include="Source\Processing\Normalization.cpp" />
     <ClCompile Include="Source\Processing\Rounding.cpp" />
     <ClCompile Include="Source\Processing\SampleConverter.cpp" />
     <ClCompile Include="Source\Processing\VolumeDetector.cpp" />

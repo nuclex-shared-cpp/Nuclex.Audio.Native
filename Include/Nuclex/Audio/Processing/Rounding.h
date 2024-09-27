@@ -67,24 +67,36 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
     /// <summary>Rounds a floating point value to the nearest integer</summary>
     /// <param name="value">Floating point value that will be rounded</param>
-    /// <returns>The nearest 32-bit integer to the floating point value</returns>
+    /// <returns>The 32-bit integer narest to the floating point value</returns>
+    /// <remarks>
+    ///   This is a bit wasteful as it excutes a whole SIMD 4-operand instruction
+    ///   for a single value, but we want all inputs to go through the exact same
+    ///   code path and not risk <code>ffastmath</code> optimizations or somesuch
+    ///   creating differently rounded results for single-value calculations.
+    /// </remarks>
     public: static inline std::int32_t NearestInt32(float value);
 
     /// <summary>Rounds a floating point value to the nearest integer</summary>
     /// <param name="value">Floating point value that will be rounded</param>
-    /// <returns>The nearest 32-bit integer to the floating point value</returns>
+    /// <returns>The 32-bit integer narest to the floating point value</returns>
+    /// <remarks>
+    ///   This is a bit wasteful as it excutes a whole SIMD 4-operand instruction
+    ///   for a single value, but we want all inputs to go through the exact same
+    ///   code path and not risk <code>ffastmath</code> optimizations or somesuch
+    ///   creating differently rounded results for single-value calculations.
+    /// </remarks>
     public: static inline std::int32_t NearestInt32(double value);
 
-    /// <summary>Rounds 4 floating point values to the nearest integers</summary>
+    /// <summary>Rounds 4 floating point values to their nearest integers</summary>
     /// <param name="values">Array of 4 floating point values that will be rounded</param>
-    /// <returns>Array of 4 nearest 32-bit integers to the floating point values</returns>
+    /// <param name="results">Receives the 4 integers nearest to the float values</param>
     public: static inline void NearestInt32x4(
       const float *values/*[4]*/, std::int32_t *results/*[4]*/
     );
 
     /// <summary>Rounds 4 floating point values to the nearest integers</summary>
     /// <param name="values">Array of 4 floating point values that will be rounded</param>
-    /// <returns>Array of 4 nearest 32-bit integers to the floating point values</returns>
+    /// <param name="results">Receives the 4 integers nearest to the float values</param>
     public: static inline void NearestInt32x4(
       const double *values/*[4]*/, std::int32_t *results/*[4]*/
     );
@@ -92,7 +104,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
     /// <summary>Multiplies and rounds 4 floating point values to the nearest integers</summary>
     /// <param name="values">Array of 4 floating point values that will be rounded</param>
     /// <param name="factor">Factor by which the floating point values will be multiplied</param>
-    /// <returns>Array of 4 nearest 32-bit integers to the floating point values</returns>
+    /// <param name="results">Receives the 4 integers nearest to the float values</param>
     public: static inline void MultiplyToNearestInt32x4(
       const float *values/*[4]*/, float factor, std::int32_t *results/*[4]*/
     );
@@ -100,7 +112,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
     /// <summary>Multiplies and rounds 4 floating point values to the nearest integers</summary>
     /// <param name="values">Array of 4 floating point values that will be rounded</param>
     /// <param name="factor">Factor by which the floating point values will be multiplied</param>
-    /// <returns>Array of 4 nearest 32-bit integers to the floating point values</returns>
+    /// <param name="results">Receives the 4 integers nearest to the float values</param>
     public: static inline void MultiplyToNearestInt32x4(
       const float *values/*[4]*/, double factor, std::int32_t *results/*[4]*/
     );
@@ -108,7 +120,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
     /// <summary>Multiplies and rounds 4 floating point values to the nearest integers</summary>
     /// <param name="values">Array of 4 floating point values that will be rounded</param>
     /// <param name="factor">Factor by which the floating point values will be multiplied</param>
-    /// <returns>Array of 4 nearest 32-bit integers to the floating point values</returns>
+    /// <param name="results">Receives the 4 integers nearest to the float values</param>
     public: static inline void MultiplyToNearestInt32x4(
       const double *values/*[4]*/, double factor, std::int32_t *results/*[4]*/
     );
@@ -167,21 +179,13 @@ namespace Nuclex { namespace Audio { namespace Processing {
     const double *values/*[4]*/, std::int32_t *results/*[4]*/
   ) {
 #if defined(NUCLEX_AUDIO_CVTS_AVAILABLE)
-  #if 0 && (defined(__AVX__) || defined(__SSE4A__) || defined(__SSE4_1__))
     _mm_storeu_si128(
       reinterpret_cast<__m128i *>(results),
-      _mm256_cvtpd_epi32(_mm256_loadu_pd(values))
+      _mm_unpacklo_epi64(
+        _mm_cvtpd_epi32(_mm_loadu_pd(values)),
+        _mm_cvtpd_epi32(_mm_loadu_pd(values + 2))
+      )
     );
-  #else
-    _mm_storeu_si128(
-      reinterpret_cast<__m128i *>(results),
-      _mm_cvtpd_epi32(_mm_loadu_pd(values))
-    );
-    _mm_storeu_si128(
-      reinterpret_cast<__m128i *>(results + 2),
-      _mm_cvtpd_epi32(_mm_loadu_pd(values + 2))
-    );
-  #endif
 //#elif defined(__ARM_NEON)
 //    float64x2_t v_low = vld1q_f64(&values[0]);
 //    float64x2_t v_high = vld1q_f64(&values[2]);
@@ -231,19 +235,18 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
     _mm_storeu_si128(
       reinterpret_cast<__m128i *>(results),
-      _mm_cvtpd_epi32(
-        _mm_mul_pd(
-          _mm_cvtps_pd(valuesVector), // loads the lower 2 values
-          factorVector
-        )
-      )
-    );
-    _mm_storeu_si128(
-      reinterpret_cast<__m128i *>(results + 2),
-      _mm_cvtpd_epi32(
-        _mm_mul_pd(
-          _mm_cvtps_pd(_mm_movehl_ps(valuesVector, valuesVector)), // loads the upper 2 values
-          factorVector
+      _mm_unpacklo_epi64(
+        _mm_cvtpd_epi32(
+          _mm_mul_pd(
+            _mm_cvtps_pd(valuesVector), // loads the lower 2 values
+            factorVector
+          )
+        ),
+        _mm_cvtpd_epi32(
+          _mm_mul_pd(
+            _mm_cvtps_pd(_mm_movehl_ps(valuesVector, valuesVector)), // loads the upper 2 values
+            factorVector
+          )
         )
       )
     );
@@ -275,19 +278,18 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
     _mm_storeu_si128(
       reinterpret_cast<__m128i *>(results),
-      _mm_cvtpd_epi32(
-        _mm_mul_pd(
-          _mm_loadu_pd(values),
-          factorVector
-        )
-      )
-    );
-    _mm_storeu_si128(
-      reinterpret_cast<__m128i *>(results + 2),
-      _mm_cvtpd_epi32(
-        _mm_mul_pd(
-          _mm_loadu_pd(values + 2),
-          factorVector
+      _mm_unpacklo_epi64(
+        _mm_cvtpd_epi32(
+          _mm_mul_pd(
+            _mm_loadu_pd(values),
+            factorVector
+          )
+        ),
+        _mm_cvtpd_epi32(
+          _mm_mul_pd(
+            _mm_loadu_pd(values + 2),
+            factorVector
+          )
         )
       )
     );
