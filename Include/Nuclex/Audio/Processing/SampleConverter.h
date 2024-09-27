@@ -23,19 +23,11 @@ limitations under the License.
 #include "Nuclex/Audio/Config.h"
 
 #include "Nuclex/Audio/Processing/Rounding.h"
+#include "Nuclex/Audio/Processing/Normalization.h"
 
 #include <cstddef> // for stdf::size_t
 #include <stdexcept> // for std::runtime_error
 #include <type_traits> // for std::is_same<>
-
-// Does adding a 'stride' parameter make sense here?
-//
-// I think normally, you'd want to always convert all samples, but perhaps there are
-// edge cases (i.e. you're very sure you only need one of two channels) where this
-// might make sense?
-//
-// Left out for now to keep the interface simple, easy to add if needed.
-//
 
 namespace Nuclex { namespace Audio { namespace Processing {
 
@@ -201,13 +193,18 @@ namespace Nuclex { namespace Audio { namespace Processing {
       ),
       u8"This method only converts from float samples to quantized integer samples"
     );
+
     if constexpr(std::is_same<TTargetSample, std::uint8_t>::value) { // float -> uint8
+
+      // Floating point to unsigned integer
+      // ----------------------------------
+      //
       std::int16_t midpoint = (1 << targetBitCount) / 2;
       TFloatSourceSample limit = static_cast<TFloatSourceSample>(
         (midpoint - 1) << (8 - targetBitCount)
       );
       midpoint <<= (8 - targetBitCount);
-      while(4 < sampleCount) {
+      while(3 < sampleCount) {
         std::int32_t scaled[4];
         Rounding::MultiplyToNearestInt32x4(source, limit, scaled);
         target[0] = static_cast<TTargetSample>(scaled[0] + midpoint);
@@ -226,22 +223,63 @@ namespace Nuclex { namespace Audio { namespace Processing {
         ++target;
         --sampleCount;
       }
+
     } else { // float -> int16 and int32
+
+      // Floating point to signed integer
+      // --------------------------------
+      //
       if(targetBitCount < 17) {
+
+        // From floating point to 16-bits or less
+        // --------------------------------------
+        //
         TFloatSourceSample limit = static_cast<TFloatSourceSample>(
-          ((1 << (targetBitCount - 1)) - 1) << (sizeof(TTargetSample) * 8 - targetBitCount)
+          (1 << (targetBitCount - 1)) - 1
         );
-        for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
-          target[sampleIndex] = static_cast<TTargetSample>(source[sampleIndex] * limit);
+        std::size_t shift = sizeof(TTargetSample) * 8 - targetBitCount;
+        while(3 < sampleCount) {
+          std::int32_t scaled[4];
+          Rounding::MultiplyToNearestInt32x4(source, limit, scaled);
+          target[0] = static_cast<TTargetSample>(scaled[0]) << shift;
+          target[1] = static_cast<TTargetSample>(scaled[1]) << shift;
+          target[2] = static_cast<TTargetSample>(scaled[2]) << shift;
+          target[3] = static_cast<TTargetSample>(scaled[3]) << shift;
+          source += 4;
+          target += 4;
+          sampleCount -= 4;
         }
-      } else { // for values longer than 16 bits, we force calculations to use doubles
+        while(0 < sampleCount) {
+          target[0] = static_cast<TTargetSample>(Rounding::NearestInt32(source[0] * limit)) << shift;
+          ++source;
+          ++target;
+          --sampleCount;
+        }
+
+      // From floating point to 17-bits or more
+      // --------------------------------------
+      //
+      } else {
         double limit = static_cast<double>(
-          ((1 << (targetBitCount - 1)) - 1) << (sizeof(TTargetSample) * 8 - targetBitCount)
+          (1 << (targetBitCount - 1)) - 1
         );
-        for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
-          target[sampleIndex] = static_cast<TTargetSample>(
-            static_cast<double>(source[sampleIndex]) * limit
-          );
+        std::size_t shift = sizeof(TTargetSample) * 8 - targetBitCount;
+        while(3 < sampleCount) {
+          std::int32_t scaled[4];
+          Rounding::MultiplyToNearestInt32x4(source, limit, scaled);
+          target[0] = static_cast<TTargetSample>(scaled[0]) << shift;
+          target[1] = static_cast<TTargetSample>(scaled[1]) << shift;
+          target[2] = static_cast<TTargetSample>(scaled[2]) << shift;
+          target[3] = static_cast<TTargetSample>(scaled[3]) << shift;
+          source += 4;
+          target += 4;
+          sampleCount -= 4;
+        }
+        while(0 < sampleCount) {
+          target[0] = static_cast<TTargetSample>(Rounding::NearestInt32(source[0] * limit)) << shift;
+          ++source;
+          ++target;
+          --sampleCount;
         }
       }
     }
@@ -266,6 +304,10 @@ namespace Nuclex { namespace Audio { namespace Processing {
       ),
       u8"This method only converts from quantized integer samples to float samples"
     );
+
+    // From unsigned integer to floating point
+    // ---------------------------------------
+    //
     if constexpr(std::is_same<TSourceSample, std::uint8_t>::value) { // uint8 -> float
       std::int16_t midpoint = (1 << sourceBitCount) / 2;
       TFloatTargetSample limit = static_cast<TFloatTargetSample>(
@@ -279,24 +321,62 @@ namespace Nuclex { namespace Audio { namespace Processing {
           ) / limit
         );
       }
+
+    // From signed integer to floating point
+    // -------------------------------------
+    //
     } else { // int16 or int32 -> float
+
+      // From 16-bits or less to floating point
+      // --------------------------------------
+      //
       if(sourceBitCount < 17) {
+        std::size_t shift = sizeof(TSourceSample) * 8 - sourceBitCount;
         TFloatTargetSample limit = static_cast<TFloatTargetSample>(
-          ((1 << (sourceBitCount - 1)) - 1) << (sizeof(TSourceSample) * 8 - sourceBitCount)
+          (1 << (sourceBitCount - 1)) - 1
         );
-        for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
-          target[sampleIndex] = (
-            static_cast<TFloatTargetSample>(source[sampleIndex]) / limit
-          );
+        while(3 < sampleCount) {
+          std::int32_t shifted[4];
+          shifted[0] = source[0] >> shift;
+          shifted[1] = source[1] >> shift;
+          shifted[2] = source[2] >> shift;
+          shifted[3] = source[3] >> shift;
+          Normalization::DivideInt32ToFloatx4(shifted, limit, target);
+          source += 4;
+          target += 4;
+          sampleCount -= 4;
         }
+        while(0 < sampleCount) {
+          target[0] = Normalization::DivideInt32ToFloat(source[0] >> shift, limit);
+          ++source;
+          ++target;
+          --sampleCount;
+        }
+
+      // From 17-bits or more to floating point
+      // --------------------------------------
+      //
       } else { // for values longer than 16 bits, we force calculations to use doubles
+        std::size_t shift = sizeof(TSourceSample) * 8 - sourceBitCount;
         double limit = static_cast<double>(
-          ((1 << (sourceBitCount - 1)) - 1) << (sizeof(TSourceSample) * 8 - sourceBitCount)
+          (1 << (sourceBitCount - 1)) - 1
         );
-        for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
-          target[sampleIndex] = static_cast<TFloatTargetSample>(
-            static_cast<double>(source[sampleIndex]) / limit
-          );
+        while(3 < sampleCount) {
+          std::int32_t shifted[4];
+          shifted[0] = source[0] >> shift;
+          shifted[1] = source[1] >> shift;
+          shifted[2] = source[2] >> shift;
+          shifted[3] = source[3] >> shift;
+          Normalization::DivideInt32ToFloatx4(shifted, limit, target);
+          source += 4;
+          target += 4;
+          sampleCount -= 4;
+        }
+        while(0 < sampleCount) {
+          target[0] = Normalization::DivideInt32ToFloat(source[0] >> shift, limit);
+          ++source;
+          ++target;
+          --sampleCount;
         }
       }
     }

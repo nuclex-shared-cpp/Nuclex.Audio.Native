@@ -189,7 +189,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
     SampleConverter::Quantize(inputSamples, outputSamples, 24, 4);
 
-    EXPECT_FLOAT_EQ(outputSamples[0], -2147483648); // float accuracy is too low here
+    EXPECT_EQ(outputSamples[0], -2147483648);
     EXPECT_EQ(outputSamples[1], -2147483392);
     EXPECT_EQ(outputSamples[2], 0);
     EXPECT_EQ(outputSamples[3], 2147483392);

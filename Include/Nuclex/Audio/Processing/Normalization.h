@@ -31,22 +31,22 @@ limitations under the License.
 #include <x86intrin.h>
 #endif
 
-// Whether the cvts CPU instruction is supported by the targeted architecture
+// Whether the SSE2 SIMD instructions are supported by the targeted architecture
 #if defined(_MSC_VER)
   // All SSE2 CPUs have the CVTS instructions, so if we're compiling for SSE2
   // or compiling to amd64 (which always has SSE2), they're available.
   #if defined(_M_X64) || (defined(_M_IX86_FP) && (_M_IX86_FP >= 2))
-    #define NUCLEX_AUDIO_CVTS_AVAILABLE 1
+    #define NUCLEX_AUDIO_HAVE_SSE2 1
   #endif
 #elif defined(__clang__) || (defined(__GNUC__) || defined(__GNUG__))
   // Same logic on GCC and clang, except they declare availability of SSE2
   // explicitly, so we don't need to study architectures and implied features.
   #if defined(__SSE2__) || defined(__SSE2_MATH__)
-    #define NUCLEX_AUDIO_CVTS_AVAILABLE 1
+    #define NUCLEX_AUDIO_HAVE_SSE2 1
   #endif
 #endif
 
-//#undef NUCLEX_AUDIO_CVTS_AVAILABLE
+//#undef NUCLEX_AUDIO_HAVE_SSE2
 
 // TODO: ARM support?
 //#include <arm_neon.h>
@@ -140,7 +140,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
   inline float Normalization::DivideInt32ToFloat(
     const std::int32_t value, float quotient
   ) {
-#if defined(NUCLEX_AUDIO_CVTS_AVAILABLE)
+#if defined(NUCLEX_AUDIO_HAVE_SSE2)
     return _mm_cvtss_f32(
       _mm_div_ps(_mm_set_ss(static_cast<float>(value)), _mm_set_ss(quotient))
     );
@@ -155,7 +155,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
   inline double Normalization::DivideInt32ToFloat(
     const std::int32_t value, double quotient
   ) {
-#if defined(NUCLEX_AUDIO_CVTS_AVAILABLE)
+#if defined(NUCLEX_AUDIO_HAVE_SSE2)
     return _mm_cvtsd_f64(
       _mm_div_pd(_mm_set_sd(static_cast<float>(value)), _mm_set_sd(quotient))
     );
@@ -170,7 +170,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
   inline void Normalization::DivideInt32ToFloatx4(
     const std::int32_t *values/*[4]*/, float quotient, float *results/*[4]*/
   ) {
-#if defined(NUCLEX_AUDIO_CVTS_AVAILABLE)
+#if defined(NUCLEX_AUDIO_HAVE_SSE2)
     _mm_storeu_ps(
       results,
       _mm_div_ps(
@@ -194,7 +194,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
   inline void Normalization::DivideInt32ToFloatx4(
     const std::int32_t *values/*[4]*/, double quotient, float *results/*[4]*/
   ) {
-#if defined(NUCLEX_AUDIO_CVTS_AVAILABLE)
+#if defined(NUCLEX_AUDIO_HAVE_SSE2)
     __m128i valuesVector = _mm_loadu_si128(reinterpret_cast<const __m128i *>(values));
     __m128d quotientVector = _mm_set1_pd(quotient);
 
@@ -231,7 +231,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
   inline void Normalization::DivideInt32ToFloatx4(
     const std::int32_t *values/*[4]*/, double quotient, double *results/*[4]*/
   ) {
-#if defined(NUCLEX_AUDIO_CVTS_AVAILABLE)
+#if defined(NUCLEX_AUDIO_HAVE_SSE2)
     __m128i valuesVector = _mm_loadu_si128(reinterpret_cast<const __m128i *>(values));
     __m128d quotientVector = _mm_set1_pd(quotient);
 
@@ -264,7 +264,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
   inline void Normalization::ShiftAndDivideInt32ToFloatx4(
     const std::int32_t *values/*[4]*/, int shift, float quotient, float *results/*[4]*/
   ) {
-#if defined(NUCLEX_AUDIO_CVTS_AVAILABLE)
+#if defined(NUCLEX_AUDIO_HAVE_SSE2)
     _mm_storeu_ps(
       results,
       _mm_div_ps(
@@ -291,7 +291,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
   inline void Normalization::ShiftAndDivideInt32ToFloatx4(
     const std::int32_t *values/*[4]*/, int shift, double quotient, float *results/*[4]*/
   ) {
-#if defined(NUCLEX_AUDIO_CVTS_AVAILABLE)
+#if defined(NUCLEX_AUDIO_HAVE_SSE2)
     __m128i valuesVector = _mm_srai_epi32(
       _mm_loadu_si128(reinterpret_cast<const __m128i *>(values)),
       shift
@@ -330,7 +330,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
   inline void Normalization::ShiftAndDivideInt32ToFloatx4(
     const std::int32_t *values/*[4]*/, int shift, double quotient, double *results/*[4]*/
   ) {
-#if defined(NUCLEX_AUDIO_CVTS_AVAILABLE)
+#if defined(NUCLEX_AUDIO_HAVE_SSE2)
     __m128i valuesVector = _mm_srai_epi32(
       _mm_loadu_si128(reinterpret_cast<const __m128i *>(values)),
       shift

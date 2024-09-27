@@ -31,22 +31,22 @@ limitations under the License.
 #include <x86intrin.h>
 #endif
 
-// Whether the cvts CPU instruction is supported by the targeted architecture
+// Whether the SSE2 SIMD instructions are supported by the targeted architecture
 #if defined(_MSC_VER)
   // All SSE2 CPUs have the CVTS instructions, so if we're compiling for SSE2
   // or compiling to amd64 (which always has SSE2), they're available.
   #if defined(_M_X64) || (defined(_M_IX86_FP) && (_M_IX86_FP >= 2))
-    #define NUCLEX_AUDIO_CVTS_AVAILABLE 1
+    #define NUCLEX_AUDIO_HAVE_SSE2 1
   #endif
 #elif defined(__clang__) || (defined(__GNUC__) || defined(__GNUG__))
   // Same logic on GCC and clang, except they declare availability of SSE2
   // explicitly, so we don't need to study architectures and implied features.
   #if defined(__SSE2__) || defined(__SSE2_MATH__)
-    #define NUCLEX_AUDIO_CVTS_AVAILABLE 1
+    #define NUCLEX_AUDIO_HAVE_SSE2 1
   #endif
 #endif
 
-//#undef NUCLEX_AUDIO_CVTS_AVAILABLE
+//#undef NUCLEX_AUDIO_HAVE_SSE2
 
 // TODO: ARM support?
 //#include <arm_neon.h>
@@ -130,7 +130,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
   // ------------------------------------------------------------------------------------------- //
 
   inline std::int32_t Rounding::NearestInt32(float value) {
-#if defined(NUCLEX_AUDIO_CVTS_AVAILABLE)
+#if defined(NUCLEX_AUDIO_HAVE_SSE2)
     return _mm_cvtss_si32(_mm_set_ss(value));
 //#elif defined(__ARM_NEON)
 //    return vgetq_lane_s32(vcvtq_s32_f32(vdupq_n_f32(value)), 0);
@@ -142,7 +142,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
   // ------------------------------------------------------------------------------------------- //
 
   inline std::int32_t Rounding::NearestInt32(double value) {
-#if defined(NUCLEX_AUDIO_CVTS_AVAILABLE)
+#if defined(NUCLEX_AUDIO_HAVE_SSE2)
     return _mm_cvtsd_si32(_mm_set_sd(value));
 //#elif defined(__ARM_NEON)
 //    return vgetq_lane_s32(vcvtq_s32_f64(vdupq_n_f64(value)), 0);
@@ -156,7 +156,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
   inline void Rounding::NearestInt32x4(
     const float *values/*[4]*/, std::int32_t *results/*[4]*/
   ) {
-#if defined(NUCLEX_AUDIO_CVTS_AVAILABLE)
+#if defined(NUCLEX_AUDIO_HAVE_SSE2)
     _mm_storeu_si128(
       reinterpret_cast<__m128i *>(results),
       _mm_cvtps_epi32(_mm_loadu_ps(values))
@@ -178,7 +178,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
   inline void Rounding::NearestInt32x4(
     const double *values/*[4]*/, std::int32_t *results/*[4]*/
   ) {
-#if defined(NUCLEX_AUDIO_CVTS_AVAILABLE)
+#if defined(NUCLEX_AUDIO_HAVE_SSE2)
     _mm_storeu_si128(
       reinterpret_cast<__m128i *>(results),
       _mm_unpacklo_epi64(
@@ -204,7 +204,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
   inline void Rounding::MultiplyToNearestInt32x4(
     const float *values/*[4]*/, float factor, std::int32_t *results/*[4]*/
   ) {
-#if defined(NUCLEX_AUDIO_CVTS_AVAILABLE)
+#if defined(NUCLEX_AUDIO_HAVE_SSE2)
     _mm_storeu_si128(
       reinterpret_cast<__m128i *>(results),
       _mm_cvtps_epi32(
@@ -229,7 +229,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
   inline void Rounding::MultiplyToNearestInt32x4(
     const float *values/*[4]*/, double factor, std::int32_t *results/*[4]*/
   ) {
-#if defined(NUCLEX_AUDIO_CVTS_AVAILABLE)
+#if defined(NUCLEX_AUDIO_HAVE_SSE2)
     __m128 valuesVector = _mm_loadu_ps(values);
     __m128d factorVector = _mm_set1_pd(factor);
 
@@ -273,7 +273,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
   inline void Rounding::MultiplyToNearestInt32x4(
     const double *values/*[4]*/, double factor, std::int32_t *results/*[4]*/
   ) {
-#if defined(NUCLEX_AUDIO_CVTS_AVAILABLE)
+#if defined(NUCLEX_AUDIO_HAVE_SSE2)
     __m128d factorVector = _mm_set1_pd(factor);
 
     _mm_storeu_si128(
