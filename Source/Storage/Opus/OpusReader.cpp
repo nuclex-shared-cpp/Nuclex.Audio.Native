@@ -176,6 +176,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     // CHECK: Could PCM offset mean interleaved sample index or is it a frame index?
     Platform::OpusApi::PcmSeek(this->opusFile, frameIndex);
     this->frameCursor = frameIndex;
+
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -183,7 +184,9 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   void OpusReader::DecodeInterleaved(float *buffer, std::size_t frameCount) {
     while(frameCount >= 1) {
       std::size_t decodedFrameCount = (
-        Platform::OpusApi::ReadFloat(this->opusFile, buffer, frameCount * this->channelCount)
+        Platform::OpusApi::ReadFloat(
+          this->opusFile, buffer, static_cast<int>(frameCount * this->channelCount)
+        )
       );
       if(decodedFrameCount == 0) {
         throw std::runtime_error(

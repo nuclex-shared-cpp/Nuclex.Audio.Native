@@ -162,7 +162,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
           this->state->Error,
           this->vorbisFile,
           buffer,
-          frameCount, // * this->channelCount,
+          static_cast<int>(frameCount), // * this->channelCount,
           streamIndex
         )
       );

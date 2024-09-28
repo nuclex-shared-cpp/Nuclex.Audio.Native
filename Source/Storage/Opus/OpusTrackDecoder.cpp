@@ -136,15 +136,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   void OpusTrackDecoder::DecodeInterleavedFloat(
     float *buffer, const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
-    if(std::numeric_limits<std::uint32_t>::max() < frameCount) {
-      throw std::logic_error(u8"Unable to decode this many samples in one call");
-    }
-    if(startFrame >= this->totalFrameCount) {
-      throw std::out_of_range(u8"Start sample index is out of bounds");
-    }
-    if(this->totalFrameCount < startFrame + frameCount) {
-      throw std::out_of_range(u8"Decode sample count goes beyond the end of audio data");
-    }
+    verifyDecodeRange(startFrame, frameCount);
 
     {
       std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
@@ -224,6 +216,22 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     (void)startFrame;
     (void)frameCount;
     throw std::runtime_error(u8"Not implemented yet");
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void OpusTrackDecoder::verifyDecodeRange(
+    const std::uint64_t startFrame, const std::size_t frameCount
+  ) const {
+    if(std::numeric_limits<std::uint32_t>::max() < frameCount) {
+      throw std::logic_error(u8"Unable to decode this many samples in one call");
+    }
+    if(startFrame >= this->totalFrameCount) {
+      throw std::out_of_range(u8"Start sample index is out of bounds");
+    }
+    if(this->totalFrameCount < startFrame + frameCount) {
+      throw std::out_of_range(u8"Decode sample count goes beyond the end of audio data");
+    }
   }
 
   // ------------------------------------------------------------------------------------------- //

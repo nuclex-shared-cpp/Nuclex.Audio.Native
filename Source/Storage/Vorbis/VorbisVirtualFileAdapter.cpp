@@ -79,12 +79,13 @@ namespace {
     }
     catch(const std::exception &) {
       state.Error = std::current_exception();
-      return -1;
+      errno = EIO; // libvorbisfile checks errno to 
+      return 0;
     }
 
     state.FileCursor += byteCountToRead;
 
-    return static_cast<int>(byteCountToRead);
+    return byteCountToRead;
   }
 
   // ------------------------------------------------------------------------------------------- //
