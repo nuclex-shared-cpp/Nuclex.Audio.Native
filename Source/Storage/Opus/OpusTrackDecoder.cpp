@@ -173,6 +173,61 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
   // ------------------------------------------------------------------------------------------- //
 
+  void OpusTrackDecoder::DecodeSeparatedUint8(
+    std::uint8_t *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+  ) const {
+    (void)buffers;
+    (void)startFrame;
+    (void)frameCount;
+    throw std::runtime_error(u8"Not implemented yet");
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void OpusTrackDecoder::DecodeSeparatedInt16(
+    std::int16_t *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+  ) const {
+    (void)buffers;
+    (void)startFrame;
+    (void)frameCount;
+    throw std::runtime_error(u8"Not implemented yet");
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void OpusTrackDecoder::DecodeSeparatedInt32(
+    std::int32_t *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+  ) const {
+    (void)buffers;
+    (void)startFrame;
+    (void)frameCount;
+    throw std::runtime_error(u8"Not implemented yet");
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void OpusTrackDecoder::DecodeSeparatedFloat(
+    float *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+  ) const {
+    (void)buffers;
+    (void)startFrame;
+    (void)frameCount;
+    throw std::runtime_error(u8"Not implemented yet");
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void OpusTrackDecoder::DecodeSeparatedDouble(
+    double *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+  ) const {
+    (void)buffers;
+    (void)startFrame;
+    (void)frameCount;
+    throw std::runtime_error(u8"Not implemented yet");
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
 }}}} // namespace Nuclex::Audio::Storage::Opus
 
 #endif // defined(NUCLEX_AUDIO_HAVE_OPUS)

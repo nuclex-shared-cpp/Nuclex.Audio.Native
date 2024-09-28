@@ -37,6 +37,7 @@ namespace {
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Helper that copies and interleaves samples returne by libflac</summary>
+  template<typename TTargetSample = float>
   class InterleavingSampleForwarder {
 
     /// <summary>Initializes a new interleaving sample forward</summary>
@@ -44,7 +45,7 @@ namespace {
     /// <param name="channelCount">Number of channels that are being decoded</param>
     /// <param name="bitsPerSample">Number of bits per audio sample</param>
     public: InterleavingSampleForwarder(
-      float *target, std::size_t channelCount, std::size_t bitsPerSample
+      TTargetSample *target, std::size_t channelCount, std::size_t bitsPerSample
     );
 
     /// <summary>Writes the decoded samples into the user-provided buffer</summary>
@@ -73,53 +74,51 @@ namespace {
     );
 
     /// <summary>Target buffer that receives the interleaved samples</summary>
-    private: float *target;
+    private: TTargetSample *target;
     /// <summary>Number of audio channels libflac is decoding for us</summary>
     private: std::size_t channelCount;
-    /// <summary>Factor by which samples need to be scaled</summary>
-    private: float factor;
+    /// <summary>Number of bits per sample in the source data</summary>>
+    private: std::size_t bitsPerSample;
 
   };
 
   // ------------------------------------------------------------------------------------------- //
 
-  InterleavingSampleForwarder::InterleavingSampleForwarder(
-    float *target, std::size_t channelCount, std::size_t bitsPerSample
+  template<typename TTargetSample>
+  InterleavingSampleForwarder<TTargetSample>::InterleavingSampleForwarder(
+    TTargetSample *target, std::size_t channelCount, std::size_t bitsPerSample
   ) :
     target(target),
     channelCount(channelCount),
-    factor(0.0f) {
-
-    this->factor = static_cast<float>(
-      1.0 / static_cast<double>((1 << (bitsPerSample - 1)) - 1)
-    );
-  }
+    bitsPerSample(bitsPerSample) {}
 
   // ------------------------------------------------------------------------------------------- //
 
-  void InterleavingSampleForwarder::WriteDecodedSamples(
+  template<typename TTargetSample>
+  void InterleavingSampleForwarder<TTargetSample>::WriteDecodedSamples(
     const std::int32_t *const buffers[], std::size_t frameCount
   ) {
+    std::vector<TTargetSample> temp;
+    temp.resize(frameCount);
 
-    // The audio samples actually do sit in the least significant bits for libflac,
-    // tested on x86 with 16-bit asnd 24-bit .flac audio files.
-    //
-    // Also, they're separated, not interleaved, but our public interface currently
-    // only supports interleaved sample output. Does this result in an efficient access
-    // pattern? Or would the CPU cache be batter served by doing it channel-by-channel?
-    //
-    for(std::size_t frameIndex = 0; frameIndex < frameCount; ++frameIndex) {
-      for(std::size_t channelIndex = 0; channelIndex < this->channelCount; ++channelIndex) {
-        *this->target = static_cast<float>(buffers[channelIndex][frameIndex]) * this->factor;
-        ++this->target;
+    for(std::size_t channelIndex = 0; channelIndex < this->channelCount; ++channelIndex) {
+      Nuclex::Audio::Processing::SampleConverter::Convert(
+        buffers[channelIndex], this->bitsPerSample,
+        temp.data(), sizeof(TTargetSample) * 8,
+        frameCount
+      );
+      TTargetSample *targetChannel = this->target + channelIndex;
+      for(std::size_t frameIndex = 0; frameIndex < frameCount; ++frameIndex) {
+        *targetChannel = temp[frameIndex];
+        targetChannel += this->channelCount;
       }
     }
-
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-  void InterleavingSampleForwarder::ProcessDecodedSamplesFunction(
+  template<typename TTargetSample>
+  void InterleavingSampleForwarder<TTargetSample>::ProcessDecodedSamplesFunction(
     void *userPointer, const std::int32_t *const buffers[], std::size_t frameCount
   ) {
     reinterpret_cast<InterleavingSampleForwarder *>(userPointer)->WriteDecodedSamples(
@@ -188,7 +187,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     return this->trackInfo.SampleFormat;
   }
 
-  // ------------------------------------------------------------------------------------------- //
+  // ------------------------std::------------------------------------------------------------------- //
 
   bool FlacTrackDecoder::IsNativelyInterleaved() const {
     return false; // FLAC actually separates the audio channels
@@ -251,13 +250,13 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
         this->reader.Seek(startFrame);
       }
 
-      InterleavingSampleForwarder forwarder(
+      InterleavingSampleForwarder<float> forwarder(
         buffer, this->channelOrder.size(), this->trackInfo.BitsPerSample
       );
 
       this->reader.DecodeSeparated(
         &forwarder,
-        &InterleavingSampleForwarder::ProcessDecodedSamplesFunction,
+        &InterleavingSampleForwarder<float>::ProcessDecodedSamplesFunction,
         frameCount
       );
     } // mutex lock scope
@@ -269,6 +268,61 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     double *buffer, const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
     (void)buffer;
+    (void)startFrame;
+    (void)frameCount;
+    throw std::runtime_error(u8"Not implemented yet");
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void FlacTrackDecoder::DecodeSeparatedUint8(
+    std::uint8_t *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+  ) const {
+    (void)buffers;
+    (void)startFrame;
+    (void)frameCount;
+    throw std::runtime_error(u8"Not implemented yet");
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void FlacTrackDecoder::DecodeSeparatedInt16(
+    std::int16_t *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+  ) const {
+    (void)buffers;
+    (void)startFrame;
+    (void)frameCount;
+    throw std::runtime_error(u8"Not implemented yet");
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void FlacTrackDecoder::DecodeSeparatedInt32(
+    std::int32_t *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+  ) const {
+    (void)buffers;
+    (void)startFrame;
+    (void)frameCount;
+    throw std::runtime_error(u8"Not implemented yet");
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void FlacTrackDecoder::DecodeSeparatedFloat(
+    float *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+  ) const {
+    (void)buffers;
+    (void)startFrame;
+    (void)frameCount;
+    throw std::runtime_error(u8"Not implemented yet");
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void FlacTrackDecoder::DecodeSeparatedDouble(
+    double *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+  ) const {
+    (void)buffers;
     (void)startFrame;
     (void)frameCount;
     throw std::runtime_error(u8"Not implemented yet");

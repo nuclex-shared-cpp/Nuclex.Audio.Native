@@ -109,8 +109,50 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
       double *buffer, const std::uint64_t startFrame, const std::size_t frameCount
     ) const override;
 
-    /// <summary>Fetches the order of audio channels from the WavPack context</summary>
-    private: void fetchChannelOrder();
+    /// <summary>Decodes audio channels, separated, into the target buffers</summary>
+    /// <typeparam name="TSample">Type of samples to decode as</typeparam>
+    /// <param name="buffers">Buffers in which the channels will be stored</param>
+    /// <param name="startFrame">Index of the first frame to decode</param>
+    /// <param name="frameCount">Number of audio frames that will be decoded</param>
+    protected: void DecodeSeparatedUint8(
+      std::uint8_t *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+    ) const override;
+
+    /// <summary>Decodes audio channels, separated, into the target buffers</summary>
+    /// <typeparam name="TSample">Type of samples to decode as</typeparam>
+    /// <param name="buffers">Buffers in which the channels will be stored</param>
+    /// <param name="startFrame">Index of the first frame to decode</param>
+    /// <param name="frameCount">Number of audio frames that will be decoded</param>
+    protected: void DecodeSeparatedInt16(
+      std::int16_t *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+    ) const override;
+
+    /// <summary>Decodes audio channels, separated, into the target buffers</summary>
+    /// <typeparam name="TSample">Type of samples to decode as</typeparam>
+    /// <param name="buffers">Buffers in which the channels will be stored</param>
+    /// <param name="startFrame">Index of the first frame to decode</param>
+    /// <param name="frameCount">Number of audio frames that will be decoded</param>
+    protected: void DecodeSeparatedInt32(
+      std::int32_t *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+    ) const override;
+
+    /// <summary>Decodes audio channels, separated, into the target buffers</summary>
+    /// <typeparam name="TSample">Type of samples to decode as</typeparam>
+    /// <param name="buffers">Buffers in which the channels will be stored</param>
+    /// <param name="startFrame">Index of the first frame to decode</param>
+    /// <param name="frameCount">Number of audio frames that will be decoded</param>
+    protected: void DecodeSeparatedFloat(
+      float *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+    ) const override;
+
+    /// <summary>Decodes audio channels, separated, into the target buffers</summary>
+    /// <typeparam name="TSample">Type of samples to decode as</typeparam>
+    /// <param name="buffers">Buffers in which the channels will be stored</param>
+    /// <param name="startFrame">Index of the first frame to decode</param>
+    /// <param name="frameCount">Number of audio frames that will be decoded</param>
+    protected: void DecodeSeparatedDouble(
+      double *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+    ) const override;
 
     /// <summary>Reader that handles accessing the WavPack file via libwavpack</summary>
     private: mutable WavPackReader reader;

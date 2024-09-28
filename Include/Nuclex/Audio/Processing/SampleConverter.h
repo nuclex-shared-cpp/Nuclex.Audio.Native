@@ -29,6 +29,7 @@ limitations under the License.
 #include <stdexcept> // for std::runtime_error
 #include <type_traits> // for std::is_same<>
 #include <vector> // for std::vector
+#include <cassert> // for assert()
 
 namespace Nuclex { namespace Audio { namespace Processing {
 
@@ -436,6 +437,8 @@ namespace Nuclex { namespace Audio { namespace Processing {
         std::is_same<TTargetSample, std::uint8_t>::value
       ) {
 
+        // 8-bit is so rare that I haven't written custom code for it...
+        assert(false && u8"Fallback code triggered, accuracy not optimal");
         std::vector<double> doubles;
         doubles.resize(sampleCount);
         Reconstruct(source, sourceBitCount, doubles.data(), sampleCount);
@@ -519,6 +522,8 @@ namespace Nuclex { namespace Audio { namespace Processing {
         std::is_same<TTargetSample, std::uint8_t>::value
       ) {
 
+        // 8-bit is so rare that I haven't written custom code for it...
+        assert(false && u8"Fallback code triggered, accuracy not optimal");
         std::vector<double> doubles;
         doubles.resize(sampleCount);
         Reconstruct(source, sourceBitCount, doubles.data(), sampleCount);
@@ -542,9 +547,16 @@ namespace Nuclex { namespace Audio { namespace Processing {
               );
             }
           } else { // repeat source bit pattern once
-            throw std::runtime_error(
-              u8"Extending bits while using a smaller integer type not implemented yet"
-            );
+
+            // Converting from a longer type to a shorter type while at the same time
+            // using more bits is something I don't expect to happen /at all/,
+            // so I haven't written custom code for it...
+            assert(false && u8"Fallback code triggered, accuracy not optimal");
+            std::vector<double> doubles;
+            doubles.resize(sampleCount);
+            Reconstruct(source, sourceBitCount, doubles.data(), sampleCount);
+            Quantize(doubles.data(), target, targetBitCount, sampleCount);
+
           }
         } else { // target type shorter / longer or equal
           std::size_t shift = (sizeof(TTargetSample) - sizeof(TSourceSample)) * 8;

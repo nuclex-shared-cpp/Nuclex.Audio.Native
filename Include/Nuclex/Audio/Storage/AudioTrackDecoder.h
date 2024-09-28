@@ -133,7 +133,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     public: virtual bool IsNativelyInterleaved() const = 0;
 
     /// <summary>Decodes audio frames, interleaved, into the target buffer</summary>
-    /// <typeparam name="TSample">Type of samples to decode into</typeparam>
+    /// <typeparam name="TSample">Type of samples to decode as</typeparam>
     /// <param name="buffer">Buffer in which the interleaved samples will be stored</param>
     /// <param name="startFrame">Index of the first frame to decode</param>
     /// <param name="frameCount">Number of audio frames that will be decoded</param>
@@ -148,14 +148,37 @@ namespace Nuclex { namespace Audio { namespace Storage {
     ///     <code>bufferSize = frameCount x channelCount x sizeof(TSample)</code>
     ///   </para>
     ///   <para>
-    ///     It is more efficient to start reading at the closest block and to achieve best
-    ///     performance, decode the file stricly sequentially, by requesting consecutive
-    ///     sample ranges starting and ending at block boundaries.
+    ///     To achieve best performance, decode the file sequentially by requesting
+    ///     consecutive sample ranges until the end of the file.
     ///   </para>
     /// </remarks>
     public: template<typename TSample>
     NUCLEX_AUDIO_API void DecodeInterleaved(
       TSample *buffer, const std::uint64_t startFrame, const std::size_t frameCount
+    ) const;
+
+    /// <summary>Decodes audio channels, separated, into the target buffers</summary>
+    /// <typeparam name="TSample">Type of samples to decode as</typeparam>
+    /// <param name="buffers">Buffers in which the channels will be stored</param>
+    /// <param name="startFrame">Index of the first frame to decode</param>
+    /// <param name="frameCount">Number of audio frames that will be decoded</param>
+    /// <remarks>
+    ///   <para>
+    ///     The term 'frame' refers to a set of one sample for each channel. So if you decode
+    ///     one frame of a 5.1 audio file, you will get 1 sample in each of the channels.
+    ///     All buffers need to have enough space to fit the number of frames you specified.
+    ///   </para>
+    ///   <para>
+    ///     <code>eachBufferSize = frameCount x sizeof(TSample)</code>
+    ///   </para>
+    ///   <para>
+    ///     To achieve best performance, decode the file sequentially by requesting
+    ///     consecutive sample ranges until the end of the file.
+    ///   </para>
+    /// </remarks>
+    public: template<typename TSample>
+    NUCLEX_AUDIO_API void DecodeSeparated(
+      TSample *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
     ) const;
 
 #if defined(CONSIDERED_FEATURES)
@@ -165,10 +188,6 @@ namespace Nuclex { namespace Audio { namespace Storage {
     // Perhaps individual pointers in the buffers list can be nullptr if only
     // specific channels are needed to skip copying/converting those?
     //
-    public: template<typename TSample>
-    NUCLEX_AUDIO_API void DecodeSeparated(
-      TSample *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
-    );
 
     // Allow user to start decoding at block boundaries
     //
@@ -227,13 +246,58 @@ namespace Nuclex { namespace Audio { namespace Storage {
       double *buffer, const std::uint64_t startFrame, const std::size_t frameCount
     ) const = 0;
 
+    /// <summary>Decodes audio channels, separated, into the target buffers</summary>
+    /// <typeparam name="TSample">Type of samples to decode as</typeparam>
+    /// <param name="buffers">Buffers in which the channels will be stored</param>
+    /// <param name="startFrame">Index of the first frame to decode</param>
+    /// <param name="frameCount">Number of audio frames that will be decoded</param>
+    protected: virtual void DecodeSeparatedUint8(
+      std::uint8_t *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+    ) const = 0;
+
+    /// <summary>Decodes audio channels, separated, into the target buffers</summary>
+    /// <typeparam name="TSample">Type of samples to decode as</typeparam>
+    /// <param name="buffers">Buffers in which the channels will be stored</param>
+    /// <param name="startFrame">Index of the first frame to decode</param>
+    /// <param name="frameCount">Number of audio frames that will be decoded</param>
+    protected: virtual void DecodeSeparatedInt16(
+      std::int16_t *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+    ) const = 0;
+
+    /// <summary>Decodes audio channels, separated, into the target buffers</summary>
+    /// <typeparam name="TSample">Type of samples to decode as</typeparam>
+    /// <param name="buffers">Buffers in which the channels will be stored</param>
+    /// <param name="startFrame">Index of the first frame to decode</param>
+    /// <param name="frameCount">Number of audio frames that will be decoded</param>
+    protected: virtual void DecodeSeparatedInt32(
+      std::int32_t *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+    ) const = 0;
+
+    /// <summary>Decodes audio channels, separated, into the target buffers</summary>
+    /// <typeparam name="TSample">Type of samples to decode as</typeparam>
+    /// <param name="buffers">Buffers in which the channels will be stored</param>
+    /// <param name="startFrame">Index of the first frame to decode</param>
+    /// <param name="frameCount">Number of audio frames that will be decoded</param>
+    protected: virtual void DecodeSeparatedFloat(
+      float *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+    ) const = 0;
+
+    /// <summary>Decodes audio channels, separated, into the target buffers</summary>
+    /// <typeparam name="TSample">Type of samples to decode as</typeparam>
+    /// <param name="buffers">Buffers in which the channels will be stored</param>
+    /// <param name="startFrame">Index of the first frame to decode</param>
+    /// <param name="frameCount">Number of audio frames that will be decoded</param>
+    protected: virtual void DecodeSeparatedDouble(
+      double *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+    ) const = 0;
+
   };
 
   // ------------------------------------------------------------------------------------------- //
 
   template<typename TSample>
   NUCLEX_AUDIO_API inline void AudioTrackDecoder::DecodeInterleaved(
-    TSample *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+    TSample *buffer, const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
     static_assert(
       std::is_same<TSample, std::uint8_t>::value ||
@@ -249,45 +313,106 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
   template<>
   inline void AudioTrackDecoder::DecodeInterleaved(
-    std::uint8_t *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+    std::uint8_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
-    DecodeInterleavedUint8(buffer, startSample, sampleCount);
+    DecodeInterleavedUint8(buffer, startFrame, frameCount);
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   template<>
   inline void AudioTrackDecoder::DecodeInterleaved(
-    std::int16_t *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+    std::int16_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
-    DecodeInterleavedInt16(buffer, startSample, sampleCount);
+    DecodeInterleavedInt16(buffer, startFrame, frameCount);
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   template<>
   inline void AudioTrackDecoder::DecodeInterleaved(
-    std::int32_t *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+    std::int32_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
-    DecodeInterleavedInt32(buffer, startSample, sampleCount);
+    DecodeInterleavedInt32(buffer, startFrame, frameCount);
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   template<>
   inline void AudioTrackDecoder::DecodeInterleaved(
-    float *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+    float *buffer, const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
-    DecodeInterleavedFloat(buffer, startSample, sampleCount);
+    DecodeInterleavedFloat(buffer, startFrame, frameCount);
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   template<>
   inline void AudioTrackDecoder::DecodeInterleaved(
-    double *buffer, const std::uint64_t startSample, const std::size_t sampleCount
+    double *buffer, const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
-    DecodeInterleavedDouble(buffer, startSample, sampleCount);
+    DecodeInterleavedDouble(buffer, startFrame, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<typename TSample>
+  NUCLEX_AUDIO_API inline void AudioTrackDecoder::DecodeSeparated(
+    TSample *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+  ) const {
+    static_assert(
+      std::is_same<TSample, std::uint8_t>::value ||
+      std::is_same<TSample, std::int16_t>::value ||
+      std::is_same<TSample, std::int32_t>::value ||
+      std::is_same<TSample, float>::value ||
+      std::is_same<TSample, double>::value,
+      u8"Only 8 but unsigned, 16/32 bit signed, float or double samples are supported"
+    );
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<>
+  inline void AudioTrackDecoder::DecodeSeparated(
+    std::uint8_t *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+  ) const {
+    DecodeSeparatedUint8(buffers, startFrame, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<>
+  inline void AudioTrackDecoder::DecodeSeparated(
+    std::int16_t *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+  ) const {
+    DecodeSeparatedInt16(buffers, startFrame, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<>
+  inline void AudioTrackDecoder::DecodeSeparated(
+    std::int32_t *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+  ) const {
+    DecodeSeparatedInt32(buffers, startFrame, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<>
+  inline void AudioTrackDecoder::DecodeSeparated(
+    float *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+  ) const {
+    DecodeSeparatedFloat(buffers, startFrame, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<>
+  inline void AudioTrackDecoder::DecodeSeparated(
+    double *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+  ) const {
+    DecodeSeparatedDouble(buffers, startFrame, frameCount);
   }
 
   // ------------------------------------------------------------------------------------------- //

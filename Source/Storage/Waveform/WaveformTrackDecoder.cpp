@@ -165,4 +165,59 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
   // ------------------------------------------------------------------------------------------- //
 
+  void WaveformTrackDecoder::DecodeSeparatedUint8(
+    std::uint8_t *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+  ) const {
+    (void)buffers;
+    (void)startFrame;
+    (void)frameCount;
+    throw std::runtime_error(u8"Not implemented yet");
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void WaveformTrackDecoder::DecodeSeparatedInt16(
+    std::int16_t *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+  ) const {
+    (void)buffers;
+    (void)startFrame;
+    (void)frameCount;
+    throw std::runtime_error(u8"Not implemented yet");
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void WaveformTrackDecoder::DecodeSeparatedInt32(
+    std::int32_t *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+  ) const {
+    (void)buffers;
+    (void)startFrame;
+    (void)frameCount;
+    throw std::runtime_error(u8"Not implemented yet");
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void WaveformTrackDecoder::DecodeSeparatedFloat(
+    float *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+  ) const {
+    (void)buffers;
+    (void)startFrame;
+    (void)frameCount;
+    throw std::runtime_error(u8"Not implemented yet");
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void WaveformTrackDecoder::DecodeSeparatedDouble(
+    double *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+  ) const {
+    (void)buffers;
+    (void)startFrame;
+    (void)frameCount;
+    throw std::runtime_error(u8"Not implemented yet");
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
 }}}} // namespace Nuclex::Audio::Storage::Waveform
