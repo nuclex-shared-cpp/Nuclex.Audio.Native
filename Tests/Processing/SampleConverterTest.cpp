@@ -21,6 +21,7 @@ limitations under the License.
 #define NUCLEX_AUDIO_SOURCE 1
 
 #include "Nuclex/Audio/Processing/SampleConverter.h"
+#include "../ExpectRange.h"
 
 #include <gtest/gtest.h>
 

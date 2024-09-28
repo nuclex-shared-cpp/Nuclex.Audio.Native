@@ -17,8 +17,8 @@ limitations under the License.
 */
 #pragma endregion // Apache License 2.0
 
-#ifndef NUCLEX_AUDIO_EXPECTRANGE_H
-#define NUCLEX_AUDIO_EXPECTRANGE_H
+#ifndef NUCLEX_AUDIO_EXPECTEITHER_H
+#define NUCLEX_AUDIO_EXPECTEITHER_H
 
 #include "Nuclex/Audio/Config.h"
 
@@ -26,12 +26,12 @@ limitations under the License.
 
 // --------------------------------------------------------------------------------------------- //
 
-// Checks if a value is in the range from lower (inclusive) to upper (exclusive)
+// Checks if a value matches either the first or the second alternative
 //
 // This is a little custom GoogleTest macro because such checks appear quite often
-// where audio signals are analyzed in the unit tests
-#define EXPECT_RANGE(value, lower, upper) \
-  EXPECT_PRED_FORMAT3(AssertInRange, value, lower, upper)
+// where controlled inaccuracies are accepted by the unit tests.
+#define EXPECT_EITHER(value, lower, upper) \
+  EXPECT_PRED_FORMAT3(AssertEither, value, lower, upper)
 
 // --------------------------------------------------------------------------------------------- //
 
@@ -47,17 +47,17 @@ limitations under the License.
 /// <param name="upper">Maximum value that is allowed (exclusive)</param>
 /// <returns>The result of the GoogleTest assertion</returns>
 template<typename TScalar>
-inline ::testing::AssertionResult AssertInRange(
-  const char *valueExpression, const char *lowerExpression, const char *upperExpression,
-  TScalar value, TScalar lower, TScalar upper
+inline ::testing::AssertionResult AssertEither(
+  const char *valueExpression, const char *primaryExpression, const char *secondaryExpression,
+  TScalar value, TScalar primary, TScalar secondary
 ) {
-  if((value >= lower) && (value < upper)) {
+  if((value == primary) || (value == secondary)) {
     return ::testing::AssertionSuccess();
   } else {
     return ::testing::AssertionFailure() <<
-      valueExpression << u8" (" << value << u8") is not in range " <<
-      u8"[" << lowerExpression << u8" (" << lower << u8"), " <<
-      upperExpression << u8" (" << upper << u8"))";
+      valueExpression << u8" (" << value << u8") does not equal either " <<
+      primaryExpression << u8" (" << primary << u8"), " <<
+      secondaryExpression << u8" (" << secondary << u8"))";
   }
 }
 

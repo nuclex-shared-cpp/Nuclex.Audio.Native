@@ -28,6 +28,7 @@ limitations under the License.
 #include <cstddef> // for stdf::size_t
 #include <stdexcept> // for std::runtime_error
 #include <type_traits> // for std::is_same<>
+#include <vector> // for std::vector
 
 namespace Nuclex { namespace Audio { namespace Processing {
 
@@ -396,6 +397,9 @@ namespace Nuclex { namespace Audio { namespace Processing {
       u8"This method only truncates float to float or integer to integer"
     );
 
+    // From floating point to floating point
+    // -------------------------------------
+    //
     if constexpr(std::is_floating_point<TSourceSample>::value) {
       bool isSameOrDoubleToFloat = (
         ((sourceBitCount == sizeof(double) * 8) && (targetBitCount == sizeof(float) * 8)) ||
@@ -409,7 +413,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
       for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
         target[sampleIndex] = static_cast<TTargetSample>(source[sampleIndex]);
       }
-    } else {
+    } else { // if both types are floating point / both are integers
       static_assert(
         (
           std::is_same<TSourceSample, std::uint8_t>::value ||
@@ -424,27 +428,45 @@ namespace Nuclex { namespace Audio { namespace Processing {
         u8"This method only handles 8-bit unsigned and 16-bit/32-bit signed integers"
       );
 
-      // TODO: This always rounds toward negative. I'm not happy with that :-/
-      // TODO: This doesn't cover unsigned 8-bit audio samples yes.
+      // Between integers with unsigned involved
+      // ---------------------------------------
+      //
+      if constexpr(
+        std::is_same<TSourceSample, std::uint8_t>::value ||
+        std::is_same<TTargetSample, std::uint8_t>::value
+      ) {
 
-      TTargetSample targetMask = (
-        ((1 << targetBitCount) - 1) << (sizeof(TTargetSample) * 8 - targetBitCount)
-      );
+        std::vector<double> doubles;
+        doubles.resize(sampleCount);
+        Reconstruct(source, sourceBitCount, doubles.data(), sampleCount);
+        Quantize(doubles.data(), target, targetBitCount, sampleCount);
 
-      //TSourceSample roundingBit = (
-      //  (1 << (sizeof(TSourceSample) * 8 - targetBitCount - 1))
-      //);
-      // down in the loop
-      //   +(roundingBit * (number already equals maximum truncated number))
+      // Longer signed integer to shorter signed integer
+      // -----------------------------------------------
+      //
+      } else { // unsigned involved / both are signed
 
-      std::size_t shift = ((sizeof(TSourceSample) - sizeof(TTargetSample)) * 8);
-      for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
-        //TSourceSample sourceSample = source[sampleIndex];
-        target[sampleIndex] = static_cast<TTargetSample>(
-          source[sampleIndex] >> shift
-        ) & targetMask; // truncation
-      }
-    }
+        TTargetSample targetMask = (
+          ((1 << (targetBitCount - 1)) - 1) | (1 << targetBitCount - 1)
+        );
+        targetMask <<= (sizeof(TTargetSample) * 8 - targetBitCount);
+        if constexpr(sizeof(TTargetSample) < sizeof(TSourceSample)) {
+          std::size_t shift = (sizeof(TSourceSample) - sizeof(TTargetSample)) * 8;
+          for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
+            target[sampleIndex] = static_cast<TTargetSample>(
+              (source[sampleIndex] >> shift) & targetMask
+            );
+          }
+        } else { // target type shorter / longer or equal
+          std::size_t shift = (sizeof(TTargetSample) - sizeof(TSourceSample)) * 8;
+          for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
+            target[sampleIndex] = (
+              (static_cast<TTargetSample>(source[sampleIndex]) << shift) & targetMask
+            );
+          }
+        } // if target type shorter or longer
+      } // if unsigned involved or both signed
+    } // if both types are float or integer
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -474,7 +496,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
       for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
         target[sampleIndex] = static_cast<TTargetSample>(source[sampleIndex]);
       }
-    } else {
+    } else { // if both types are floating point / both are integers
       static_assert(
         (
           std::is_same<TSourceSample, std::uint8_t>::value ||
@@ -489,7 +511,30 @@ namespace Nuclex { namespace Audio { namespace Processing {
         u8"This method only handles 8-bit unsigned and 16-bit/32-bit signed integers"
       );
 
-      throw std::runtime_error(u8"Not implemented yet");
+      // Between integers with unsigned involved
+      // ---------------------------------------
+      //
+      if constexpr(
+        std::is_same<TSourceSample, std::uint8_t>::value ||
+        std::is_same<TTargetSample, std::uint8_t>::value
+      ) {
+
+        std::vector<double> doubles;
+        doubles.resize(sampleCount);
+        Reconstruct(source, sourceBitCount, doubles.data(), sampleCount);
+        Quantize(doubles.data(), target, targetBitCount, sampleCount);
+
+      // Longer signed integer to shorter signed integer
+      // -----------------------------------------------
+      //
+      } else { // unsigned involved / both are signed
+
+        std::vector<double> doubles;
+        doubles.resize(sampleCount);
+        Reconstruct(source, sourceBitCount, doubles.data(), sampleCount);
+        Quantize(doubles.data(), target, targetBitCount, sampleCount);
+
+      } // if unsigned involved or both signed
     }
   }
 
