@@ -350,6 +350,26 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
+  TEST(SampleConverterTest, Converts12BitTo32BitIntegersWithDifferentTypes) {
+    std::int16_t inputSamples[6] = {
+      -32768, -32752, -16400, 0, 32736, 32752
+    };
+    std::int32_t outputSamples[6] = { 0, 0, 0, 0, 0, 0 };
+
+    SampleConverter::ExtendBits(
+      inputSamples, 12, outputSamples, 32, 6
+    );
+
+    EXPECT_EQ(outputSamples[0], std::int32_t(-2147483648));
+    EXPECT_EQ(outputSamples[1], -2146434560);
+    EXPECT_EQ(outputSamples[2], -1074266369);
+    EXPECT_EQ(outputSamples[3], 0);
+    EXPECT_EQ(outputSamples[4], 2146434559);
+    EXPECT_EQ(outputSamples[5], 2147483647);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   TEST(SampleConverterTest, Converts24BitTo32BitIntegers) {
     std::int32_t inputSamples[6] = {
       -2147483648, -2147483392, -1073742080, 0, 2147483136, 2147483392

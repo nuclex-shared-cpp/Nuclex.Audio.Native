@@ -561,15 +561,15 @@ namespace Nuclex { namespace Audio { namespace Processing {
               doubleMask <<= (sizeof(TTargetSample) * 8 - sourceBitCount);
               doubleMask >>= (sourceBitCount - 1);
               for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
-                TTargetSample value = static_cast<TTargetSample>(source[sampleIndex]);
+                TTargetSample value = static_cast<TTargetSample>(source[sampleIndex]) << shift;
                 TTargetSample once = (value >> (sourceBitCount - 1)) & doubleMask;
                 target[sampleIndex] = targetMask & (value | once);
               }
             } else { // repeat bit pattern once / twice
               doubleMask <<= (sizeof(TTargetSample) * 8 - sourceBitCount - (sourceBitCount - 1));
-              TTargetSample tripleMask = doubleMask >> (sourceBitCount - 1);
+              //TTargetSample tripleMask = doubleMask >> (sourceBitCount - 1);
               for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
-                TTargetSample value = static_cast<TTargetSample>(source[sampleIndex]);
+                TTargetSample value = static_cast<TTargetSample>(source[sampleIndex]) << shift;
                 TTargetSample once = (value >> (sourceBitCount - 1)) & doubleMask;
                 TTargetSample twice = (once >> (sourceBitCount - 1));
                 target[sampleIndex] = targetMask & (value | once | twice);
