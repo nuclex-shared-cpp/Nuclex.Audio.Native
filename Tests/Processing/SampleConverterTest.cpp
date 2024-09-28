@@ -330,6 +330,26 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
+  TEST(SampleConverterTest, Converts12BitTo32BitIntegers) {
+    std::int32_t inputSamples[6] = {
+      -2147483648, -2146435072, -1074790400, 0, 2145386496, 2146435072
+    };
+    std::int32_t outputSamples[6] = { 0, 0, 0, 0, 0, 0 };
+
+    SampleConverter::ExtendBits(
+      inputSamples, 12, outputSamples, 32, 6
+    );
+
+    EXPECT_EQ(outputSamples[0], std::int32_t(-2147483648));
+    EXPECT_EQ(outputSamples[1], -2146434560);
+    EXPECT_EQ(outputSamples[2], -1074266369);
+    EXPECT_EQ(outputSamples[3], 0);
+    EXPECT_EQ(outputSamples[4], 2146434559);
+    EXPECT_EQ(outputSamples[5], 2147483647);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   TEST(SampleConverterTest, Converts24BitTo32BitIntegers) {
     std::int32_t inputSamples[6] = {
       -2147483648, -2147483392, -1073742080, 0, 2147483136, 2147483392
@@ -341,7 +361,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
     );
 
     EXPECT_EQ(outputSamples[0], std::int32_t(-2147483648));
-    EXPECT_EQ(outputSamples[1], std::int32_t(-2147483392));
+    EXPECT_EQ(outputSamples[1], -2147483392);
     EXPECT_EQ(outputSamples[2], -1073741953);
     EXPECT_EQ(outputSamples[3], 0);
     EXPECT_EQ(outputSamples[4], 2147483391); // truncate = round down, not round nearest

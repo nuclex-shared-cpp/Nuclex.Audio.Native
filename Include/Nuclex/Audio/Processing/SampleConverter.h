@@ -446,10 +446,10 @@ namespace Nuclex { namespace Audio { namespace Processing {
       //
       } else { // unsigned involved / both are signed
 
-        TTargetSample targetMask = (
-          ((1 << (targetBitCount - 1)) - 1) | (1 << (targetBitCount - 1))
-        );
+        TTargetSample targetMask = (1 << (targetBitCount - 1)) - 1;
+        targetMask |= 1 << (targetBitCount - 1);
         targetMask <<= (sizeof(TTargetSample) * 8 - targetBitCount);
+
         if constexpr(sizeof(TTargetSample) < sizeof(TSourceSample)) {
           std::size_t shift = (sizeof(TSourceSample) - sizeof(TTargetSample)) * 8;
           for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
@@ -529,9 +529,8 @@ namespace Nuclex { namespace Audio { namespace Processing {
       //
       } else { // unsigned involved / both are signed
 
-        TTargetSample targetMask = (
-          ((1 << (targetBitCount - 1)) - 1) | (1 << (targetBitCount - 1))
-        );
+        TTargetSample targetMask = (1 << (targetBitCount - 1)) - 1;
+        targetMask |= 1 << (targetBitCount - 1);
         targetMask <<= (sizeof(TTargetSample) * 8 - targetBitCount);
 
         if constexpr(sizeof(TTargetSample) < sizeof(TSourceSample)) {
@@ -543,11 +542,9 @@ namespace Nuclex { namespace Audio { namespace Processing {
               );
             }
           } else { // repeat source bit pattern once
-            TTargetSample doubleMask = (
-              ((1 << (sourceBitCount - 1)) - 1) | (1 << (sourceBitCount - 1))
+            throw std::runtime_error(
+              u8"Extending bits while using a smaller integer type not implemented yet"
             );
-            doubleMask <<= (sizeof(TTargetSample) * 8 - sourceBitCount);
-
           }
         } else { // target type shorter / longer or equal
           std::size_t shift = (sizeof(TTargetSample) - sizeof(TSourceSample)) * 8;
@@ -558,18 +555,25 @@ namespace Nuclex { namespace Audio { namespace Processing {
                 (static_cast<TTargetSample>(source[sampleIndex]) << shift)
               );
             }
-          } else {// repeat bit pattern once
-            TTargetSample doubleMask = (
-              ((1 << (sourceBitCount - 1)) - 1) | (1 << (sourceBitCount - 1))
-            );
-            doubleMask <<= (sizeof(TTargetSample) * 8 - sourceBitCount);
-            doubleMask = ~doubleMask;
-
-            for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
-              TTargetSample value = static_cast<TTargetSample>(source[sampleIndex]);
-              target[sampleIndex] = targetMask & (
-                ((value >> (sourceBitCount - 1)) & doubleMask) | value
-              );
+          } else {// repeat bit pattern once or twice
+            TTargetSample doubleMask = (1 << (sourceBitCount - 1)) - 1;
+            if(sourceBitCount * 2 >= targetBitCount + 1) { // repeat bit pattern once
+              doubleMask <<= (sizeof(TTargetSample) * 8 - sourceBitCount);
+              doubleMask >>= (sourceBitCount - 1);
+              for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
+                TTargetSample value = static_cast<TTargetSample>(source[sampleIndex]);
+                TTargetSample once = (value >> (sourceBitCount - 1)) & doubleMask;
+                target[sampleIndex] = targetMask & (value | once);
+              }
+            } else { // repeat bit pattern once / twice
+              doubleMask <<= (sizeof(TTargetSample) * 8 - sourceBitCount - (sourceBitCount - 1));
+              TTargetSample tripleMask = doubleMask >> (sourceBitCount - 1);
+              for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
+                TTargetSample value = static_cast<TTargetSample>(source[sampleIndex]);
+                TTargetSample once = (value >> (sourceBitCount - 1)) & doubleMask;
+                TTargetSample twice = (once >> (sourceBitCount - 1));
+                target[sampleIndex] = targetMask & (value | once | twice);
+              }
             }
 
           }
