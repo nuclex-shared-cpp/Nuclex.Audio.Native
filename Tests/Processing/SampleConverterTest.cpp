@@ -21,7 +21,7 @@ limitations under the License.
 #define NUCLEX_AUDIO_SOURCE 1
 
 #include "Nuclex/Audio/Processing/SampleConverter.h"
-#include "../ExpectRange.h"
+#include "../ExpectEither.h"
 
 #include <gtest/gtest.h>
 
@@ -190,7 +190,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
     SampleConverter::Quantize(inputSamples, outputSamples, 24, 4);
 
-    EXPECT_EQ(outputSamples[0], -2147483648);
+    EXPECT_EQ(outputSamples[0], std::int32_t(-2147483648));
     EXPECT_EQ(outputSamples[1], -2147483392);
     EXPECT_EQ(outputSamples[2], 0);
     EXPECT_EQ(outputSamples[3], 2147483392);
@@ -204,7 +204,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
     SampleConverter::Quantize(inputSamples, outputSamples, 32, 4);
 
-    EXPECT_FLOAT_EQ(outputSamples[0], -2147483648); // input value already unrepresentable
+    EXPECT_EITHER(outputSamples[0], std::int32_t(-2147483647), std::int32_t(-2147483648));
     EXPECT_EQ(outputSamples[1], -2147483647);
     EXPECT_EQ(outputSamples[2], 0);
     EXPECT_EQ(outputSamples[3], 2147483647);
@@ -326,6 +326,26 @@ namespace Nuclex { namespace Audio { namespace Processing {
     EXPECT_EQ(outputSamples[1], -1.0);
     EXPECT_EQ(outputSamples[2], 0.0);
     EXPECT_EQ(outputSamples[3], 1.0);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(SampleConverterTest, Converts24BitTo32BitIntegers) {
+    std::int32_t inputSamples[6] = {
+      -2147483648, -2147483392, -1073742080, 0, 2147483136, 2147483392
+    };
+    std::int32_t outputSamples[6] = { 0, 0, 0, 0, 0, 0 };
+
+    SampleConverter::ExtendBits(
+      inputSamples, 24, outputSamples, 32, 6
+    );
+
+    EXPECT_EQ(outputSamples[0], std::int32_t(-2147483648));
+    EXPECT_EQ(outputSamples[1], std::int32_t(-2147483392));
+    EXPECT_EQ(outputSamples[2], -1073741953);
+    EXPECT_EQ(outputSamples[3], 0);
+    EXPECT_EQ(outputSamples[4], 2147483391); // truncate = round down, not round nearest
+    EXPECT_EQ(outputSamples[5], 2147483647);
   }
 
   // ------------------------------------------------------------------------------------------- //

@@ -447,7 +447,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
       } else { // unsigned involved / both are signed
 
         TTargetSample targetMask = (
-          ((1 << (targetBitCount - 1)) - 1) | (1 << targetBitCount - 1)
+          ((1 << (targetBitCount - 1)) - 1) | (1 << (targetBitCount - 1))
         );
         targetMask <<= (sizeof(TTargetSample) * 8 - targetBitCount);
         if constexpr(sizeof(TTargetSample) < sizeof(TSourceSample)) {
@@ -529,13 +529,55 @@ namespace Nuclex { namespace Audio { namespace Processing {
       //
       } else { // unsigned involved / both are signed
 
-        std::vector<double> doubles;
-        doubles.resize(sampleCount);
-        Reconstruct(source, sourceBitCount, doubles.data(), sampleCount);
-        Quantize(doubles.data(), target, targetBitCount, sampleCount);
+        TTargetSample targetMask = (
+          ((1 << (targetBitCount - 1)) - 1) | (1 << (targetBitCount - 1))
+        );
+        targetMask <<= (sizeof(TTargetSample) * 8 - targetBitCount);
+
+        if constexpr(sizeof(TTargetSample) < sizeof(TSourceSample)) {
+          std::size_t shift = (sizeof(TSourceSample) - sizeof(TTargetSample)) * 8;
+          if(sourceBitCount == targetBitCount) { // conversion between containing types only
+            for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
+              target[sampleIndex] = static_cast<TTargetSample>(
+                (source[sampleIndex] >> shift)
+              );
+            }
+          } else { // repeat source bit pattern once
+            TTargetSample doubleMask = (
+              ((1 << (sourceBitCount - 1)) - 1) | (1 << (sourceBitCount - 1))
+            );
+            doubleMask <<= (sizeof(TTargetSample) * 8 - sourceBitCount);
+
+          }
+        } else { // target type shorter / longer or equal
+          std::size_t shift = (sizeof(TTargetSample) - sizeof(TSourceSample)) * 8;
+
+          if(sourceBitCount == targetBitCount) { // conversion between containing types only
+            for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
+              target[sampleIndex] = (
+                (static_cast<TTargetSample>(source[sampleIndex]) << shift)
+              );
+            }
+          } else {// repeat bit pattern once
+            TTargetSample doubleMask = (
+              ((1 << (sourceBitCount - 1)) - 1) | (1 << (sourceBitCount - 1))
+            );
+            doubleMask <<= (sizeof(TTargetSample) * 8 - sourceBitCount);
+            doubleMask = ~doubleMask;
+
+            for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
+              TTargetSample value = static_cast<TTargetSample>(source[sampleIndex]);
+              target[sampleIndex] = targetMask & (
+                ((value >> (sourceBitCount - 1)) & doubleMask) | value
+              );
+            }
+
+          }
+
+        } // if target type shorter or longer
 
       } // if unsigned involved or both signed
-    }
+    } // if both types are float or integer
   }
 
   // ------------------------------------------------------------------------------------------- //
