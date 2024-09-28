@@ -337,8 +337,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
   // ------------------------------------------------------------------------------------------- //
 
-  WaveformReader::WaveformReader(const std::shared_ptr<const VirtualFile> & source) :
-    file(file),
+  WaveformReader::WaveformReader(const std::shared_ptr<const VirtualFile> &source) :
+    file(source),
     isLittleEndian(true),
     trackInfo(),
     firstSampleOffset(std::uint64_t(-1)),

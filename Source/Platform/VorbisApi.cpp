@@ -182,7 +182,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
       }
 
       std::string message(
-        u8"Unable to decode audio samples from virtual file via libvorbisfile: ", 80
+        u8"Unable to decode audio samples from virtual file via libvorbisfile: ", 68
       );
       message.append(stringFromVorbisFileErrorCode(result));
       throw std::runtime_error(message);

@@ -148,6 +148,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
       std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
 
       //this->reader.DecodeInterleaved(buffer, frameCount);
+      (void)buffer;
 
     } // mutex lock scope
   }
