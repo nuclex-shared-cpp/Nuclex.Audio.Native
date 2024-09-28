@@ -29,6 +29,8 @@ limitations under the License.
 #include "../../Platform/OpusApi.h" // for OpusApi
 
 #include "Nuclex/Audio/TrackInfo.h"
+#include "Nuclex/Audio/Errors/CorruptedFileError.h"
+#include "Nuclex/Audio/Processing/SampleConverter.h"
 
 #include <stdexcept> // for std::runtime_error
 #include <cassert> // for assert()
@@ -37,6 +39,81 @@ limitations under the License.
 namespace {
 
   // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Decodes audio samples from an opened Opus file and converts them</summary>
+  /// <typeparam name="TTargetSample">
+  ///   Data type in which the target samples will be stored
+  /// </typeparam>
+  /// <param name="opusFile">Opened Opus file samples will be decoded from</param>
+  /// <param name="channelCount">Number of channels in the audio file</param>
+  /// <param name="frameCursor">Current decoding cursor in the Opus file</param>
+  /// <param name="target">Buffer that will receive the converted samples</param>
+  /// <param name="frameCount">Number of frames that will be decoded</param>
+  template<typename TTargetSample>
+  void decodeOpusAndConvert(
+    const std::shared_ptr<::OggOpusFile> &opusFile,
+    std::size_t channelCount,
+    std::uint64_t &frameCursor,
+    TTargetSample *target,
+    std::size_t frameCount
+  ) {
+    std::vector<float> intermediateBuffer;
+    intermediateBuffer.resize(1024 * channelCount);
+
+    while(frameCount >= 1) {
+
+      // Decode into a float buffer which we will later convert into the target type.
+      // We always use the float decoding method, even for int16, because the int16
+      // decoding method in libopusfile does dithering. That's nice for playback,
+      // but for this library's output, we don't want one audio format to dither and
+      // another to not dither.
+      std::size_t decodedFrameCount = Nuclex::Audio::Platform::OpusApi::ReadFloat(
+        opusFile,
+        intermediateBuffer.data(),
+        static_cast<int>(intermediateBuffer.size() * channelCount)
+      );
+      if(decodedFrameCount == 0) {
+        throw Nuclex::Audio::Errors::CorruptedFileError(
+          u8"Unexpected end of audio stream decoding Opus file. File truncated?"
+        );
+      }
+
+      // Decoding was done, the frame cursor inside libopusfile has moved, so update
+      // our frame cursor as well. Even if something goes wrong while handling the samples,
+      // it's important we track where libopusfile currently is so we don't decode
+      // the wrong samples next.
+      frameCursor += decodedFrameCount;
+
+      // Either convert the decoded floats to doubles or quantize them into integers,
+      // depending on the target type. We could just leave it up to SampleConverter::Convert(),
+      // but at this point, we know the correct operation at compile time.
+      if constexpr(std::is_same<TTargetSample, double>::value) {
+        Nuclex::Audio::Processing::SampleConverter::ExtendBits(
+          intermediateBuffer.data(), 32,
+          target, 64,
+          decodedFrameCount * channelCount
+        );
+      } else {
+        Nuclex::Audio::Processing::SampleConverter::Quantize(
+          intermediateBuffer.data(),
+          target, 32,
+          decodedFrameCount * channelCount
+        );
+      }
+
+      // Buffer was filled by the sample conversion method above, update the buffer pointer
+      // to point to where the next batch of samples needs to be written
+      target += decodedFrameCount * channelCount;
+      if(decodedFrameCount > frameCount) {
+        assert((frameCount >= decodedFrameCount) && u8"Read stays within buffer bounds");
+        break;
+      }
+
+      frameCount -= decodedFrameCount;
+
+    } // while frames left to decode
+  }
+
   // ------------------------------------------------------------------------------------------- //
 
 } // anonymous namespace
@@ -181,15 +258,43 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
   // ------------------------------------------------------------------------------------------- //
 
+  void OpusReader::DecodeInterleaved(std::uint8_t *buffer, std::size_t frameCount) {
+    decodeOpusAndConvert(
+      this->opusFile, this->channelCount, this->frameCursor,
+      buffer, frameCount
+    );
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void OpusReader::DecodeInterleaved(std::int16_t *buffer, std::size_t frameCount) {
+    decodeOpusAndConvert(
+      this->opusFile, this->channelCount, this->frameCursor,
+      buffer, frameCount
+    );
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void OpusReader::DecodeInterleaved(std::int32_t *buffer, std::size_t frameCount) {
+    decodeOpusAndConvert(
+      this->opusFile, this->channelCount, this->frameCursor,
+      buffer, frameCount
+    );
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   void OpusReader::DecodeInterleaved(float *buffer, std::size_t frameCount) {
     while(frameCount >= 1) {
-      std::size_t decodedFrameCount = (
-        Platform::OpusApi::ReadFloat(
-          this->opusFile, buffer, static_cast<int>(frameCount * this->channelCount)
-        )
+
+      // Decode the audio samples directly into the caller-provided buffer,
+      // since we have a perfect match of the audio sample format.
+      std::size_t decodedFrameCount = Platform::OpusApi::ReadFloat(
+        this->opusFile, buffer, static_cast<int>(frameCount * this->channelCount)
       );
       if(decodedFrameCount == 0) {
-        throw std::runtime_error(
+        throw Errors::CorruptedFileError(
           u8"Unexpected end of audio stream decoding Opus file. File truncated?"
         );
       }
@@ -201,8 +306,18 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
         assert((frameCount >= decodedFrameCount) && u8"Read stays within buffer bounds");
         break;
       }
+
       frameCount -= decodedFrameCount;
     }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void OpusReader::DecodeInterleaved(double *buffer, std::size_t frameCount) {
+    decodeOpusAndConvert(
+      this->opusFile, this->channelCount, this->frameCursor,
+      buffer, frameCount
+    );
   }
 
   // ------------------------------------------------------------------------------------------- //

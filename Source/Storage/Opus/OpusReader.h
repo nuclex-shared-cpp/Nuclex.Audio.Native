@@ -100,7 +100,27 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     /// <summary>Decodes sample from the audio file in interleaved format</summary>
     /// <param name="buffer">Buffer into which the samples will be written</param>
     /// <param name="frameCount">Number of frame that should be decoded</param>
+    public: void DecodeInterleaved(std::uint8_t *buffer, std::size_t frameCount);
+
+    /// <summary>Decodes sample from the audio file in interleaved format</summary>
+    /// <param name="buffer">Buffer into which the samples will be written</param>
+    /// <param name="frameCount">Number of frame that should be decoded</param>
+    public: void DecodeInterleaved(std::int16_t *buffer, std::size_t frameCount);
+
+    /// <summary>Decodes sample from the audio file in interleaved format</summary>
+    /// <param name="buffer">Buffer into which the samples will be written</param>
+    /// <param name="frameCount">Number of frame that should be decoded</param>
+    public: void DecodeInterleaved(std::int32_t *buffer, std::size_t frameCount);
+
+    /// <summary>Decodes sample from the audio file in interleaved format</summary>
+    /// <param name="buffer">Buffer into which the samples will be written</param>
+    /// <param name="frameCount">Number of frame that should be decoded</param>
     public: void DecodeInterleaved(float *buffer, std::size_t frameCount);
+
+    /// <summary>Decodes sample from the audio file in interleaved format</summary>
+    /// <param name="buffer">Buffer into which the samples will be written</param>
+    /// <param name="frameCount">Number of frame that should be decoded</param>
+    public: void DecodeInterleaved(double *buffer, std::size_t frameCount);
 
     /// <summary>File the reader is accessing</summary>
     private: std::shared_ptr<const VirtualFile> file;

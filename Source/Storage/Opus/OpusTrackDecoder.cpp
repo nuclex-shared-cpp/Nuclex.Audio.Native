@@ -103,10 +103,20 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   void OpusTrackDecoder::DecodeInterleavedUint8(
     std::uint8_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
-    (void)buffer;
-    (void)startFrame;
-    (void)frameCount;
-    throw std::runtime_error(u8"Not implemented yet");
+    verifyDecodeRange(startFrame, frameCount);
+
+    {
+      std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
+
+      // If the caller requests to read from a location that is not where the file cursor
+      // is currently at, we need to seek to that position first.
+      if(this->reader.GetFrameCursorPosition() != startFrame) {
+        this->reader.Seek(startFrame);
+      }
+
+      this->reader.DecodeInterleaved(buffer, frameCount);
+
+    } // mutex lock scope
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -114,10 +124,20 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   void OpusTrackDecoder::DecodeInterleavedInt16(
     std::int16_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
-    (void)buffer;
-    (void)startFrame;
-    (void)frameCount;
-    throw std::runtime_error(u8"Not implemented yet");
+    verifyDecodeRange(startFrame, frameCount);
+
+    {
+      std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
+
+      // If the caller requests to read from a location that is not where the file cursor
+      // is currently at, we need to seek to that position first.
+      if(this->reader.GetFrameCursorPosition() != startFrame) {
+        this->reader.Seek(startFrame);
+      }
+
+      this->reader.DecodeInterleaved(buffer, frameCount);
+
+    } // mutex lock scope
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -125,10 +145,20 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   void OpusTrackDecoder::DecodeInterleavedInt32(
     std::int32_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
-    (void)buffer;
-    (void)startFrame;
-    (void)frameCount;
-    throw std::runtime_error(u8"Not implemented yet");
+    verifyDecodeRange(startFrame, frameCount);
+
+    {
+      std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
+
+      // If the caller requests to read from a location that is not where the file cursor
+      // is currently at, we need to seek to that position first.
+      if(this->reader.GetFrameCursorPosition() != startFrame) {
+        this->reader.Seek(startFrame);
+      }
+
+      this->reader.DecodeInterleaved(buffer, frameCount);
+
+    } // mutex lock scope
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -157,10 +187,20 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   void OpusTrackDecoder::DecodeInterleavedDouble(
     double *buffer, const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
-    (void)buffer;
-    (void)startFrame;
-    (void)frameCount;
-    throw std::runtime_error(u8"Not implemented yet");
+    verifyDecodeRange(startFrame, frameCount);
+
+    {
+      std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
+
+      // If the caller requests to read from a location that is not where the file cursor
+      // is currently at, we need to seek to that position first.
+      if(this->reader.GetFrameCursorPosition() != startFrame) {
+        this->reader.Seek(startFrame);
+      }
+
+      this->reader.DecodeInterleaved(buffer, frameCount);
+
+    } // mutex lock scope
   }
 
   // ------------------------------------------------------------------------------------------- //

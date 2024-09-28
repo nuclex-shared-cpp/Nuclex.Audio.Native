@@ -157,14 +157,12 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
     while(frameCount >= 1) {
 
       int streamIndex = -1;
-      std::size_t decodedFrameCount = (
-        Platform::VorbisApi::ReadFloat(
-          this->state->Error,
-          this->vorbisFile,
-          buffer,
-          static_cast<int>(frameCount), // * this->channelCount,
-          streamIndex
-        )
+      std::size_t decodedFrameCount = Platform::VorbisApi::ReadFloat(
+        this->state->Error,
+        this->vorbisFile,
+        buffer,
+        static_cast<int>(frameCount), // * this->channelCount,
+        streamIndex
       );
       if(decodedFrameCount == 0) {
         throw Errors::CorruptedFileError(
@@ -198,14 +196,12 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
 
       float **samples = nullptr;
       int streamIndex = -1;
-      std::size_t decodedFrameCount = (
-        Platform::VorbisApi::ReadFloat(
-          this->state->Error,
-          this->vorbisFile,
-          samples,
-          frameCount, // * this->channelCount,
-          streamIndex
-        )
+      std::size_t decodedFrameCount = Platform::VorbisApi::ReadFloat(
+        this->state->Error,
+        this->vorbisFile,
+        samples,
+        static_cast<int>(frameCount), // * this->channelCount,
+        streamIndex
       );
       if(decodedFrameCount == 0) {
         throw Errors::CorruptedFileError(

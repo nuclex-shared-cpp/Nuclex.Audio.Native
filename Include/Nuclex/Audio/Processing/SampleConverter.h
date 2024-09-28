@@ -252,7 +252,9 @@ namespace Nuclex { namespace Audio { namespace Processing {
           sampleCount -= 4;
         }
         while(0 < sampleCount) {
-          target[0] = static_cast<TTargetSample>(Rounding::NearestInt32(source[0] * limit)) << shift;
+          target[0] = static_cast<TTargetSample>(
+            Rounding::NearestInt32(source[0] * limit)
+          ) << shift;
           ++source;
           ++target;
           --sampleCount;
@@ -278,7 +280,9 @@ namespace Nuclex { namespace Audio { namespace Processing {
           sampleCount -= 4;
         }
         while(0 < sampleCount) {
-          target[0] = static_cast<TTargetSample>(Rounding::NearestInt32(source[0] * limit)) << shift;
+          target[0] = static_cast<TTargetSample>(
+            Rounding::NearestInt32(source[0] * limit)
+          ) << shift;
           ++source;
           ++target;
           --sampleCount;
