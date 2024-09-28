@@ -264,9 +264,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
       // --------------------------------------
       //
       } else {
-        double limit = static_cast<double>(
-          (1 << (targetBitCount - 1)) - 1
-        );
+        double limit = static_cast<double>((1 << (targetBitCount - 1)) - 1);
         std::size_t shift = sizeof(TTargetSample) * 8 - targetBitCount;
         while(3 < sampleCount) {
           std::int32_t scaled[4];

@@ -84,6 +84,40 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
   // ------------------------------------------------------------------------------------------- //
 
+  TEST(OpusTrackDecoderTest, DecodesToInterleavedInt16) {
+    std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
+      GetResourcesDirectory() + u8"opus-stereo-v152.opus"
+    );
+
+    OpusTrackDecoder decoder(file);
+
+    std::size_t frameCount = decoder.CountFrames();
+    std::size_t channelCount = decoder.CountChannels();
+
+    std::vector<std::int16_t> samples(frameCount * channelCount);
+    decoder.DecodeInterleaved(samples.data(), 0, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(OpusTrackDecoderTest, DecodesToSeparatedInt16) {
+    std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
+      GetResourcesDirectory() + u8"opus-stereo-v152.opus"
+    );
+
+    OpusTrackDecoder decoder(file);
+
+    std::size_t frameCount = decoder.CountFrames();
+    std::size_t channelCount = decoder.CountChannels();
+
+    std::vector<std::int16_t> leftSamples(frameCount);
+    std::vector<std::int16_t> rightSamples(frameCount);
+    std::int16_t *samples[] = { leftSamples.data(), rightSamples.data() };
+    decoder.DecodeSeparated(samples, 0, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   TEST(OpusTrackDecoderTest, DecodesFloatingPoint) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
       GetResourcesDirectory() + u8"opus-stereo-v152.opus"
@@ -95,7 +129,6 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     std::size_t channelCount = decoder.CountChannels();
 
     std::vector<float> samples(frameCount * channelCount);
-    std::fill_n(samples.data(), samples.size(), 12345.6789f);
     decoder.DecodeInterleaved(samples.data(), 0, frameCount);
 
     // TODO: The sine wave detector is not robust enough to correctly detect

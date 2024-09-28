@@ -97,30 +97,55 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     /// <param name="frameIndex">Index of the frame that should be decoded next</param>
     public: void Seek(std::uint64_t frameIndex);
 
-    /// <summary>Decodes sample from the audio file in interleaved format</summary>
+    /// <summary>Decodes samples from the audio file in interleaved format</summary>
     /// <param name="buffer">Buffer into which the samples will be written</param>
     /// <param name="frameCount">Number of frame that should be decoded</param>
     public: void DecodeInterleaved(std::uint8_t *buffer, std::size_t frameCount);
 
-    /// <summary>Decodes sample from the audio file in interleaved format</summary>
+    /// <summary>Decodes samples from the audio file in interleaved format</summary>
     /// <param name="buffer">Buffer into which the samples will be written</param>
     /// <param name="frameCount">Number of frame that should be decoded</param>
     public: void DecodeInterleaved(std::int16_t *buffer, std::size_t frameCount);
 
-    /// <summary>Decodes sample from the audio file in interleaved format</summary>
+    /// <summary>Decodes samples from the audio file in interleaved format</summary>
     /// <param name="buffer">Buffer into which the samples will be written</param>
     /// <param name="frameCount">Number of frame that should be decoded</param>
     public: void DecodeInterleaved(std::int32_t *buffer, std::size_t frameCount);
 
-    /// <summary>Decodes sample from the audio file in interleaved format</summary>
+    /// <summary>Decodes samples from the audio file in interleaved format</summary>
     /// <param name="buffer">Buffer into which the samples will be written</param>
     /// <param name="frameCount">Number of frame that should be decoded</param>
     public: void DecodeInterleaved(float *buffer, std::size_t frameCount);
 
-    /// <summary>Decodes sample from the audio file in interleaved format</summary>
+    /// <summary>Decodes samples from the audio file in interleaved format</summary>
     /// <param name="buffer">Buffer into which the samples will be written</param>
     /// <param name="frameCount">Number of frame that should be decoded</param>
     public: void DecodeInterleaved(double *buffer, std::size_t frameCount);
+
+    /// <summary>Decodes samples from the audio file in interleaved format</summary>
+    /// <param name="buffers">Buffers into which the channels will be written</param>
+    /// <param name="frameCount">Number of frame that should be decoded</param>
+    public: void DecodeSeparated(std::uint8_t *buffers[], std::size_t frameCount);
+
+    /// <summary>Decodes samples from the audio file as separate channels</summary>
+    /// <param name="buffers">Buffers into which the channels will be written</param>
+    /// <param name="frameCount">Number of frame that should be decoded</param>
+    public: void DecodeSeparated(std::int16_t *buffers[], std::size_t frameCount);
+
+    /// <summary>Decodes samples from the audio file as separate channels</summary>
+    /// <param name="buffers">Buffers into which the channels will be written</param>
+    /// <param name="frameCount">Number of frame that should be decoded</param>
+    public: void DecodeSeparated(std::int32_t *buffers[], std::size_t frameCount);
+
+    /// <summary>Decodes samples from the audio file as separate channels</summary>
+    /// <param name="buffers">Buffers into which the channels will be written</param>
+    /// <param name="frameCount">Number of frame that should be decoded</param>
+    public: void DecodeSeparated(float *buffers[], std::size_t frameCount);
+
+    /// <summary>Decodes samples from the audio file as separate channels</summary>
+    /// <param name="buffers">Buffers into which the channels will be written</param>
+    /// <param name="frameCount">Number of frame that should be decoded</param>
+    public: void DecodeSeparated(double *buffers[], std::size_t frameCount);
 
     /// <summary>File the reader is accessing</summary>
     private: std::shared_ptr<const VirtualFile> file;
