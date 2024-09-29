@@ -118,6 +118,24 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
   // ------------------------------------------------------------------------------------------- //
 
+  TEST(OpusTrackDecoderTest, DecodesToSeparatedFloat) {
+    std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
+      GetResourcesDirectory() + u8"opus-stereo-v152.opus"
+    );
+
+    OpusTrackDecoder decoder(file);
+
+    std::size_t frameCount = decoder.CountFrames();
+    std::size_t channelCount = decoder.CountChannels();
+
+    std::vector<float> leftSamples(frameCount);
+    std::vector<float> rightSamples(frameCount);
+    float *samples[] = { leftSamples.data(), rightSamples.data() };
+    decoder.DecodeSeparated(samples, 0, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   TEST(OpusTrackDecoderTest, DecodesFloatingPoint) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
       GetResourcesDirectory() + u8"opus-stereo-v152.opus"

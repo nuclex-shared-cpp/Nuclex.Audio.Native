@@ -30,11 +30,10 @@ limitations under the License.
 
 #include "Nuclex/Audio/TrackInfo.h"
 #include "Nuclex/Audio/Errors/CorruptedFileError.h"
-#include "Nuclex/Audio/Processing/SampleConverter.h"
+#include "Nuclex/Audio/Processing/Rounding.h"
 
-#include <stdexcept> // for std::runtime_error
+#include <numeric> // for std::gcd()
 #include <cassert> // for assert()
-#include <cmath>
 
 namespace {
 
@@ -57,24 +56,11 @@ namespace {
     TTargetSample *target,
     std::size_t frameCount
   ) {
-    std::vector<float> intermediateBuffer;
-    intermediateBuffer.resize(1024 * channelCount);
-
-    // If we're decoding to separated channels, we need to copy the channel pointers,
-    // otherwise we'd be modifying the ones the caller gave us. Hopefully, when not
-    // decoding to separate channels, the compiler will optimize the vector away.
-    std::vector<TTargetSample> targets;
-    if constexpr(std::is_pointer<TTargetSample>::value) {
-      targets.reserve(channelCount);
-      for(std::size_t index = 0; index < channelCount; ++index) {
-        targets.push_back(target[index]);
-      }
-    } else {
-      (void)targets; // remains unused for interleaved channel output
-    }
+    std::vector<float> decodeBuffer;
+    decodeBuffer.resize(1020 * channelCount);
 
     // Keep going until we delivered all requested frames
-    while(frameCount >= 1) {
+    while(0 < frameCount) {
 
       // Decode into a float buffer which we will later convert into the target type.
       // We always use the float decoding method, even for int16, because the int16
@@ -83,8 +69,8 @@ namespace {
       // another to not dither.
       std::size_t decodedFrameCount = Nuclex::Audio::Platform::OpusApi::ReadFloat(
         opusFile,
-        intermediateBuffer.data(),
-        static_cast<int>(intermediateBuffer.size() * channelCount)
+        decodeBuffer.data(),
+        static_cast<int>(decodeBuffer.size() * channelCount)
       );
       if(decodedFrameCount == 0) {
         throw Nuclex::Audio::Errors::CorruptedFileError(
@@ -102,42 +88,180 @@ namespace {
       // depending on the target type. We could just leave it up to SampleConverter::Convert(),
       // but at this point, we know the correct operation at compile time.
       std::size_t sampleCount = decodedFrameCount * channelCount;
-      if constexpr(
-        std::is_same<TTargetSample, float>::value ||
-        std::is_same<TTargetSample, double>::value
-      ) {
-        if constexpr(std::is_pointer<TTargetSample>::value) {
-          for(std::size_t sampleIndex = 0; sampleIndex < sampleCount;) {
-            for(std::size_t channelIndex = 0; channelIndex < channelCount; ++channelIndex) {
-              *targets[channelIndex] = static_cast<TTargetSample>(intermediateBuffer[sampleIndex]);
-              ++targets[channelIndex];
-              ++sampleIndex;
-            }
-          }
-        } else {
-          for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
-            target[sampleIndex] = static_cast<double>(intermediateBuffer[sampleIndex]);
-          }
-          target += decodedFrameCount * channelCount;
+      if constexpr(std::is_same<TTargetSample, double>::value) {
+        for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
+          target[sampleIndex] = static_cast<double>(decodeBuffer[sampleIndex]);
         }
-      } else {
-        if constexpr(std::is_pointer<TTargetSample>::value) {
-          throw std::runtime_error(u8"Not implemented yet");
-        } else {
-          Nuclex::Audio::Processing::SampleConverter::Quantize(
-            intermediateBuffer.data(),
-            target, 32,
-            decodedFrameCount * channelCount
+        target += decodedFrameCount * channelCount;
+      } else { // if target type is double / integer
+        typedef typename std::conditional<
+          sizeof(TTargetSample) < 17, float, double
+        >::type LimitType;
+
+        const float *source = decodeBuffer.data();
+        LimitType limit = static_cast<LimitType>(
+          (std::uint32_t(1) << (sizeof(TTargetSample) * 8 - 1)) - 1
+        );
+        while(3 < sampleCount) {
+          std::int32_t scaled[4];
+          Nuclex::Audio::Processing::Rounding::MultiplyToNearestInt32x4(
+            source, limit, scaled
           );
-          target += decodedFrameCount * channelCount;
+          target[0] = static_cast<TTargetSample>(scaled[0]);
+          target[1] = static_cast<TTargetSample>(scaled[1]);
+          target[2] = static_cast<TTargetSample>(scaled[2]);
+          target[3] = static_cast<TTargetSample>(scaled[3]);
+          source += 4;
+          target += 4;
+          sampleCount -= 4;
         }
-      }
+        while(0 < sampleCount) {
+          target[0] = static_cast<TTargetSample>(
+            Nuclex::Audio::Processing::Rounding::NearestInt32(
+              static_cast<LimitType>(source[0]) * limit
+            )
+          );
+          ++source;
+          ++target;
+          --sampleCount;
+        }
+      } // if target type is double / integer
 
       // Buffer was filled by the sample conversion method above, update the buffer pointer
       // to point to where the next batch of samples needs to be written
       if(decodedFrameCount > frameCount) {
         assert((frameCount >= decodedFrameCount) && u8"Read stays within buffer bounds");
         break;
+      }
+
+      frameCount -= decodedFrameCount;
+
+    } // while frames left to decode
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  /// <summary>Decodes audio samples from an opened Opus file and converts them</summary>
+  /// <typeparam name="TTargetSample">
+  ///   Data type in which the target samples will be stored
+  /// </typeparam>
+  /// <param name="opusFile">Opened Opus file samples will be decoded from</param>
+  /// <param name="channelCount">Number of channels in the audio file</param>
+  /// <param name="frameCursor">Current decoding cursor in the Opus file</param>
+  /// <param name="targets">Buffers that will receive the converted channels</param>
+  /// <param name="frameCount">Number of frames that will be decoded</param>
+  template<typename TTargetSample>
+  void decodeOpusConvertAndDeinterleave(
+    const std::shared_ptr<::OggOpusFile> &opusFile,
+    std::size_t channelCount,
+    std::uint64_t &frameCursor,
+    TTargetSample *targets[],
+    std::size_t frameCount
+  ) {
+    constexpr bool targetTypeIsFloat = (
+      std::is_same<TTargetSample, float>::value ||
+      std::is_same<TTargetSample, double>::value
+    );
+
+    // The channel pointers are in a caller-provided array, if we changed them,
+    // we'd trash the caller's own pointers, so we have to take a copy.
+    std::vector<TTargetSample *> mutableTargets(channelCount);
+    for(std::size_t index = 0; index < channelCount; ++index) {
+      mutableTargets[index] = targets[index];
+    }
+
+    // Allocate an intermedia buffer. In this variant, we use std::byte because
+    // we're going to be decoding into it as float, then quantizing to std::int32_t
+    // in-place and we don't want to break any C++ aliasing rules.
+    std::vector<std::byte> decodeBuffer(1020 * channelCount * sizeof(float));
+
+    while(0 < frameCount) {
+
+      // Decode into a float buffer which we will later convert into the target type.
+      // We always use the float decoding method, even for int16, because the int16
+      // decoding method in libopusfile does dithering. That's nice for playback,
+      // but for this library's output, we don't want one audio format to dither and
+      // another to not dither.
+      std::size_t decodedFrameCount = Nuclex::Audio::Platform::OpusApi::ReadFloat(
+        opusFile,
+        reinterpret_cast<float *>(decodeBuffer.data()),
+        static_cast<int>(decodeBuffer.size() * channelCount)
+      );
+      if(decodedFrameCount == 0) {
+        throw Nuclex::Audio::Errors::CorruptedFileError(
+          u8"Unexpected end of audio stream decoding Opus file. File truncated?"
+        );
+      }
+
+      // Decoding was done, the frame cursor inside libopusfile has moved, so update
+      // our frame cursor as well. Even if something goes wrong while handling the samples,
+      // it's important we track where libopusfile currently is so we don't decode
+      // the wrong samples next.
+      frameCursor += decodedFrameCount;
+
+      // If the target type is not a floating point type, we need to quantize the values
+      // to the range of the integer we're decoding into first
+      if constexpr(!targetTypeIsFloat) {
+        typedef typename std::conditional<
+          sizeof(TTargetSample) < 3, float, double
+        >::type LimitType;
+
+        LimitType limit = static_cast<LimitType>(
+          (std::uint32_t(1) << (sizeof(TTargetSample) * 8 - 1)) - 1
+        );
+        const float *decoded = reinterpret_cast<float *>(decodeBuffer.data());
+        std::int32_t *target = reinterpret_cast<std::int32_t *>(decodeBuffer.data());
+
+        std::size_t sampleCount = decodedFrameCount * channelCount;
+        while(3 < sampleCount) {
+          Nuclex::Audio::Processing::Rounding::MultiplyToNearestInt32x4(
+            decoded, limit, target
+          );
+          decoded += 4;
+          target += 4;
+          sampleCount -= 4;
+        }
+        while(0 < sampleCount) {
+          target[0] = static_cast<TTargetSample>(
+            Nuclex::Audio::Processing::Rounding::NearestInt32(
+              static_cast<LimitType>(decoded[0]) * limit
+            )
+          );
+          ++decoded;
+          ++target;
+          --sampleCount;
+        }
+      } // if samples need to be quantized
+
+      // Sort the interleaved samples into each channel buffer. We know that a multiple
+      // of the channel count was decoded (since op_read_float() returns the number of
+      // frames), so we can simply run a nested loop to sort this out.
+      {
+        typedef typename std::conditional<
+          targetTypeIsFloat, float, std::int32_t
+        >::type DecodedType;
+        DecodedType *decoded = reinterpret_cast<DecodedType *>(decodeBuffer.data());
+
+        std::size_t sampleIndex = 0;
+        for(std::size_t frameIndex = 0; frameIndex < decodedFrameCount; ++frameIndex) {
+          for(std::size_t channelIndex = 0; channelIndex < channelCount; ++channelIndex) {
+            if constexpr(std::is_same<TTargetSample, std::uint8_t>::value) {
+              mutableTargets[channelIndex][frameIndex] = static_cast<TTargetSample>(
+                decoded[sampleIndex] + 128
+              );
+            } else {
+              mutableTargets[channelIndex][frameIndex] = static_cast<TTargetSample>(
+                decoded[sampleIndex]
+              );
+            }
+            ++sampleIndex;
+          }
+        }
+      }
+
+      // Advance the target buffer pointers
+      for(std::size_t channelIndex = 0; channelIndex < channelCount; ++channelIndex) {
+        mutableTargets[channelIndex] += decodedFrameCount;
       }
 
       frameCount -= decodedFrameCount;
@@ -354,7 +478,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   // ------------------------------------------------------------------------------------------- //
 
   void OpusReader::DecodeSeparated(std::uint8_t *buffers[], std::size_t frameCount) {
-    decodeOpusAndConvert(
+    decodeOpusConvertAndDeinterleave(
       this->opusFile, this->channelCount, this->frameCursor,
       buffers, frameCount
     );
@@ -363,7 +487,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   // ------------------------------------------------------------------------------------------- //
 
   void OpusReader::DecodeSeparated(std::int16_t *buffers[], std::size_t frameCount) {
-    decodeOpusAndConvert(
+    decodeOpusConvertAndDeinterleave(
       this->opusFile, this->channelCount, this->frameCursor,
       buffers, frameCount
     );
@@ -372,7 +496,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   // ------------------------------------------------------------------------------------------- //
 
   void OpusReader::DecodeSeparated(std::int32_t *buffers[], std::size_t frameCount) {
-    decodeOpusAndConvert(
+    decodeOpusConvertAndDeinterleave(
       this->opusFile, this->channelCount, this->frameCursor,
       buffers, frameCount
     );
@@ -381,7 +505,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   // ------------------------------------------------------------------------------------------- //
 
   void OpusReader::DecodeSeparated(float *buffers[], std::size_t frameCount) {
-    decodeOpusAndConvert(
+    decodeOpusConvertAndDeinterleave(
       this->opusFile, this->channelCount, this->frameCursor,
       buffers, frameCount
     );
@@ -390,7 +514,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   // ------------------------------------------------------------------------------------------- //
 
   void OpusReader::DecodeSeparated(double *buffers[], std::size_t frameCount) {
-    decodeOpusAndConvert(
+    decodeOpusConvertAndDeinterleave(
       this->opusFile, this->channelCount, this->frameCursor,
       buffers, frameCount
     );
