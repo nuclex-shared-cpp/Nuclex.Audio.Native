@@ -34,7 +34,7 @@ namespace {
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>A UUID is just a very long ID value with 128 bits / or 16 bytes</summary>
-  typedef std::array<std::uint8_t, 16> Guid;
+  typedef std::array<std::byte, 16> Guid;
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -49,14 +49,18 @@ namespace {
 
   /// <summary>GUID for the integer PCM audio subformat in WAVEFORMATEXTENSIBLE</summary>
   const Guid WaveFormatSubTypePcm = {
-    0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00,
-    0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71
+    std::byte(0x01), std::byte(0x00), std::byte(0x00), std::byte(0x00),
+    std::byte(0x00), std::byte(0x00), std::byte(0x10), std::byte(0x00),
+    std::byte(0x80), std::byte(0x00), std::byte(0x00), std::byte(0xaa),
+    std::byte(0x00), std::byte(0x38), std::byte(0x9b), std::byte(0x71)
   };
 
   /// <summary>GUID for the float PCM audio subformat in WAVEFORMATEXTENSIBLE</summary>
   const Guid WaveFormatSubTypeIeeeFloat = {
-    0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00,
-    0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71
+    std::byte(0x03), std::byte(0x00), std::byte(0x00), std::byte(0x00),
+    std::byte(0x00), std::byte(0x00), std::byte(0x10), std::byte(0x00),
+    std::byte(0x80), std::byte(0x00), std::byte(0x00), std::byte(0xaa),
+    std::byte(0x00), std::byte(0x38), std::byte(0x9b), std::byte(0x71)
   };
 
   // ------------------------------------------------------------------------------------------- //
@@ -123,7 +127,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
   template<>
   void WaveformParser::ParseFormatChunk<LittleEndianReader>(
-    const std::uint8_t *buffer, std::size_t chunkLength
+    const std::byte *buffer, std::size_t chunkLength
   ) {
     parseFormatChunkInternal<LittleEndianReader>(buffer, chunkLength);
   }
@@ -132,7 +136,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
   template<>
   void WaveformParser::ParseFormatChunk<BigEndianReader>(
-    const std::uint8_t *buffer, std::size_t chunkLength
+    const std::byte *buffer, std::size_t chunkLength
   ) {
     parseFormatChunkInternal<BigEndianReader>(buffer, chunkLength);
   }
@@ -140,14 +144,14 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
   // ------------------------------------------------------------------------------------------- //
 
   template<>
-  void WaveformParser::ParseFactChunk<LittleEndianReader>(const std::uint8_t *buffer) {
+  void WaveformParser::ParseFactChunk<LittleEndianReader>(const std::byte *buffer) {
     parseFactChunkInternal<LittleEndianReader>(buffer);
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   template<>
-  void WaveformParser::ParseFactChunk<BigEndianReader>(const std::uint8_t *buffer) {
+  void WaveformParser::ParseFactChunk<BigEndianReader>(const std::byte *buffer) {
     parseFactChunkInternal<BigEndianReader>(buffer);
   }
 
@@ -242,7 +246,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
   template<typename TReader>
   void WaveformParser::parseFormatChunkInternal(
-    const std::uint8_t *chunk, std::size_t chunkLength
+    const std::byte *chunk, std::size_t chunkLength
   ) {
     if(this->formatChunkParsed) {
       throw Errors::CorruptedFileError(
@@ -384,7 +388,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
   // ------------------------------------------------------------------------------------------- //
 
   template<typename TReader>
-  void WaveformParser::parseFactChunkInternal(const std::uint8_t *chunk) {
+  void WaveformParser::parseFactChunkInternal(const std::byte *chunk) {
     if(this->factChunkParsed) {
       throw Errors::CorruptedFileError(
         u8"Waveform audio file contains more than one 'fact' (extra metadata) chunk"

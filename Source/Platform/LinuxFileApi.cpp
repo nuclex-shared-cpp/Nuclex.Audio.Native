@@ -98,7 +98,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
   // ------------------------------------------------------------------------------------------- //
 
   std::size_t LinuxFileApi::Read(
-    int fileDescriptor, std::uint8_t *buffer, std::size_t count
+    int fileDescriptor, std::byte *buffer, std::size_t count
   ) {
     ssize_t result = ::read(fileDescriptor, buffer, count);
     if(unlikely(result == static_cast<ssize_t>(-1))) {
@@ -114,7 +114,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
   // ------------------------------------------------------------------------------------------- //
 
   std::size_t LinuxFileApi::PositionalRead(
-    int fileDescriptor, std::uint8_t *buffer, std::size_t count, std::uint64_t offset
+    int fileDescriptor, std::byte *buffer, std::size_t count, std::uint64_t offset
   ) {
     ssize_t result = ::pread(fileDescriptor, buffer, count, offset);
     if(unlikely(result == static_cast<ssize_t>(-1))) {
@@ -130,7 +130,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
   // ------------------------------------------------------------------------------------------- //
 
   std::size_t LinuxFileApi::Write(
-    int fileDescriptor, const std::uint8_t *buffer, std::size_t count
+    int fileDescriptor, const std::byte *buffer, std::size_t count
   ) {
     ssize_t result = ::write(fileDescriptor, buffer, count);
     if(unlikely(result == static_cast<ssize_t>(-1))) {
@@ -146,7 +146,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
   // ------------------------------------------------------------------------------------------- //
 
   std::size_t LinuxFileApi::PositionalWrite(
-    int fileDescriptor, const std::uint8_t *buffer, std::size_t count, std::uint64_t offset
+    int fileDescriptor, const std::byte *buffer, std::size_t count, std::uint64_t offset
   ) {
     ssize_t result = ::pwrite(fileDescriptor, buffer, count, offset);
     if(unlikely(result == static_cast<ssize_t>(-1))) {

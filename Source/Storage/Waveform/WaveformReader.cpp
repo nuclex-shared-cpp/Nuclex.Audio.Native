@@ -88,29 +88,29 @@ namespace {
   /// <summary>Checks the FourCC on a file for the codes relevant to Waveform files</summary>
   /// <param name="fileHeader">Array containing the bytes in the file header</param>
   /// <returns>The FourCC found in the file header</returns>
-  FourCC checkFourCC(const std::uint8_t *fileHeader/*[4]*/) {
+  FourCC checkFourCC(const std::byte *fileHeader/*[4]*/) {
     if(
-      (fileHeader[0] == 0x52) &&
-      (fileHeader[1] == 0x49) &&
-      (fileHeader[2] == 0x46)
+      (fileHeader[0] == std::byte(0x52)) &&
+      (fileHeader[1] == std::byte(0x49)) &&
+      (fileHeader[2] == std::byte(0x46))
     ) {
-      if(fileHeader[3] == 0x46) {
+      if(fileHeader[3] == std::byte(0x46)) {
         return FourCC::Riff;
-      } else if(fileHeader[3] == 0x58) {
+      } else if(fileHeader[3] == std::byte(0x58)) {
         return FourCC::Rifx;
       }
     } else if(
-      (fileHeader[0] == 0x46) &&
-      (fileHeader[1] == 0x46) &&
-      (fileHeader[2] == 0x49) &&
-      (fileHeader[3] == 0x52)
+      (fileHeader[0] == std::byte(0x46)) &&
+      (fileHeader[1] == std::byte(0x46)) &&
+      (fileHeader[2] == std::byte(0x49)) &&
+      (fileHeader[3] == std::byte(0x52))
     ) {
       return FourCC::Ffir;
     } else if(
-      (fileHeader[0] == 0x58) &&
-      (fileHeader[1] == 0x46) &&
-      (fileHeader[2] == 0x49) &&
-      (fileHeader[3] == 0x52)
+      (fileHeader[0] == std::byte(0x58)) &&
+      (fileHeader[1] == std::byte(0x46)) &&
+      (fileHeader[2] == std::byte(0x49)) &&
+      (fileHeader[3] == std::byte(0x52))
     ) {
       return FourCC::Xfir;
     }
@@ -158,7 +158,7 @@ namespace {
     Nuclex::Audio::Storage::Waveform::WaveformParser &parser,
     const std::shared_ptr<const Nuclex::Audio::Storage::VirtualFile> &source,
     std::uint64_t fileSize,
-    std::uint8_t *buffer /*[OptimistcInitialByteCount]*/,
+    std::byte *buffer /*[OptimistcInitialByteCount]*/,
     std::size_t readByteCount
   ) {
     using Nuclex::Audio::Storage::Waveform::WaveformParser;
@@ -185,10 +185,10 @@ namespace {
     // other things, so we need to make sure ours says 'WAVE' for Waveform audio.
     {
       bool formatIsWaveform = (
-        (buffer[8] == 0x57) &&  //  1 W | WAVE (format id)
-        (buffer[9] == 0x41) &&  //  2 A |
-        (buffer[10] == 0x56) && //  3 V | RIFF is a chunked format for many purposes,
-        (buffer[11] == 0x45)    //  4 E | we're looking for a RIFF file with audio data.
+        (buffer[8] == std::byte(0x57)) &&  //  1 W | WAVE (format id)
+        (buffer[9] == std::byte(0x41)) &&  //  2 A |
+        (buffer[10] == std::byte(0x56)) && //  3 V | RIFF is a chunked format for many
+        (buffer[11] == std::byte(0x45))    //  4 E | purposes, we're looking for audio data.
       );
       if(!formatIsWaveform) {
         return false;
@@ -294,7 +294,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
           readByteCount = OptimistcInitialByteCount;
         }
 
-        std::vector<std::uint8_t> buffer(readByteCount);
+        std::vector<std::byte> buffer(readByteCount);
         source->ReadAt(0, readByteCount, buffer.data());
 
         // Figure out what kind of file we're dealing with
@@ -369,7 +369,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
         readByteCount = OptimistcInitialByteCount;
       }
 
-      std::vector<std::uint8_t> buffer(readByteCount);
+      std::vector<std::byte> buffer(readByteCount);
       source->ReadAt(0, readByteCount, buffer.data());
 
       // Figure out what kind of file we're dealing with

@@ -88,7 +88,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     //
     //   "Something like 512 bytes will give more reliable results for multiplexed streams."
     //
-    std::uint8_t fileHeader[512];
+    std::byte fileHeader[512];
     std::size_t checkLength = static_cast<std::size_t>(std::min<std::uint64_t>(size, 512));
 
     source.ReadAt(0, checkLength, fileHeader);
@@ -98,7 +98,9 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     // OP_EVERSION (file format version not supported) and OP_EBADHEADER (damaged header).
     //
     // We're only interested in figuring out whether the file can be loaded:
-    int result = ::op_test(nullptr, fileHeader, checkLength);
+    int result = ::op_test(
+      nullptr, reinterpret_cast<unsigned char *>(fileHeader), checkLength
+    );
     return (result == 0);
   }
 
@@ -109,7 +111,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
       return false; // File is too small to be a .opus file
     }
 
-    std::uint8_t fileHeader[48];
+    std::byte fileHeader[48];
     source.ReadAt(0, 48, fileHeader);
 
     // OPUS files, even those produced by the standalone opusenc executable,
@@ -146,23 +148,23 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     );
 
     return (
-      (fileHeader[0] == 0x4f) &&  //  1 O | Oggs (FourCC magic header)
-      (fileHeader[1] == 0x67) &&  //  2 g |
-      (fileHeader[2] == 0x67) &&  //  3 g | All Opus audio files are OGG containers,
-      (fileHeader[3] == 0x53) &&  //  4 s | so the first thing we should see is an OGG FourCC
-      (fileHeader[4] == 0x0) &&   //  - stream_structure version (currently 0 - use range?)
-      (fileHeader[5] == 0x2) &&   //  - 2 = first page of logical bitstream (= file start intact)
+      (fileHeader[0] == std::byte(0x4f)) &&  //  1 O | Oggs (FourCC magic header)
+      (fileHeader[1] == std::byte(0x67)) &&  //  2 g |
+      (fileHeader[2] == std::byte(0x67)) &&  //  3 g | All Opus audio files are OGG containers,
+      (fileHeader[3] == std::byte(0x53)) &&  //  4 s | so the first thing we should see is an OGG FourCC
+      (fileHeader[4] == std::byte(0x0)) &&   //  - stream_structure version (currently 0 - use range?)
+      (fileHeader[5] == std::byte(0x2)) &&   //  - 2 = first page of logical bitstream (= file start intact)
       (encodedSampleCount < 0x691200000ULL) && // total samples encoded at this point, ideally 0
       (pageSequenceNumber == 0) &&
-      (fileHeader[28] == 0x4f) && //  1 O | OpusHead (magic header)
-      (fileHeader[29] == 0x70) && //  2 p |
-      (fileHeader[30] == 0x75) && //  3 u |
-      (fileHeader[31] == 0x73) && //  4 s |
-      (fileHeader[32] == 0x48) && //  5 H |
-      (fileHeader[33] == 0x65) && //  6 e |
-      (fileHeader[34] == 0x61) && //  7 a |
-      (fileHeader[35] == 0x64) && //  8 d |
-      (fileHeader[36] == 0x01)    //  - version
+      (fileHeader[28] == std::byte(0x4f)) && //  1 O | OpusHead (magic header)
+      (fileHeader[29] == std::byte(0x70)) && //  2 p |
+      (fileHeader[30] == std::byte(0x75)) && //  3 u |
+      (fileHeader[31] == std::byte(0x73)) && //  4 s |
+      (fileHeader[32] == std::byte(0x48)) && //  5 H |
+      (fileHeader[33] == std::byte(0x65)) && //  6 e |
+      (fileHeader[34] == std::byte(0x61)) && //  7 a |
+      (fileHeader[35] == std::byte(0x64)) && //  8 d |
+      (fileHeader[36] == std::byte(0x01))    //  - version
     );
   }
 

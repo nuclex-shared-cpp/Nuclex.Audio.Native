@@ -40,7 +40,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   struct StreamAdapterState : public Shared::VirtualFileAdapterState {
 
     /// <summary>Bytes that have been buffered for read operations</summary>
-    public: std::vector<std::uint8_t> BufferedBytes;
+    public: std::vector<std::byte> BufferedBytes;
 
   };
 

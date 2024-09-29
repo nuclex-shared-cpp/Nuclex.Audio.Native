@@ -125,12 +125,16 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5,
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5
       };
-      const ByteArrayAsFile dummyFile(dummyData, sizeof(dummyData));
+      const ByteArrayAsFile dummyFile(
+        reinterpret_cast<const std::byte *>(dummyData), sizeof(dummyData)
+      );
       EXPECT_FALSE(Detection::CheckIfOpusHeaderPresentLite(dummyFile));
     }
 
     {
-      const ByteArrayAsFile opusFile(prettySmallOpusFile, sizeof(prettySmallOpusFile));
+      const ByteArrayAsFile opusFile(
+        reinterpret_cast<const std::byte *>(prettySmallOpusFile), sizeof(prettySmallOpusFile)
+      );
       EXPECT_TRUE(Detection::CheckIfOpusHeaderPresentLite(opusFile));
     }
   }
@@ -143,12 +147,17 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5,
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5
       };
-      const ByteArrayAsFile dummyFile(dummyData, sizeof(dummyData));
+      const ByteArrayAsFile dummyFile(
+        reinterpret_cast<const std::byte *>(dummyData), sizeof(dummyData)
+      );
       EXPECT_FALSE(Detection::CheckIfOpusHeaderPresent(dummyFile));
     }
 
     {
-      const ByteArrayAsFile opusFile(prettySmallOpusFile, sizeof(prettySmallOpusFile));
+      const ByteArrayAsFile opusFile(
+        reinterpret_cast<const std::byte *>(prettySmallOpusFile),
+        sizeof(prettySmallOpusFile)
+      );
       EXPECT_TRUE(Detection::CheckIfOpusHeaderPresent(opusFile));
     }
   }

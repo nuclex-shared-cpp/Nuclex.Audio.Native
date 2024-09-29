@@ -99,7 +99,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
   // ------------------------------------------------------------------------------------------- //
 
   void RealFile::ReadAt(
-    std::uint64_t start, std::size_t byteCount, std::uint8_t *buffer
+    std::uint64_t start, std::size_t byteCount, std::byte *buffer
   ) const {
 #if defined(NUCLEX_AUDIO_LINUX)
     if(start == this->position) { // Prefer read() to support stdin etc.
@@ -193,7 +193,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
   // ------------------------------------------------------------------------------------------- //
 
   void RealFile::WriteAt(
-    std::uint64_t start, std::size_t byteCount, const std::uint8_t *buffer
+    std::uint64_t start, std::size_t byteCount, const std::byte *buffer
   ) {
 #if defined(NUCLEX_AUDIO_LINUX)
     std::size_t writtenByteCount;

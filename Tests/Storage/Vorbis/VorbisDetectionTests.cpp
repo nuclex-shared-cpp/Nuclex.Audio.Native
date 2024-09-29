@@ -416,12 +416,17 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5,
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5
       };
-      const ByteArrayAsFile dummyFile(dummyData, sizeof(dummyData));
+      const ByteArrayAsFile dummyFile(
+        reinterpret_cast<const std::byte *>(dummyData), sizeof(dummyData)
+      );
       EXPECT_FALSE(Detection::CheckIfVorbisHeaderPresentLite(dummyFile));
     }
 
     {
-      const ByteArrayAsFile vorbisFile(prettySmallVorbisFile, sizeof(prettySmallVorbisFile));
+      const ByteArrayAsFile vorbisFile(
+        reinterpret_cast<const std::byte *>(prettySmallVorbisFile),
+        sizeof(prettySmallVorbisFile)
+      );
       EXPECT_TRUE(Detection::CheckIfVorbisHeaderPresentLite(vorbisFile));
     }
   }
@@ -434,12 +439,17 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5,
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5
       };
-      const ByteArrayAsFile dummyFile(dummyData, sizeof(dummyData));
+      const ByteArrayAsFile dummyFile(
+        reinterpret_cast<const std::byte *>(dummyData), sizeof(dummyData)
+      );
       EXPECT_FALSE(Detection::CheckIfVorbisHeaderPresent(dummyFile));
     }
 
     {
-      const ByteArrayAsFile vorbisFile(prettySmallVorbisFile, sizeof(prettySmallVorbisFile));
+      const ByteArrayAsFile vorbisFile(
+        reinterpret_cast<const std::byte *>(prettySmallVorbisFile),
+        sizeof(prettySmallVorbisFile)
+      );
       EXPECT_TRUE(Detection::CheckIfVorbisHeaderPresent(vorbisFile));
     }
   }

@@ -71,7 +71,7 @@ namespace {
     TAdapterState &state = *reinterpret_cast<TAdapterState *>(id);
     assert(state.IsReadOnly && u8"File read is performed on read state");
 
-    std::uint8_t *dataAsBytes = reinterpret_cast<std::uint8_t *>(data);
+    std::byte *dataAsBytes = reinterpret_cast<std::byte *>(data);
 
     // Determine the number of bytes we can read from the buffer. This buffer holds bytes
     // that have been pushed back into the stream by libwavpack (kinda awkward, but we need
@@ -160,7 +160,7 @@ namespace {
       state.File->WriteAt(
         state.FileCursor,
         byteCount,
-        reinterpret_cast<std::uint8_t *>(data)
+        reinterpret_cast<std::byte *>(data)
       );
     }
     catch(const std::exception &) {
@@ -323,7 +323,7 @@ namespace {
       return -1;
     }
 
-    state.BufferedBytes.push_back(static_cast<std::uint8_t>(c));
+    state.BufferedBytes.push_back(static_cast<std::byte>(c));
 
     return c;
   }

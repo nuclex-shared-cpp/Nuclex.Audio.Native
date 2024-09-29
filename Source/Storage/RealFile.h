@@ -61,7 +61,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// <param name="byteCount">Number of bytes that will be read</param>
     /// <parma name="buffer">Buffer into which the data will be read</param>
     public: void ReadAt(
-      std::uint64_t, std::size_t byteCount, std::uint8_t *buffer
+      std::uint64_t, std::size_t byteCount, std::byte *buffer
     ) const override;
 
     /// <summary>Writes data into the file at an absolute position</summary>
@@ -69,7 +69,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// <param name="byteCount">Number of bytes that should be written</param>
     /// <param name="buffer">Buffer holding the data that should be written</param>
     public: void WriteAt(
-      std::uint64_t start, std::size_t byteCount, const std::uint8_t *buffer
+      std::uint64_t start, std::size_t byteCount, const std::byte *buffer
     ) override;
 
 #if defined(NUCLEX_AUDIO_LINUX)

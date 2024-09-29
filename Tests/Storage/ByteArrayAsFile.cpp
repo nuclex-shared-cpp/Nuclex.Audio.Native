@@ -30,7 +30,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
   // ------------------------------------------------------------------------------------------- //
 
   void ByteArrayAsFile::ReadAt(
-    std::uint64_t start, std::size_t byteCount, std::uint8_t *buffer
+    std::uint64_t start, std::size_t byteCount, std::byte *buffer
   ) const {
     assert((start < this->length) && u8"Read starts within file boundaries");
     assert((this->length >= start + byteCount) && u8"Read ends within file boundaries");
@@ -40,7 +40,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
   // ------------------------------------------------------------------------------------------- //
 
   void ByteArrayAsFile::WriteAt(
-    std::uint64_t start, std::size_t byteCount, const std::uint8_t *buffer
+    std::uint64_t start, std::size_t byteCount, const std::byte *buffer
   ) {
     (void)start;
     (void)byteCount;

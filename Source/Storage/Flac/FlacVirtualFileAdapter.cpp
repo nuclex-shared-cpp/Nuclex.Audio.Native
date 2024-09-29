@@ -76,7 +76,7 @@ namespace {
     }
 
     try {
-      state.File->ReadAt(state.FileCursor, byteCount, buffer);
+      state.File->ReadAt(state.FileCursor, byteCount, reinterpret_cast<std::byte *>(buffer));
     }
     catch(const std::exception &) {
       state.Error = std::current_exception();

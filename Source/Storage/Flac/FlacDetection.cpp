@@ -74,7 +74,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
       return false; // File is too small to be a .flac file
     }
 
-    std::uint8_t fileHeader[16];
+    std::byte fileHeader[16];
     source.ReadAt(0, 16, fileHeader);
 
     // FLAC specification:
@@ -125,11 +125,11 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
     );
 
     return (
-      (fileHeader[0] == 0x66) && //  1 fLaC (magic header)
-      (fileHeader[1] == 0x4c) && //  2
-      (fileHeader[2] == 0x61) && //  3
-      (fileHeader[3] == 0x43) && //  4
-      (fileHeader[4] == 0x0) &&  //  1 metadata header (0 = streaminfo block + more follow)
+      (fileHeader[0] == std::byte(0x66)) && //  1 fLaC (magic header)
+      (fileHeader[1] == std::byte(0x4c)) && //  2
+      (fileHeader[2] == std::byte(0x61)) && //  3
+      (fileHeader[3] == std::byte(0x43)) && //  4
+      (fileHeader[4] == std::byte(0x0)) &&  //  1 metadata header (0 = streaminfo block + more follow)
       (                          //  - uint32, contains 24-bit metadata block length
         (metaDataBlockLength >= 34) // metadata block is at least 34 bytes long
       ) &&

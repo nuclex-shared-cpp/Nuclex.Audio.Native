@@ -114,7 +114,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
       return false; // File is too small to be a .wav file
     }
 
-    std::uint8_t fileHeader[24];
+    std::byte fileHeader[24];
     source.ReadAt(0, 24, fileHeader);
 
     // Officially, there's only RIFF (little-endian) and RIFX (big-endian) with identical
@@ -123,27 +123,27 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
     // and rarely, even anticipate "XFIR" files. Whether these exist in the wild, it's
     // a tiny step to support all possible variants, so we do.
     bool isLittleEndian = (
-      (fileHeader[0] == 0x52) &&   //  1 R | RIFF (fourcc; chunk descriptor)
-      (fileHeader[1] == 0x49) &&   //  2 I |
-      (fileHeader[2] == 0x46) &&   //  3 F | This is the standard fourcc for little-endian
-      (fileHeader[3] == 0x46)      //  4 F | Waveform audio files.
+      (fileHeader[0] == std::byte(0x52)) &&   //  1 R | RIFF (FourCC; chunk descriptor)
+      (fileHeader[1] == std::byte(0x49)) &&   //  2 I |
+      (fileHeader[2] == std::byte(0x46)) &&   //  3 F | This is the FourCC for little-endian
+      (fileHeader[3] == std::byte(0x46))      //  4 F | Waveform audio files.
     ) || (
-      (fileHeader[0] == 0x58) &&   //  1 X | XFIR (fourcc; chunk descriptor)
-      (fileHeader[1] == 0x46) &&   //  2 F |
-      (fileHeader[2] == 0x49) &&   //  3 I | This would be an opposite-endian RIFX file
-      (fileHeader[3] == 0x52)      //  4 R | written by a confused audio library :)
+      (fileHeader[0] == std::byte(0x58)) &&   //  1 X | XFIR (FourCC; chunk descriptor)
+      (fileHeader[1] == std::byte(0x46)) &&   //  2 F |
+      (fileHeader[2] == std::byte(0x49)) &&   //  3 I | This would be an opposite-endian RIFX file
+      (fileHeader[3] == std::byte(0x52))      //  4 R | written by a confused audio library :)
     );
 
     bool isBigEndian = (
-      (fileHeader[0] == 0x52) &&   //  1 R | RIFX (fourcc; chunk descriptor)
-      (fileHeader[1] == 0x49) &&   //  2 I |
-      (fileHeader[2] == 0x46) &&   //  3 F | The official fourcc for big-endian
-      (fileHeader[3] == 0x58)      //  4 X | Waveform audio files
+      (fileHeader[0] == std::byte(0x52)) &&   //  1 R | RIFX (FourCC; chunk descriptor)
+      (fileHeader[1] == std::byte(0x49)) &&   //  2 I |
+      (fileHeader[2] == std::byte(0x46)) &&   //  3 F | The official fourcc for big-endian
+      (fileHeader[3] == std::byte(0x58))      //  4 X | Waveform audio files
     ) || (
-      (fileHeader[0] == 0x46) &&   //  1 F | FFIR (fourcc; chunk descriptor)
-      (fileHeader[1] == 0x46) &&   //  2 F |
-      (fileHeader[2] == 0x49) &&   //  3 I | This would be produced by a endian-unaware
-      (fileHeader[3] == 0x52)      //  4 R | library saving a file on a big-endian system.
+      (fileHeader[0] == std::byte(0x46)) &&   //  1 F | FFIR (FourCC; chunk descriptor)
+      (fileHeader[1] == std::byte(0x46)) &&   //  2 F |
+      (fileHeader[2] == std::byte(0x49)) &&   //  3 I | This would be produced by a endian-unaware
+      (fileHeader[3] == std::byte(0x52))      //  4 R | library saving a file on a big-endian system.
     );
 
     std::uint32_t blockSize, firstChunkSize;
@@ -179,13 +179,13 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
     return (
       // (isLittleEndian | isBigEndian) implied -> RIFF header variants checked
-      (blockSize >= 36) &&          // Big enough to be a Waveformat file at all
-      (blockSize < 0x80000000) &&   // Plausible overall file size
-      (fileHeader[8] == 0x57) &&    //  1 W | WAVE (format id)
-      (fileHeader[9] == 0x41) &&    //  2 A |
-      (fileHeader[10] == 0x56) &&   //  3 V | RIFF is a chunked format for many purposes,
-      (fileHeader[11] == 0x45) &&   //  4 E | we're looking for a RIFF file with audio data.
-      (firstChunkSize < 0x80000000) // Plausible size of unknown first chunk
+      (blockSize >= 36) &&                     // Big enough to be a Waveformat file at all
+      (blockSize < 0x80000000) &&              // Plausible overall file size
+      (fileHeader[8] == std::byte(0x57)) &&    //  1 W | WAVE (format id)
+      (fileHeader[9] == std::byte(0x41)) &&    //  2 A |
+      (fileHeader[10] == std::byte(0x56)) &&   //  3 V | RIFF is a chunked format for many
+      (fileHeader[11] == std::byte(0x45)) &&   //  4 E | purposes, we're looking for audio data.
+      (firstChunkSize < 0x80000000)            // Plausible size of unknown first chunk
     );
   }
 

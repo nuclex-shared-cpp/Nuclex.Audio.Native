@@ -113,7 +113,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
       return false; // File is too small to be an Ogg Vorbis file
     }
 
-    std::uint8_t fileHeader[48];
+    std::byte fileHeader[48];
     source.ReadAt(0, 48, fileHeader);
 
     // Ogg containers can contain multiple streams, potentially mixing multiple audio
@@ -151,28 +151,28 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
     );
 
     return (
-      (fileHeader[0] == 0x4f) &&  //  1 O | Oggs (FourCC magic header)
-      (fileHeader[1] == 0x67) &&  //  2 g |
-      (fileHeader[2] == 0x67) &&  //  3 g | All Vorbis audio files are OGG containers,
-      (fileHeader[3] == 0x53) &&  //  4 s | so the first thing we should see is an OGG FourCC
-      (fileHeader[4] == 0x0) &&   //  - stream_structure version (currently 0 - use range?)
+      (fileHeader[0] == std::byte(0x4f)) &&    //  1 O | Oggs (FourCC magic header)
+      (fileHeader[1] == std::byte(0x67)) &&    //  2 g |
+      (fileHeader[2] == std::byte(0x67)) &&    //  3 g | All Vorbis files are OGG containers,
+      (fileHeader[3] == std::byte(0x53)) &&    //  4 s | so first we should see the OGG FourCC.
+      (fileHeader[4] == std::byte(0x0)) &&     //  - stream_structure version (use range?)
       (
-        (fileHeader[5] == 0x2) || //  - 2 = first page of logical bitstream (= file start intact)
-        (fileHeader[5] == 0x6)    //  - 6 = first and also last page of logical bitstream
+        (fileHeader[5] == std::byte(0x2)) ||   //  - 2 = first page of logical bitstream
+        (fileHeader[5] == std::byte(0x6))      //  - 6 = first and last page of logical bitstream
       ) &&
       (encodedSampleCount < 0x691200000ULL) && // total samples encoded at this point, ideally 0
       (pageSequenceNumber == 0) &&
       (
-        (fileHeader[28] == 1) ||  //  - 1 = identification header packet
-        (fileHeader[28] == 3) ||  //  - 3 = comment header packet
-        (fileHeader[28] == 5)     //  - 5 = setup header packet
+        (fileHeader[28] == std::byte(0x01)) || //  - 1 = identification header packet
+        (fileHeader[28] == std::byte(0x03)) || //  - 3 = comment header packet
+        (fileHeader[28] == std::byte(0x05))    //  - 5 = setup header packet
       ) &&
-      (fileHeader[29] == 0x76) && //  1 v | Vorbis (magic header)
-      (fileHeader[30] == 0x6f) && //  2 o |
-      (fileHeader[31] == 0x72) && //  3 r |
-      (fileHeader[32] == 0x62) && //  4 b |
-      (fileHeader[33] == 0x69) && //  5 i |
-      (fileHeader[34] == 0x73)    //  6 s |
+      (fileHeader[29] == std::byte(0x76)) &&   //  1 v | Vorbis (magic header)
+      (fileHeader[30] == std::byte(0x6f)) &&   //  2 o |
+      (fileHeader[31] == std::byte(0x72)) &&   //  3 r | This declares the subframe type
+      (fileHeader[32] == std::byte(0x62)) &&   //  4 b | within the Ogg container
+      (fileHeader[33] == std::byte(0x69)) &&   //  5 i |
+      (fileHeader[34] == std::byte(0x73))      //  6 s |
     );
   }
 

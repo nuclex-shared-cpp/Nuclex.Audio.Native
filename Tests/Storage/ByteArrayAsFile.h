@@ -37,7 +37,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// <summary>Initializes a new memory buffer based file</summary>
     /// <param name="data">Memory buffer the virtual file will access</param>
     /// <param name="length">Size of the memory buffer in bytes</param>
-    public: ByteArrayAsFile(const std::uint8_t *data, std::uint64_t length) :
+    public: ByteArrayAsFile(const std::byte *data, std::uint64_t length) :
       data(data),
       length(length) {}
 
@@ -53,7 +53,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// <param name="byteCount">Number of bytes that will be read</param>
     /// <parma name="buffer">Buffer into which the data will be read</param>
     public: void ReadAt(
-      std::uint64_t start, std::size_t byteCount, std::uint8_t *buffer
+      std::uint64_t start, std::size_t byteCount, std::byte *buffer
     ) const override;
 
     /// <summary>Writes data into the file</summary>
@@ -61,11 +61,11 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// <param name="byteCount">Number of bytes that should be written</param>
     /// <param name="buffer">Buffer holding the data that should be written</param>
     public: void WriteAt(
-      std::uint64_t start, std::size_t byteCount, const std::uint8_t *buffer
+      std::uint64_t start, std::size_t byteCount, const std::byte *buffer
     ) override;
 
     /// <summary>Memory buffer the virtual file implementation is serving data from</summary>
-    private: const std::uint8_t *data;
+    private: const std::byte *data;
     /// <summary>Length of the memory buffer in bytes</summary>
     private: std::uint64_t length;
 

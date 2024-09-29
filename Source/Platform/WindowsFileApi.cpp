@@ -204,7 +204,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
 
   // ------------------------------------------------------------------------------------------- //
 
-  std::size_t WindowsFileApi::Read(HANDLE fileHandle, void *buffer, std::size_t count) {
+  std::size_t WindowsFileApi::Read(HANDLE fileHandle, std::byte *buffer, std::size_t count) {
     DWORD desiredCount = static_cast<DWORD>(count);
     DWORD actualCount = 0;
 
@@ -221,7 +221,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
   // ------------------------------------------------------------------------------------------- //
 
   std::size_t WindowsFileApi::Write(
-    HANDLE fileHandle, const void *buffer, std::size_t count
+    HANDLE fileHandle, const std::byte *buffer, std::size_t count
   ) {
     DWORD desiredCount = static_cast<DWORD>(count);
     DWORD actualCount = 0;

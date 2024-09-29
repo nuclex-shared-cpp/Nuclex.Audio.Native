@@ -24,8 +24,9 @@ limitations under the License.
 
 #if defined(NUCLEX_AUDIO_LINUX)
 
+#include <cstddef> // std::byte and std::size_t
+#include <cstdint> // for std::uint64_t
 #include <string> // std::string
-#include <cstdint> // std::uint8_t and std::size_t
 
 #include <sys/stat.h> // ::fstat() and permission flags
 #include <dirent.h> // struct ::dirent
@@ -72,7 +73,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
     /// <param name="count">Number of bytes that will be read from the file</param>
     /// <returns>The number of bytes that were actually read</returns>
     public: static std::size_t Read(
-      int fileDescriptor, std::uint8_t *buffer, std::size_t count
+      int fileDescriptor, std::byte *buffer, std::size_t count
     );
 
     /// <summary>Reads data from the specified file</summary>
@@ -82,7 +83,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
     /// <param name="offset">Absolute file offset at which the read will take place</param>
     /// <returns>The number of bytes that were actually read</returns>
     public: static std::size_t PositionalRead(
-      int fileDescriptor, std::uint8_t *buffer, std::size_t count, std::uint64_t offset
+      int fileDescriptor, std::byte *buffer, std::size_t count, std::uint64_t offset
     );
 
     /// <summary>Writes data into the specified file</summary>
@@ -91,7 +92,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
     /// <param name="count">Number of bytes that will be written into the file</param>
     /// <returns>The number of bytes that were actually written</returns>
     public: static std::size_t Write(
-      int fileDescriptor, const std::uint8_t *buffer, std::size_t count
+      int fileDescriptor, const std::byte *buffer, std::size_t count
     );
 
     /// <summary>Writes data into the specified file</summary>
@@ -101,7 +102,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
     /// <param name="offset">Absolute file offset at which the write will take place</param>
     /// <returns>The number of bytes that were actually written</returns>
     public: static std::size_t PositionalWrite(
-      int fileDescriptor, const std::uint8_t *buffer, std::size_t count, std::uint64_t offset
+      int fileDescriptor, const std::byte *buffer, std::size_t count, std::uint64_t offset
     );
 
     /// <summary>Determines the size of a file using the Linux API</summary>

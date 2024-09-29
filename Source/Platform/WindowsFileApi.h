@@ -75,14 +75,18 @@ namespace Nuclex { namespace Audio { namespace Platform {
     /// <param name="buffer">Buffer into which the data will be put</param>
     /// <param name="count">Number of bytes that will be read from the file</param>
     /// <returns>The number of bytes that were actually read</returns>
-    public: static std::size_t Read(HANDLE fileHandle, void *buffer, std::size_t count);
+    public: static std::size_t Read(
+      HANDLE fileHandle, std::byte *buffer, std::size_t count
+    );
 
     /// <summary>Writes data into the specified file</summary>
     /// <param name="fileHandle">Handle of the file into which data will be written</param>
     /// <param name="buffer">Buffer containing the data that will be written</param>
     /// <param name="count">Number of bytes that will be written into the file</param>
     /// <returns>The number of bytes that were actually written</returns>
-    public: static std::size_t Write(HANDLE fileHandle, const void *buffer, std::size_t count);
+    public: static std::size_t Write(
+      HANDLE fileHandle, const std::byte *buffer, std::size_t count
+    );
 
     /// <summary>Closes the specified file</summary>
     /// <param name="fileHandle">Handle of the file that will be closed</param>

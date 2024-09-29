@@ -71,7 +71,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
       return false; // File is too small to be a .wav file
     }
 
-    std::uint8_t fileHeader[16];
+    std::byte fileHeader[16];
     source.ReadAt(0, 16, fileHeader);
 
     // The WavPack block headers are entirely in little endian (see WavPack 4 and 5
@@ -97,10 +97,10 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     // always be the "fmt" chunk, but we don't want to be the only library that
     // has trouble with a non-standard Waveformat audio file everyone else can load.
     return (
-      (fileHeader[0] == 0x77) &&  //  1 w | ckID (fourcc; file type id)
-      (fileHeader[1] == 0x76) &&  //  2 v |
-      (fileHeader[2] == 0x70) &&  //  3 p |
-      (fileHeader[3] == 0x6b) &&  //  4 k |
+      (fileHeader[0] == std::byte(0x77)) &&  //  1 w | ckID (fourcc; file type id)
+      (fileHeader[1] == std::byte(0x76)) &&  //  2 v |
+      (fileHeader[2] == std::byte(0x70)) &&  //  3 p |
+      (fileHeader[3] == std::byte(0x6b)) &&  //  4 k |
       (blockSize < 0x01000000) && // Block size: *should* be below 1 MiB, we check for 16 MiB
       (version >= 0x400) &&       // Version: expect at least version 4 for this format
       (version < 0x999)           // Version: allow up to 9.99 before assuming bad file

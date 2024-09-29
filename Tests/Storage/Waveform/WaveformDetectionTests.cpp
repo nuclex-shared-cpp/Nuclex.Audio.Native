@@ -54,13 +54,16 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5,
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5
       };
-      const ByteArrayAsFile dummyFile(dummyData, sizeof(dummyData));
+      const ByteArrayAsFile dummyFile(
+        reinterpret_cast<const std::byte *>(dummyData), sizeof(dummyData)
+      );
       EXPECT_FALSE(Detection::CheckIfWaveformHeaderPresent(dummyFile));
     }
 
     {
       const ByteArrayAsFile waveFile(
-        smallestPossibleWaveFile, sizeof(smallestPossibleWaveFile)
+        reinterpret_cast<const std::byte *>(smallestPossibleWaveFile),
+        sizeof(smallestPossibleWaveFile)
       );
       EXPECT_TRUE(Detection::CheckIfWaveformHeaderPresent(waveFile));
     }

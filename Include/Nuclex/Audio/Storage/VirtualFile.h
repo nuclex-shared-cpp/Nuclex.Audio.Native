@@ -22,9 +22,10 @@ limitations under the License.
 
 #include "Nuclex/Audio/Config.h"
 
+#include <cstddef> // for std::byte
+#include <cstdint> // for std::uint64_t
 #include <string> // for std::string
 #include <memory> // for std::unique_ptr
-#include <cstdint> // for std::uint64_t
 
 namespace Nuclex { namespace Audio { namespace Storage {
 
@@ -117,7 +118,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     ///   attempt to read beyond the end of the file.
     /// </remarks>
     public: virtual void ReadAt(
-      std::uint64_t start, std::size_t byteCount, std::uint8_t *buffer
+      std::uint64_t start, std::size_t byteCount, std::byte *buffer
     ) const = 0;
 
     /// <summary>Writes data into the file</summary>
@@ -130,7 +131,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     ///   at the end of the file, thus increasing the file's size.
     /// </remarks>
     public: virtual void WriteAt(
-      std::uint64_t start, std::size_t byteCount, const std::uint8_t *buffer
+      std::uint64_t start, std::size_t byteCount, const std::byte *buffer
     ) = 0;
 
   };

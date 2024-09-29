@@ -25,6 +25,7 @@ License along with this library
 
 #include <Nuclex/Support/Endian.h> // for Endian::Flip()
 
+#include <cstddef> // for std::byte
 #include <cstdint> // for std::uint8_t, std::uint16_t, std::uint32_t, std::uint64_t
 
 namespace Nuclex { namespace Audio { namespace Storage {
@@ -37,22 +38,22 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// <summary>Reads an unsigned 8-bit integer value from memory</summary>
     /// <param name="data">Pointer from which the integer will be read</param>
     /// <returns>The integer read from memory</returns>
-    public: static std::uint8_t ReadUInt8(const std::uint8_t *data);
+    public: static std::uint8_t ReadUInt8(const std::byte *data);
 
     /// <summary>Reads an unsigned 16-bit integer value in little endian format</summary>
     /// <param name="data">Pointer from which the integer will be read</param>
     /// <returns>The integer read from memory in little endian format</returns>
-    public: static std::uint16_t ReadUInt16(const std::uint8_t *data);
+    public: static std::uint16_t ReadUInt16(const std::byte *data);
 
     /// <summary>Reads an unsigned 32-bit integer value in little endian format</summary>
     /// <param name="data">Pointer from which the integer will be read</param>
     /// <returns>The integer read from memory in little endian format</returns>
-    public: static std::uint32_t ReadUInt32(const std::uint8_t *data);
+    public: static std::uint32_t ReadUInt32(const std::byte *data);
 
     /// <summary>Reads an unsigned 64-bit integer value in little endian format</summary>
     /// <param name="data">Pointer from which the integer will be read</param>
     /// <returns>The integer read from memory in little endian format</returns>
-    public: static std::uint64_t ReadUInt64(const std::uint8_t *data);
+    public: static std::uint64_t ReadUInt64(const std::byte *data);
 
   };
 
@@ -64,28 +65,28 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// <summary>Reads an unsigned 8-bit integer value from memory</summary>
     /// <param name="data">Pointer from which the integer will be read</param>
     /// <returns>The integer read from memory</returns>
-    public: static std::uint8_t ReadUInt8(const std::uint8_t *data);
+    public: static std::uint8_t ReadUInt8(const std::byte *data);
 
     /// <summary>Reads an unsigned 16-bit integer value in big endian format</summary>
     /// <param name="data">Pointer from which the integer will be read</param>
     /// <returns>The integer read from memory in big endian format</returns>
-    public: static std::uint16_t ReadUInt16(const std::uint8_t *data);
+    public: static std::uint16_t ReadUInt16(const std::byte *data);
 
     /// <summary>Reads an unsigned 32-bit integer value in big endian format</summary>
     /// <param name="data">Pointer from which the integer will be read</param>
     /// <returns>The integer read from memory in big endian format</returns>
-    public: static std::uint32_t ReadUInt32(const std::uint8_t *data);
+    public: static std::uint32_t ReadUInt32(const std::byte *data);
 
     /// <summary>Reads an unsigned 64-bit integer value in big endian format</summary>
     /// <param name="data">Pointer from which the integer will be read</param>
     /// <returns>The integer read from memory in big endian format</returns>
-    public: static std::uint64_t ReadUInt64(const std::uint8_t *data);
+    public: static std::uint64_t ReadUInt64(const std::byte *data);
 
   };
 
   // ------------------------------------------------------------------------------------------- //
 
-  inline std::uint8_t LittleEndianReader::ReadUInt8(const std::uint8_t *data) {
+  inline std::uint8_t LittleEndianReader::ReadUInt8(const std::byte *data) {
 #if defined(NUCLEX_AUDIO_LITTLE_ENDIAN)
     return *reinterpret_cast<const std::uint8_t *>(data);
 #else
@@ -95,7 +96,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
   // ------------------------------------------------------------------------------------------- //
 
-  inline std::uint16_t LittleEndianReader::ReadUInt16(const std::uint8_t *data) {
+  inline std::uint16_t LittleEndianReader::ReadUInt16(const std::byte *data) {
 #if defined(NUCLEX_AUDIO_LITTLE_ENDIAN)
     return *reinterpret_cast<const std::uint16_t *>(data);
 #else
@@ -105,7 +106,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
   // ------------------------------------------------------------------------------------------- //
 
-  inline std::uint32_t LittleEndianReader::ReadUInt32(const std::uint8_t *data) {
+  inline std::uint32_t LittleEndianReader::ReadUInt32(const std::byte *data) {
 #if defined(NUCLEX_AUDIO_LITTLE_ENDIAN)
     return *reinterpret_cast<const std::uint32_t *>(data);
 #else
@@ -115,7 +116,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
   // ------------------------------------------------------------------------------------------- //
 
-  inline std::uint64_t LittleEndianReader::ReadUInt64(const std::uint8_t *data) {
+  inline std::uint64_t LittleEndianReader::ReadUInt64(const std::byte *data) {
 #if defined(NUCLEX_AUDIO_LITTLE_ENDIAN)
     return *reinterpret_cast<const std::uint64_t *>(data);
 #else
@@ -125,7 +126,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
 
   // ------------------------------------------------------------------------------------------- //
-  inline std::uint8_t BigEndianReader::ReadUInt8(const std::uint8_t *data) {
+  inline std::uint8_t BigEndianReader::ReadUInt8(const std::byte *data) {
 #if defined(NUCLEX_AUDIO_LITTLE_ENDIAN)
     return Nuclex::Support::Endian::Flip(*reinterpret_cast<const std::uint8_t *>(data));
 #else
@@ -135,7 +136,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
   // ------------------------------------------------------------------------------------------- //
 
-  inline std::uint16_t BigEndianReader::ReadUInt16(const std::uint8_t *data) {
+  inline std::uint16_t BigEndianReader::ReadUInt16(const std::byte *data) {
 #if defined(NUCLEX_AUDIO_LITTLE_ENDIAN)
     return Nuclex::Support::Endian::Flip(*reinterpret_cast<const std::uint16_t *>(data));
 #else
@@ -145,7 +146,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
   // ------------------------------------------------------------------------------------------- //
 
-  inline std::uint32_t BigEndianReader::ReadUInt32(const std::uint8_t *data) {
+  inline std::uint32_t BigEndianReader::ReadUInt32(const std::byte *data) {
 #if defined(NUCLEX_AUDIO_LITTLE_ENDIAN)
     return Nuclex::Support::Endian::Flip(*reinterpret_cast<const std::uint32_t *>(data));
 #else
@@ -155,7 +156,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
   // ------------------------------------------------------------------------------------------- //
 
-  inline std::uint64_t BigEndianReader::ReadUInt64(const std::uint8_t *data) {
+  inline std::uint64_t BigEndianReader::ReadUInt64(const std::byte *data) {
 #if defined(NUCLEX_AUDIO_LITTLE_ENDIAN)
     return Nuclex::Support::Endian::Flip(*reinterpret_cast<const std::uint64_t *>(data));
 #else
