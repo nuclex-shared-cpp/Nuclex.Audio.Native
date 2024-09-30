@@ -418,9 +418,44 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
           std::is_same<TSample, float>::value ||
           std::is_same<TSample, double>::value
         );
-
         std::int32_t *decodedInts = reinterpret_cast<std::int32_t *>(decodeBuffer.data());
         if constexpr(targetTypeIsFloat) {
+          std::size_t shift = this->bytesPerSample * 8 - this->bitsPerSample;
+          if(std::is_same<TSample, double>::value || (this->bitsPerSample >= 17)) {
+            double limit = static_cast<double>(
+              (std::uint32_t(1) << (this->bitsPerSample - 1)) - 1
+            );
+            while(3 < sampleCount) {
+              std::int32_t shifted[4];
+              shifted[0] = decodedInts[0] >> shift;
+              shifted[1] = decodedInts[1] >> shift;
+              shifted[2] = decodedInts[2] >> shift;
+              shifted[3] = decodedInts[3] >> shift;
+              Nuclex::Audio::Processing::Normalization::DivideInt32ToFloatx4(
+                shifted, limit, target
+              );
+              decodedInts += 4;
+              target += 4;
+              sampleCount -= 4;
+            }
+            while(0 < sampleCount) {
+              target[0] = static_cast<TSample>(
+                Nuclex::Audio::Processing::Normalization::DivideInt32ToFloat(
+                  decodedInts[0] >> shift, limit
+                )
+              );
+              ++decodedInts;
+              ++target;
+              --sampleCount;
+            }
+          } else {
+            float limit = static_cast<float>(
+              (std::uint32_t(1) << (sizeof(TSample) * 8 - 1)) - 1
+            );
+            throw std::runtime_error(u8"Not implemented yet");
+
+          }
+
           target += sampleCount;
         } else { // if target type is double / integer
         } // if target type is double / integer
