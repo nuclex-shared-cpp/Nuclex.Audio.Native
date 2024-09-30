@@ -155,7 +155,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// </remarks>
     public: template<typename TSample>
     NUCLEX_AUDIO_API void DecodeInterleaved(
-      TSample *buffer, const std::uint64_t startFrame, const std::size_t frameCount
+      TSample *buffer, std::uint64_t startFrame, std::size_t frameCount
     ) const;
 
     /// <summary>Decodes audio channels, separated, into the target buffers</summary>
@@ -179,7 +179,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// </remarks>
     public: template<typename TSample>
     NUCLEX_AUDIO_API void DecodeSeparated(
-      TSample *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+      TSample *buffers[], std::uint64_t startFrame, std::size_t frameCount
     ) const;
 
 #if defined(CONSIDERED_FEATURES)
@@ -205,7 +205,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
   template<typename TSample>
   NUCLEX_AUDIO_API inline void AudioTrackDecoder::DecodeInterleaved(
-    TSample *buffer, const std::uint64_t startFrame, const std::size_t frameCount
+    TSample *buffer, std::uint64_t startFrame, std::size_t frameCount
   ) const {
     static_assert(
       std::is_same<TSample, std::uint8_t>::value ||
@@ -221,7 +221,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
   template<>
   inline void AudioTrackDecoder::DecodeInterleaved(
-    std::uint8_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
+    std::uint8_t *buffer, std::uint64_t startFrame, std::size_t frameCount
   ) const {
     DecodeInterleavedUint8(buffer, startFrame, frameCount);
   }
@@ -230,7 +230,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
   template<>
   inline void AudioTrackDecoder::DecodeInterleaved(
-    std::int16_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
+    std::int16_t *buffer, std::uint64_t startFrame, std::size_t frameCount
   ) const {
     DecodeInterleavedInt16(buffer, startFrame, frameCount);
   }
@@ -239,7 +239,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
   template<>
   inline void AudioTrackDecoder::DecodeInterleaved(
-    std::int32_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
+    std::int32_t *buffer, std::uint64_t startFrame, std::size_t frameCount
   ) const {
     DecodeInterleavedInt32(buffer, startFrame, frameCount);
   }
@@ -248,7 +248,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
   template<>
   inline void AudioTrackDecoder::DecodeInterleaved(
-    float *buffer, const std::uint64_t startFrame, const std::size_t frameCount
+    float *buffer, std::uint64_t startFrame, std::size_t frameCount
   ) const {
     DecodeInterleavedFloat(buffer, startFrame, frameCount);
   }
@@ -257,7 +257,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
   template<>
   inline void AudioTrackDecoder::DecodeInterleaved(
-    double *buffer, const std::uint64_t startFrame, const std::size_t frameCount
+    double *buffer, std::uint64_t startFrame, std::size_t frameCount
   ) const {
     DecodeInterleavedDouble(buffer, startFrame, frameCount);
   }
@@ -266,7 +266,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
   template<typename TSample>
   NUCLEX_AUDIO_API inline void AudioTrackDecoder::DecodeSeparated(
-    TSample *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+    TSample *buffers[], std::uint64_t startFrame, std::size_t frameCount
   ) const {
     static_assert(
       std::is_same<TSample, std::uint8_t>::value ||
@@ -282,7 +282,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
   template<>
   inline void AudioTrackDecoder::DecodeSeparated(
-    std::uint8_t *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+    std::uint8_t *buffers[], std::uint64_t startFrame, std::size_t frameCount
   ) const {
     DecodeSeparatedUint8(buffers, startFrame, frameCount);
   }
@@ -291,7 +291,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
   template<>
   inline void AudioTrackDecoder::DecodeSeparated(
-    std::int16_t *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+    std::int16_t *buffers[], std::uint64_t startFrame, std::size_t frameCount
   ) const {
     DecodeSeparatedInt16(buffers, startFrame, frameCount);
   }
@@ -300,7 +300,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
   template<>
   inline void AudioTrackDecoder::DecodeSeparated(
-    std::int32_t *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+    std::int32_t *buffers[], std::uint64_t startFrame, std::size_t frameCount
   ) const {
     DecodeSeparatedInt32(buffers, startFrame, frameCount);
   }
@@ -309,7 +309,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
   template<>
   inline void AudioTrackDecoder::DecodeSeparated(
-    float *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+    float *buffers[], std::uint64_t startFrame, std::size_t frameCount
   ) const {
     DecodeSeparatedFloat(buffers, startFrame, frameCount);
   }
@@ -318,7 +318,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
   template<>
   inline void AudioTrackDecoder::DecodeSeparated(
-    double *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+    double *buffers[], std::uint64_t startFrame, std::size_t frameCount
   ) const {
     DecodeSeparatedDouble(buffers, startFrame, frameCount);
   }
