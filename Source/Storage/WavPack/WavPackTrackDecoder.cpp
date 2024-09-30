@@ -96,48 +96,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   void WavPackTrackDecoder::DecodeInterleavedUint8(
     std::uint8_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
-    (void)buffer;
-    (void)startFrame;
-    (void)frameCount;
-    throw std::runtime_error(u8"Not implemented yet");
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  void WavPackTrackDecoder::DecodeInterleavedInt16(
-    std::int16_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
-  ) const {
-    (void)buffer;
-    (void)startFrame;
-    (void)frameCount;
-    throw std::runtime_error(u8"Not implemented yet");
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  void WavPackTrackDecoder::DecodeInterleavedInt32(
-    std::int32_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
-  ) const {
-    (void)buffer;
-    (void)startFrame;
-    (void)frameCount;
-    throw std::runtime_error(u8"Not implemented yet");
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  void WavPackTrackDecoder::DecodeInterleavedFloat(
-    float *buffer, const std::uint64_t startFrame, const std::size_t frameCount
-  ) const {
-    if(std::numeric_limits<std::uint32_t>::max() < frameCount) {
-      throw std::logic_error(u8"Unable to decode this many samples in one call");
-    }
-    if(startFrame >= this->totalFrameCount) {
-      throw std::out_of_range(u8"Start sample index is out of bounds");
-    }
-    if(this->totalFrameCount < startFrame + frameCount) {
-      throw std::out_of_range(u8"Decode sample count goes beyond the end of audio data");
-    }
+    verifyDecodeRange(startFrame, frameCount);
 
     {
       std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
@@ -148,31 +107,72 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
         this->reader.Seek(startFrame);
       }
 
-      // If the audio data is already using floating point, pick the fast path
-      if(this->nativeSampleFormat == AudioSampleFormat::Float_32) {
-        this->reader.DecodeInterleaved(
-          reinterpret_cast<std::int32_t *>(buffer),
-          static_cast<std::uint32_t>(frameCount)
-        );
-      } else {
-        throw std::runtime_error(u8"Formats other than float not implemented yet");
-      }
+      this->reader.DecodeInterleaved(buffer, frameCount);
 
     } // mutex lock scope
+  }
 
-    // TODO: Change SampleConverter or write separate LitteEndianSampleConverter
-    // Or not? Does libwavpack talk about LSB-justified or about memory-left-justified?
+  // ------------------------------------------------------------------------------------------- //
 
-    // WavPack API documentation for GetBitsPerSample():
-    //
-    //     "...That is, values are right justified when unpacked into ints, but are
-    //     left justified in the number of bytes used by the original data.'
-    //
-    // This is currently not the exact behavior of the SampleConverter, which always
-    // fills the most significant bits with the samples, even if bytes remain empty.
-    //
-    // It will bite us with 24-bit audio samples stored in 32-bit integers.
-    //
+  void WavPackTrackDecoder::DecodeInterleavedInt16(
+    std::int16_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
+  ) const {
+    verifyDecodeRange(startFrame, frameCount);
+
+    {
+      std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
+
+      // If the caller requests to read from a location that is not where the file cursor
+      // is currently at, we need to seek to that position first.
+      if(this->reader.GetFrameCursorPosition() != startFrame) {
+        this->reader.Seek(startFrame);
+      }
+
+      this->reader.DecodeInterleaved(buffer, frameCount);
+
+    } // mutex lock scope
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void WavPackTrackDecoder::DecodeInterleavedInt32(
+    std::int32_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
+  ) const {
+    verifyDecodeRange(startFrame, frameCount);
+
+    {
+      std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
+
+      // If the caller requests to read from a location that is not where the file cursor
+      // is currently at, we need to seek to that position first.
+      if(this->reader.GetFrameCursorPosition() != startFrame) {
+        this->reader.Seek(startFrame);
+      }
+
+      this->reader.DecodeInterleaved(buffer, frameCount);
+
+    } // mutex lock scope
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void WavPackTrackDecoder::DecodeInterleavedFloat(
+    float *buffer, const std::uint64_t startFrame, const std::size_t frameCount
+  ) const {
+    verifyDecodeRange(startFrame, frameCount);
+
+    {
+      std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
+
+      // If the caller requests to read from a location that is not where the file cursor
+      // is currently at, we need to seek to that position first.
+      if(this->reader.GetFrameCursorPosition() != startFrame) {
+        this->reader.Seek(startFrame);
+      }
+
+      this->reader.DecodeInterleaved(buffer, frameCount);
+
+    } // mutex lock scope
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -180,12 +180,20 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   void WavPackTrackDecoder::DecodeInterleavedDouble(
     double *buffer, const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
-    std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
+    verifyDecodeRange(startFrame, frameCount);
 
-    (void)buffer;
-    (void)startFrame;
-    (void)frameCount;
-    throw std::runtime_error(u8"Not implemented yet");
+    {
+      std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
+
+      // If the caller requests to read from a location that is not where the file cursor
+      // is currently at, we need to seek to that position first.
+      if(this->reader.GetFrameCursorPosition() != startFrame) {
+        this->reader.Seek(startFrame);
+      }
+
+      this->reader.DecodeInterleaved(buffer, frameCount);
+
+    } // mutex lock scope
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -193,10 +201,20 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   void WavPackTrackDecoder::DecodeSeparatedUint8(
     std::uint8_t *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
-    (void)buffers;
-    (void)startFrame;
-    (void)frameCount;
-    throw std::runtime_error(u8"Not implemented yet");
+    verifyDecodeRange(startFrame, frameCount);
+
+    {
+      std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
+
+      // If the caller requests to read from a location that is not where the file cursor
+      // is currently at, we need to seek to that position first.
+      if(this->reader.GetFrameCursorPosition() != startFrame) {
+        this->reader.Seek(startFrame);
+      }
+
+      this->reader.DecodeSeparated(buffers, frameCount);
+
+    } // mutex lock scope
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -204,10 +222,20 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   void WavPackTrackDecoder::DecodeSeparatedInt16(
     std::int16_t *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
-    (void)buffers;
-    (void)startFrame;
-    (void)frameCount;
-    throw std::runtime_error(u8"Not implemented yet");
+    verifyDecodeRange(startFrame, frameCount);
+
+    {
+      std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
+
+      // If the caller requests to read from a location that is not where the file cursor
+      // is currently at, we need to seek to that position first.
+      if(this->reader.GetFrameCursorPosition() != startFrame) {
+        this->reader.Seek(startFrame);
+      }
+
+      this->reader.DecodeSeparated(buffers, frameCount);
+
+    } // mutex lock scope
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -215,10 +243,20 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   void WavPackTrackDecoder::DecodeSeparatedInt32(
     std::int32_t *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
-    (void)buffers;
-    (void)startFrame;
-    (void)frameCount;
-    throw std::runtime_error(u8"Not implemented yet");
+    verifyDecodeRange(startFrame, frameCount);
+
+    {
+      std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
+
+      // If the caller requests to read from a location that is not where the file cursor
+      // is currently at, we need to seek to that position first.
+      if(this->reader.GetFrameCursorPosition() != startFrame) {
+        this->reader.Seek(startFrame);
+      }
+
+      this->reader.DecodeSeparated(buffers, frameCount);
+
+    } // mutex lock scope
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -226,10 +264,20 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   void WavPackTrackDecoder::DecodeSeparatedFloat(
     float *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
-    (void)buffers;
-    (void)startFrame;
-    (void)frameCount;
-    throw std::runtime_error(u8"Not implemented yet");
+    verifyDecodeRange(startFrame, frameCount);
+
+    {
+      std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
+
+      // If the caller requests to read from a location that is not where the file cursor
+      // is currently at, we need to seek to that position first.
+      if(this->reader.GetFrameCursorPosition() != startFrame) {
+        this->reader.Seek(startFrame);
+      }
+
+      this->reader.DecodeSeparated(buffers, frameCount);
+
+    } // mutex lock scope
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -237,10 +285,36 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   void WavPackTrackDecoder::DecodeSeparatedDouble(
     double *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
-    (void)buffers;
-    (void)startFrame;
-    (void)frameCount;
-    throw std::runtime_error(u8"Not implemented yet");
+    verifyDecodeRange(startFrame, frameCount);
+
+    {
+      std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
+
+      // If the caller requests to read from a location that is not where the file cursor
+      // is currently at, we need to seek to that position first.
+      if(this->reader.GetFrameCursorPosition() != startFrame) {
+        this->reader.Seek(startFrame);
+      }
+
+      this->reader.DecodeSeparated(buffers, frameCount);
+
+    } // mutex lock scope
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void WavPackTrackDecoder::verifyDecodeRange(
+    const std::uint64_t startFrame, const std::size_t frameCount
+  ) const {
+    if(std::numeric_limits<std::uint32_t>::max() < frameCount) {
+      throw std::logic_error(u8"Unable to decode this many samples in one call");
+    }
+    if(startFrame >= this->totalFrameCount) {
+      throw std::out_of_range(u8"Start sample index is out of bounds");
+    }
+    if(this->totalFrameCount < startFrame + frameCount) {
+      throw std::out_of_range(u8"Decode sample count goes beyond the end of audio data");
+    }
   }
 
   // ------------------------------------------------------------------------------------------- //

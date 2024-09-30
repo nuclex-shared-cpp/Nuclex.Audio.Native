@@ -25,10 +25,26 @@ limitations under the License.
 #if defined(NUCLEX_AUDIO_HAVE_WAVPACK)
 
 #include "Nuclex/Audio/TrackInfo.h"
+#include "Nuclex/Audio/Processing/Rounding.h"
+#include "Nuclex/Audio/Processing/Normalization.h"
 
 #include "./WavPackVirtualFileAdapter.h"
 #include "../Shared/ChannelOrderFactory.h"
 #include "../../Platform/WavPackApi.h"
+
+// This is a bit "nasty" - for efficient decoding, we want to decode
+// from block boundaries and by whole blocks. However, that information is
+// not readily available from the public libwavpack API. One option would
+// be to parse the WavPack file's structures ourselves, but that would
+// possibly make it harder to update -- if the format changes, we would
+// read garbage and have to dig down into the format again. By accessing
+// some private WavPack fields, we get a compilation error if those change
+// and the file doesn't have tp be parsed twice.
+#define NUCLEX_AUDIO_ACCESS_WAVPACK_INTERNALS 1
+
+#if defined(NUCLEX_AUDIO_ACCESS_WAVPACK_INTERNALS)
+#include <../src/wavpack_local.h>
+#endif
 
 namespace {
 
@@ -49,11 +65,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     // should be an exact match, but WavPack leaves room to store fewer bits, not only
     // for 24-bit formats. For the sake of robustness, we'll anticipate those, too.
     if((mode & MODE_FLOAT) != 0) {
-      if(bitsPerSample >= 33) {
-        return Nuclex::Audio::AudioSampleFormat::Float_64;
-      } else {
-        return Nuclex::Audio::AudioSampleFormat::Float_32;
-      }
+      return Nuclex::Audio::AudioSampleFormat::Float_32;
     } else {
       if(bitsPerSample >= 25) {
         return Nuclex::Audio::AudioSampleFormat::SignedInteger_32;
@@ -78,6 +90,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     mode(0),
     bitsPerSample(0),
     bytesPerSample(0),
+    channelCount(0),
+    sampleRate(0),
     frameCursor(0) {
 
     // Set up a WavPack stream reader with adapter methods that will perform all reads
@@ -103,6 +117,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     this->mode = Platform::WavPackApi::GetMode(this->context);
     this->bitsPerSample = Platform::WavPackApi::GetBitsPerSample(context);
     this->bytesPerSample = Platform::WavPackApi::GetBytesPerSample(context);
+    this->channelCount = Platform::WavPackApi::GetNumChannels(context);
+    this->sampleRate = Platform::WavPackApi::GetSampleRate(context);
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -158,6 +174,29 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
+  std::size_t WavPackReader::GetCurrentBlockSize() const {
+    #if defined(NUCLEX_AUDIO_ACCESS_WAVPACK_INTERNALS)
+    ::WavpackStream *wavpackStream = this->context->streams[0];
+    if(wavpackStream != nullptr) {
+      std::size_t sampleCountInBlock = static_cast<std::size_t>(
+        wavpackStream->wphdr.block_samples
+      );
+      if((sampleCountInBlock >= 512) && (sampleCountInBlock < 24001)) {
+        return sampleCountInBlock;
+      }
+    }
+    #endif
+
+    // This should be a "reasonable" default for when we don't want to peek into
+    // the internal structures of libwavpack. In my test files, block size seems
+    // to always be half a second, but I have not investigated in-depth if that
+    // always holds up or if that is just a side effect of my test audio files
+    // having neat, easy-to-compress sine waves.
+    return this->sampleRate / 2;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   std::uint64_t WavPackReader::GetFrameCursorPosition() const {
     return this->frameCursor;
   }
@@ -178,26 +217,233 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void WavPackReader::DecodeInterleaved(std::int32_t *buffer, std::size_t frameCount) {
-    if(std::numeric_limits<std::uint32_t>::max() < frameCount) {
-      throw std::invalid_argument(u8"Unable to decode that many samples in a single call");
+  template<> void WavPackReader::DecodeInterleaved<std::uint8_t>(
+    std::uint8_t *target, std::size_t frameCount
+  ) {
+    decodeInterleavedAndConvert(target, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void WavPackReader::DecodeInterleaved<std::int16_t>(
+    std::int16_t *target, std::size_t frameCount
+  ) {
+    decodeInterleavedAndConvert(target, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void WavPackReader::DecodeInterleaved<std::int32_t>(
+    std::int32_t *target, std::size_t frameCount
+  ) {
+    decodeInterleavedAndConvert(target, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void WavPackReader::DecodeInterleaved<float>(
+    float *target, std::size_t frameCount
+  ) {
+    if(mode & MODE_FLOAT) {
+
+      // If the audio file contains floating point data and the caller wants floats,
+      // just let libwavpack unpack it all directly into the caller-provided buffer.
+      // The parameter type is std::int32_t however, so unless the caller allocates
+      // a buffer of char-based types, are we promoting a C++ aliasing violation here?
+      std::uint32_t unpackedFrameCount = Platform::WavPackApi::UnpackSamples(
+        this->state->Error, // exception_ptr that will receive VirtualFile exceptions
+        this->context,
+        reinterpret_cast<std::int32_t *>(target), // C++ strict aliasing violation or not?
+        static_cast<std::uint32_t>(frameCount)
+      );
+
+      this->frameCursor += unpackedFrameCount;
+
+      if(unpackedFrameCount != frameCount) {
+        throw std::runtime_error(
+          u8"libwavpack unpacked a different number of samples than was requested. "
+          u8"Truncated file?"
+        );
+      }
+
+    } else {
+      decodeInterleavedAndConvert(target, frameCount);
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void WavPackReader::DecodeInterleaved<double>(
+    double *target, std::size_t frameCount
+  ) {
+    decodeInterleavedAndConvert(target, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void WavPackReader::DecodeSeparated<std::uint8_t>(
+    std::uint8_t *targets[], std::size_t frameCount
+  ) {
+    decodeInterleavedConvertAndSeparate(targets, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void WavPackReader::DecodeSeparated<std::int16_t>(
+    std::int16_t *targets[], std::size_t frameCount
+  ) {
+    decodeInterleavedConvertAndSeparate(targets, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void WavPackReader::DecodeSeparated<std::int32_t>(
+    std::int32_t *targets[], std::size_t frameCount
+  ) {
+    decodeInterleavedConvertAndSeparate(targets, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void WavPackReader::DecodeSeparated<float>(
+    float *targets[], std::size_t frameCount
+  ) {
+    decodeInterleavedConvertAndSeparate(targets, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void WavPackReader::DecodeSeparated<double>(
+    double *targets[], std::size_t frameCount
+  ) {
+    decodeInterleavedConvertAndSeparate(targets, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<typename TSample>
+  void WavPackReader::decodeInterleavedAndConvert(TSample *target, std::size_t frameCount) {
+
+    // Determine the number of frames to process per batch. 
+    std::size_t frameCountToDecode;
+    {
+#if defined(NUCLEX_AUDIO_ACCESS_WAVPACK_INTERNALS)
+      frameCountToDecode = static_cast<std::size_t>(
+        GET_BLOCK_INDEX(this->context->streams[0]->wphdr) +
+        this->context->streams[0]->wphdr.block_samples -
+        this->context->streams[0]->sample_index
+      );
+#else
+      frameCountToDecode = this->sampleRate / 2;
+#endif
+      while(12000 < frameCountToDecode) {
+        frameCountToDecode >>= 1;
+      }
     }
 
-    std::uint32_t unpackedFrameCount = Platform::WavPackApi::UnpackSamples(
-      this->state->Error, // exception_ptr that will receive VirtualFile exceptions
-      this->context,
-      buffer,
-      static_cast<std::uint32_t>(frameCount)
+    // Allocate an intermedia buffer. In this variant, we use std::byte because
+    // we're going to be decoding into it from libwavpack (either float or std::int32_t),
+    std::vector<std::byte> decodeBuffer(
+      frameCountToDecode * this->channelCount * sizeof(std::int32_t)
     );
 
-    this->frameCursor += unpackedFrameCount;
+    while(0 < frameCount) {
 
-    if(unpackedFrameCount != frameCount) {
-      throw std::runtime_error(
-        u8"libwavpack unpacked a different number of samples than was requested. "
-        u8"Truncated file?"
+      // Decode into our intermediate buffer. This will either be floats or std::int32_ts,
+      // both written into an int32_t buffer. In the case of integers, the number of bits
+      // actually carrying data varies, but for floats, it's always 32 bits.
+      std::uint32_t unpackedFrameCount = Platform::WavPackApi::UnpackSamples(
+        this->state->Error, // exception_ptr that will receive VirtualFile exceptions
+        this->context,
+        reinterpret_cast<std::int32_t *>(decodeBuffer.data()),
+        static_cast<std::uint32_t>(frameCountToDecode)
       );
+
+      // Record the new frame cursor position that the libwavpack decoding context will
+      // now have assumes. This is important so we know when a seek is needed, even if
+      // we should decide "fail" the decode on our side.
+      frameCursor += unpackedFrameCount;
+
+      if(unpackedFrameCount != frameCountToDecode) {
+        throw std::runtime_error(
+          u8"libwavpack unpacked a different number of samples than was requested. "
+          u8"Truncated file?"
+        );
+      }
+
+      // If the WavPack audio file contains floats and this method was called, the caller
+      // wants them as something other than float, so we need to convert.
+      std::size_t sampleCount = unpackedFrameCount * this->channelCount;
+      if(mode & MODE_FLOAT) {
+        float *decodedFloats = reinterpret_cast<float *>(decodeBuffer.data());
+        if constexpr(std::is_same<TSample, double>::value) {
+          for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
+            target[sampleIndex] = static_cast<double>(decodedFloats[sampleIndex]);
+          }
+          target += sampleCount;
+        } else { // if target type is double / integer
+          typedef typename std::conditional<
+            sizeof(TSample) < 17, float, double
+          >::type LimitType;
+
+          LimitType limit = static_cast<LimitType>(
+            (std::uint32_t(1) << (sizeof(TSample) * 8 - 1)) - 1
+          );
+          while(3 < sampleCount) {
+            std::int32_t scaled[4];
+            Nuclex::Audio::Processing::Rounding::MultiplyToNearestInt32x4(
+              decodedFloats, limit, scaled
+            );
+            target[0] = static_cast<TSample>(scaled[0]);
+            target[1] = static_cast<TSample>(scaled[1]);
+            target[2] = static_cast<TSample>(scaled[2]);
+            target[3] = static_cast<TSample>(scaled[3]);
+            decodedFloats += 4;
+            target += 4;
+            sampleCount -= 4;
+          }
+          while(0 < sampleCount) {
+            target[0] = static_cast<TSample>(
+              Nuclex::Audio::Processing::Rounding::NearestInt32(
+                static_cast<LimitType>(decodedFloats[0]) * limit
+              )
+            );
+            ++decodedFloats;
+            ++target;
+            --sampleCount;
+          }
+        } // if target type is double / integer
+      } else { // if decoded data is float / int32
+        constexpr bool targetTypeIsFloat = (
+          std::is_same<TSample, float>::value ||
+          std::is_same<TSample, double>::value
+        );
+
+        std::int32_t *decodedInts = reinterpret_cast<std::int32_t *>(decodeBuffer.data());
+        if constexpr(targetTypeIsFloat) {
+          target += sampleCount;
+        } else { // if target type is double / integer
+        } // if target type is double / integer
+      } // if decoded data is float / in t32
+
+      // Buffer was filled by the sample conversion method above, update the buffer pointer
+      // to point to where the next batch of samples needs to be written
+      if(unpackedFrameCount > frameCount) {
+        assert((frameCount >= unpackedFrameCount) && u8"Read stays within buffer bounds");
+        break;
+      }
+
+      frameCount -= unpackedFrameCount;
+
     }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<typename TSample>
+  void WavPackReader::decodeInterleavedConvertAndSeparate(
+    TSample *targets[], std::size_t frameCount
+  ) {
   }
 
   // ------------------------------------------------------------------------------------------- //

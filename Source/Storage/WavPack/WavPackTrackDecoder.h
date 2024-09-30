@@ -154,6 +154,13 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
       double *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
     ) const override;
 
+    /// <summary>Throws an exception if the decoding range is out of bounds</summary>
+    /// <param name="startFrame">Index of the first frame to decode</param>
+    /// <param name="frameCount">Number of audio frames that will be decoded</param>
+    private: void verifyDecodeRange(
+      const std::uint64_t startFrame, const std::size_t frameCount
+    ) const;
+
     /// <summary>Reader that handles accessing the WavPack file via libwavpack</summary>
     private: mutable WavPackReader reader;
     /// <summary>Order in which audio channels appear</summary>

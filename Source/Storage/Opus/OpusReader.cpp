@@ -286,8 +286,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
   template<typename TSample>
   void OpusReader::decodeInterleavedAndConvert(TSample *target, std::size_t frameCount) {
-    std::vector<float> decodeBuffer;
-    decodeBuffer.resize(1020 * this->channelCount);
+    std::vector<float> decodeBuffer(1020 * this->channelCount);
 
     // Keep going until we delivered all requested frames
     while(0 < frameCount) {
@@ -322,7 +321,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
         for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
           target[sampleIndex] = static_cast<double>(decodeBuffer[sampleIndex]);
         }
-        target += decodedFrameCount * this->channelCount;
+        target += sampleCount;
       } else { // if target type is double / integer
         typedef typename std::conditional<
           sizeof(TSample) < 17, float, double

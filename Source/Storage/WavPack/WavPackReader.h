@@ -112,6 +112,10 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     /// <returns>A list of channels in the order they are interleaved</returns>
     public: std::vector<ChannelPlacement> GetChannelOrder() const;
 
+    /// <summary>Tries to figure out the size of the current block</summary>
+    /// <returns>The size of the current block</returns>
+    public: std::size_t GetCurrentBlockSize() const;
+
     /// <summary>Retrieves the current position of the frame cursor</summary>
     /// <returns>The frame cursor, pointing at the frame that will be decoded next</returns>
     public: std::uint64_t GetFrameCursorPosition() const;
@@ -120,10 +124,43 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     /// <param name="frameIndex">Index of the frame that should be decoded next</param>
     public: void Seek(std::uint64_t frameIndex);
 
-    /// <summary>Decodes sample from the audio file in interleaved format</summary>
-    /// <param name="buffer">Buffer into which the samples will be written</param>
+    /// <summary>Decodes samples from the audio file in interleaved format</summary>
+    /// <typename name="TSample">Type of samples that will be decoded</typename>
+    /// <param name="target">Buffer into which the samples will be written</param>
     /// <param name="frameCount">Number of frame that should be decoded</param>
-    public: void DecodeInterleaved(std::int32_t *buffer, std::size_t frameCount);
+    public: template<typename TSample>
+    void DecodeInterleaved(TSample *target, std::size_t frameCount);
+
+    /// <summary>Decodes samples from the audio file in interleaved format</summary>
+    /// <param name="targets">Buffers into which the channels will be written</param>
+    /// <param name="frameCount">Number of frame that should be decoded</param>
+    public: template<typename TSample>
+    void DecodeSeparated(TSample *targets[], std::size_t frameCount);
+
+    /// <summary>Decodes samples from the audio file and converts them</summary>
+    /// <typename name="TSample">Type of samples to convert to</typename>
+    /// <param name="target">Buffer into which the samples will be written</param>
+    /// <param name="frameCount">Number of frame that should be decoded</param>
+    /// <remarks>
+    ///   This method is invoked if a target format other than float is requested,
+    ///   performing an SSE2 SIMD-enhanced conversion of the samples to the requested
+    ///   target type at the decoded block level.
+    /// </remarks>
+    private: template<typename TSample>
+    void decodeInterleavedAndConvert(TSample *target, std::size_t frameCount);
+
+    /// <summary>Decodes samples from the audio file and converts them</summary>
+    /// <typename name="TSample">Type of samples to convert to</typename>
+    /// <param name="targets">Buffers into which the channels will be written</param>
+    /// <param name="frameCount">Number of frame that should be decoded</param>
+    /// <remarks>
+    ///   This method is invoked if the channels need to be separated. Since libopusfile
+    ///   always delivers samples in interleaved format, each sample needs an additional
+    ///   copy this way. If a sample format other than float is the target, it will also
+    ///   performing an SSE2 SIMD-enhanced conversion at the decoded block level.
+    /// </remarks>
+    private: template<typename TSample>
+    void decodeInterleavedConvertAndSeparate(TSample *targets[], std::size_t frameCount);
 
     /// <summary>File the reader is accessing</summary>
     private: std::shared_ptr<const VirtualFile> file;
@@ -155,6 +192,10 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     private: int bitsPerSample;
     /// <summary>Number of bytes per sample</summary>
     private: int bytesPerSample;
+    /// <summary>Number of channels in the audio file</summary>
+    private: std::size_t channelCount;
+    /// <summary>Number of samples per second (per channel)</summary>
+    private: std::size_t sampleRate;
     /// <summary>Index of the frame that will be decoded next</summary>
     private: std::uint64_t frameCursor;
 
