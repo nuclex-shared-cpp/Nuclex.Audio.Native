@@ -146,7 +146,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     ///   performing an SSE2 SIMD-enhanced conversion of the samples to the requested
     ///   target type at the decoded block level.
     /// </remarks>
-    private: template<typename TSample>
+    private: template<typename TSample, bool FromFloat = false, bool BitsPerSampleOver16 = false>
     void decodeInterleavedAndConvert(TSample *target, std::size_t frameCount);
 
     /// <summary>Decodes samples from the audio file and converts them</summary>
