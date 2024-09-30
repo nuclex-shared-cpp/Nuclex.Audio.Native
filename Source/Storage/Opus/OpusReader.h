@@ -98,54 +98,42 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     public: void Seek(std::uint64_t frameIndex);
 
     /// <summary>Decodes samples from the audio file in interleaved format</summary>
-    /// <param name="buffer">Buffer into which the samples will be written</param>
+    /// <typename name="TSample">Type of samples that will be decoded</typename>
+    /// <param name="target">Buffer into which the samples will be written</param>
     /// <param name="frameCount">Number of frame that should be decoded</param>
-    public: void DecodeInterleaved(std::uint8_t *buffer, std::size_t frameCount);
+    public: template<typename TSample>
+    void DecodeInterleaved(TSample *target, std::size_t frameCount);
 
     /// <summary>Decodes samples from the audio file in interleaved format</summary>
-    /// <param name="buffer">Buffer into which the samples will be written</param>
+    /// <param name="targets">Buffers into which the channels will be written</param>
     /// <param name="frameCount">Number of frame that should be decoded</param>
-    public: void DecodeInterleaved(std::int16_t *buffer, std::size_t frameCount);
+    public: template<typename TSample>
+    void DecodeSeparated(TSample *targets[], std::size_t frameCount);
 
-    /// <summary>Decodes samples from the audio file in interleaved format</summary>
-    /// <param name="buffer">Buffer into which the samples will be written</param>
+    /// <summary>Decodes samples from the audio file and converts them</summary>
+    /// <typename name="TSample">Type of samples to convert to</typename>
+    /// <param name="target">Buffer into which the samples will be written</param>
     /// <param name="frameCount">Number of frame that should be decoded</param>
-    public: void DecodeInterleaved(std::int32_t *buffer, std::size_t frameCount);
+    /// <remarks>
+    ///   This method is invoked if a target format other than float is requested,
+    ///   performing an SSE2 SIMD-enhanced conversion of the samples to the requested
+    ///   target type at the decoded block level.
+    /// </remarks>
+    private: template<typename TSample>
+    void decodeInterleavedAndConvert(TSample *target, std::size_t frameCount);
 
-    /// <summary>Decodes samples from the audio file in interleaved format</summary>
-    /// <param name="buffer">Buffer into which the samples will be written</param>
+    /// <summary>Decodes samples from the audio file and converts them</summary>
+    /// <typename name="TSample">Type of samples to convert to</typename>
+    /// <param name="targets">Buffers into which the channels will be written</param>
     /// <param name="frameCount">Number of frame that should be decoded</param>
-    public: void DecodeInterleaved(float *buffer, std::size_t frameCount);
-
-    /// <summary>Decodes samples from the audio file in interleaved format</summary>
-    /// <param name="buffer">Buffer into which the samples will be written</param>
-    /// <param name="frameCount">Number of frame that should be decoded</param>
-    public: void DecodeInterleaved(double *buffer, std::size_t frameCount);
-
-    /// <summary>Decodes samples from the audio file in interleaved format</summary>
-    /// <param name="buffers">Buffers into which the channels will be written</param>
-    /// <param name="frameCount">Number of frame that should be decoded</param>
-    public: void DecodeSeparated(std::uint8_t *buffers[], std::size_t frameCount);
-
-    /// <summary>Decodes samples from the audio file as separate channels</summary>
-    /// <param name="buffers">Buffers into which the channels will be written</param>
-    /// <param name="frameCount">Number of frame that should be decoded</param>
-    public: void DecodeSeparated(std::int16_t *buffers[], std::size_t frameCount);
-
-    /// <summary>Decodes samples from the audio file as separate channels</summary>
-    /// <param name="buffers">Buffers into which the channels will be written</param>
-    /// <param name="frameCount">Number of frame that should be decoded</param>
-    public: void DecodeSeparated(std::int32_t *buffers[], std::size_t frameCount);
-
-    /// <summary>Decodes samples from the audio file as separate channels</summary>
-    /// <param name="buffers">Buffers into which the channels will be written</param>
-    /// <param name="frameCount">Number of frame that should be decoded</param>
-    public: void DecodeSeparated(float *buffers[], std::size_t frameCount);
-
-    /// <summary>Decodes samples from the audio file as separate channels</summary>
-    /// <param name="buffers">Buffers into which the channels will be written</param>
-    /// <param name="frameCount">Number of frame that should be decoded</param>
-    public: void DecodeSeparated(double *buffers[], std::size_t frameCount);
+    /// <remarks>
+    ///   This method is invoked if the channels need to be separated. Since libopusfile
+    ///   always delivers samples in interleaved format, each sample needs an additional
+    ///   copy this way. If a sample format other than float is the target, it will also
+    ///   performing an SSE2 SIMD-enhanced conversion at the decoded block level.
+    /// </remarks>
+    private: template<typename TSample>
+    void decodeInterleavedConvertAndSeparate(TSample *targets[], std::size_t frameCount);
 
     /// <summary>File the reader is accessing</summary>
     private: std::shared_ptr<const VirtualFile> file;
@@ -166,6 +154,94 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     private: std::uint64_t frameCursor;
 
   };
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<typename TSample>
+  inline void OpusReader::DecodeInterleaved(TSample *target, std::size_t frameCount) {
+    static_assert(
+      std::is_same<TSample, std::uint8_t>::value ||
+      std::is_same<TSample, std::int16_t>::value ||
+      std::is_same<TSample, std::int32_t>::value ||
+      std::is_same<TSample, float>::value ||
+      std::is_same<TSample, double>::value,
+      u8"Only 8 but unsigned, 16/32 bit signed, float or double samples are supported"
+    );
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void OpusReader::DecodeInterleaved<std::uint8_t>(
+    std::uint8_t *target, std::size_t frameCount
+  );
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void OpusReader::DecodeInterleaved<std::int16_t>(
+    std::int16_t *target, std::size_t frameCount
+  );
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void OpusReader::DecodeInterleaved<std::int32_t>(
+    std::int32_t *target, std::size_t frameCount
+  );
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void OpusReader::DecodeInterleaved<float>(
+    float *target, std::size_t frameCount
+  );
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void OpusReader::DecodeInterleaved<double>(
+    double *target, std::size_t frameCount
+  );
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<typename TSample>
+  inline void OpusReader::DecodeSeparated(TSample *targets[], std::size_t frameCount) {
+    static_assert(
+      std::is_same<TSample, std::uint8_t>::value ||
+      std::is_same<TSample, std::int16_t>::value ||
+      std::is_same<TSample, std::int32_t>::value ||
+      std::is_same<TSample, float>::value ||
+      std::is_same<TSample, double>::value,
+      u8"Only 8 but unsigned, 16/32 bit signed, float or double samples are supported"
+    );
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void OpusReader::DecodeSeparated<std::uint8_t>(
+    std::uint8_t *targets[], std::size_t frameCount
+  );
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void OpusReader::DecodeSeparated<std::int16_t>(
+    std::int16_t *targets[], std::size_t frameCount
+  );
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void OpusReader::DecodeSeparated<std::int32_t>(
+    std::int32_t *targets[], std::size_t frameCount
+  );
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void OpusReader::DecodeSeparated<float>(
+    float *targets[], std::size_t frameCount
+  );
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void OpusReader::DecodeSeparated<double>(
+    double *targets[], std::size_t frameCount
+  );
 
   // ------------------------------------------------------------------------------------------- //
 
