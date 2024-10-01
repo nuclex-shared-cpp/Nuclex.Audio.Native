@@ -30,7 +30,7 @@ limitations under the License.
 
 #include "Nuclex/Audio/TrackInfo.h"
 #include "Nuclex/Audio/Errors/CorruptedFileError.h"
-#include "Nuclex/Audio/Processing/Rounding.h"
+#include "Nuclex/Audio/Processing/Quantization.h"
 
 #include <numeric> // for std::gcd()
 #include <cassert> // for assert()
@@ -333,7 +333,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
         );
         while(3 < sampleCount) {
           std::int32_t scaled[4];
-          Nuclex::Audio::Processing::Rounding::MultiplyToNearestInt32x4(
+          Nuclex::Audio::Processing::Quantization::MultiplyToNearestInt32x4(
             source, limit, scaled
           );
           target[0] = static_cast<TSample>(scaled[0]);
@@ -346,7 +346,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
         }
         while(0 < sampleCount) {
           target[0] = static_cast<TSample>(
-            Nuclex::Audio::Processing::Rounding::NearestInt32(
+            Nuclex::Audio::Processing::Quantization::NearestInt32(
               static_cast<LimitType>(source[0]) * limit
             )
           );
@@ -430,7 +430,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
         std::size_t sampleCount = decodedFrameCount * this->channelCount;
         while(3 < sampleCount) {
-          Nuclex::Audio::Processing::Rounding::MultiplyToNearestInt32x4(
+          Nuclex::Audio::Processing::Quantization::MultiplyToNearestInt32x4(
             decoded, limit, target
           );
           decoded += 4;
@@ -439,7 +439,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
         }
         while(0 < sampleCount) {
           target[0] = static_cast<TSample>(
-            Nuclex::Audio::Processing::Rounding::NearestInt32(
+            Nuclex::Audio::Processing::Quantization::NearestInt32(
               static_cast<LimitType>(decoded[0]) * limit
             )
           );
