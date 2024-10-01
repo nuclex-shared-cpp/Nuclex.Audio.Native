@@ -23,7 +23,7 @@ limitations under the License.
 #include "Nuclex/Audio/Config.h"
 
 #include "Nuclex/Audio/Processing/Rounding.h"
-#include "Nuclex/Audio/Processing/Normalization.h"
+#include "Nuclex/Audio/Processing/Reconstruction.h"
 
 #include <cstddef> // for stdf::size_t
 #include <stdexcept> // for std::runtime_error
@@ -345,13 +345,13 @@ namespace Nuclex { namespace Audio { namespace Processing {
           shifted[1] = source[1] >> shift;
           shifted[2] = source[2] >> shift;
           shifted[3] = source[3] >> shift;
-          Normalization::DivideInt32ToFloatx4(shifted, limit, target);
+          Reconstruction::DivideInt32ToFloatx4(shifted, limit, target);
           source += 4;
           target += 4;
           sampleCount -= 4;
         }
         while(0 < sampleCount) {
-          target[0] = Normalization::DivideInt32ToFloat(source[0] >> shift, limit);
+          target[0] = Reconstruction::DivideInt32ToFloat(source[0] >> shift, limit);
           ++source;
           ++target;
           --sampleCount;
@@ -371,14 +371,14 @@ namespace Nuclex { namespace Audio { namespace Processing {
           shifted[1] = source[1] >> shift;
           shifted[2] = source[2] >> shift;
           shifted[3] = source[3] >> shift;
-          Normalization::DivideInt32ToFloatx4(shifted, limit, target);
+          Reconstruction::DivideInt32ToFloatx4(shifted, limit, target);
           source += 4;
           target += 4;
           sampleCount -= 4;
         }
         while(0 < sampleCount) {
           target[0] = static_cast<TFloatTargetSample>(
-            Normalization::DivideInt32ToFloat(source[0] >> shift, limit)
+            Reconstruction::DivideInt32ToFloat(source[0] >> shift, limit)
           );
           ++source;
           ++target;

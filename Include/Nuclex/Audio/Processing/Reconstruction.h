@@ -17,8 +17,8 @@ limitations under the License.
 */
 #pragma endregion // Apache License 2.0
 
-#ifndef NUCLEX_AUDIO_PROCESSING_NORMALIZATION_H
-#define NUCLEX_AUDIO_PROCESSING_NORMALIZATION_H
+#ifndef NUCLEX_AUDIO_PROCESSING_RECONSTRUCTION_H
+#define NUCLEX_AUDIO_PROCESSING_RECONSTRUCTION_H
 
 #include "Nuclex/Audio/Config.h"
 
@@ -55,7 +55,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Helper methods to normalize integers to floating point values</summary>
+  /// <summary>Helper methods to turn quantized integers to floating point values</summary>
   /// <remarks>
   ///   <para>
   ///     This is a relatively tame wrapper for some SIMD instructions with fallbacks.
@@ -63,8 +63,13 @@ namespace Nuclex { namespace Audio { namespace Processing {
   ///     converting them to floating point is also pretty common, so this class offers
   ///     a variant that does that.
   ///   </para>
+  ///   <para>
+  ///     The term &quot;reconstruction&quot; isn't a perfect match for what this class
+  ///     does, but there seems to be no well-established term for "de-quantization" or
+  ///     undoing quantization, so we'll go with it.
+  ///   </para>
   /// </remarks>
-  class Normalization {
+  class Reconstruction {
 
     /// <summary>Converts an integer into a normalized float by dividing it</summary>
     /// <param name="value">Value that will be normalized</param>
@@ -137,7 +142,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  inline float Normalization::DivideInt32ToFloat(
+  inline float Reconstruction::DivideInt32ToFloat(
     const std::int32_t value, float quotient
   ) {
 #if defined(NUCLEX_AUDIO_HAVE_SSE2)
@@ -152,7 +157,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  inline double Normalization::DivideInt32ToFloat(
+  inline double Reconstruction::DivideInt32ToFloat(
     const std::int32_t value, double quotient
   ) {
 #if defined(NUCLEX_AUDIO_HAVE_SSE2)
@@ -167,7 +172,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  inline void Normalization::DivideInt32ToFloatx4(
+  inline void Reconstruction::DivideInt32ToFloatx4(
     const std::int32_t *values/*[4]*/, float quotient, float *results/*[4]*/
   ) {
 #if defined(NUCLEX_AUDIO_HAVE_SSE2)
@@ -191,7 +196,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  inline void Normalization::DivideInt32ToFloatx4(
+  inline void Reconstruction::DivideInt32ToFloatx4(
     const std::int32_t *values/*[4]*/, double quotient, float *results/*[4]*/
   ) {
 #if defined(NUCLEX_AUDIO_HAVE_SSE2)
@@ -228,7 +233,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  inline void Normalization::DivideInt32ToFloatx4(
+  inline void Reconstruction::DivideInt32ToFloatx4(
     const std::int32_t *values/*[4]*/, double quotient, double *results/*[4]*/
   ) {
 #if defined(NUCLEX_AUDIO_HAVE_SSE2)
@@ -261,7 +266,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  inline void Normalization::ShiftAndDivideInt32ToFloatx4(
+  inline void Reconstruction::ShiftAndDivideInt32ToFloatx4(
     const std::int32_t *values/*[4]*/, int shift, float quotient, float *results/*[4]*/
   ) {
 #if defined(NUCLEX_AUDIO_HAVE_SSE2)
@@ -288,7 +293,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  inline void Normalization::ShiftAndDivideInt32ToFloatx4(
+  inline void Reconstruction::ShiftAndDivideInt32ToFloatx4(
     const std::int32_t *values/*[4]*/, int shift, double quotient, float *results/*[4]*/
   ) {
 #if defined(NUCLEX_AUDIO_HAVE_SSE2)
@@ -327,7 +332,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  inline void Normalization::ShiftAndDivideInt32ToFloatx4(
+  inline void Reconstruction::ShiftAndDivideInt32ToFloatx4(
     const std::int32_t *values/*[4]*/, int shift, double quotient, double *results/*[4]*/
   ) {
 #if defined(NUCLEX_AUDIO_HAVE_SSE2)
@@ -364,4 +369,4 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
 }}} // namespace Nuclex::Audio::Processing
 
-#endif // NUCLEX_AUDIO_PROCESSING_NORMALIZATION_H
+#endif // NUCLEX_AUDIO_PROCESSING_RECONSTRUCTION_H

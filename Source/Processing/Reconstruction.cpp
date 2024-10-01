@@ -20,7 +20,7 @@ limitations under the License.
 // If the library is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_AUDIO_SOURCE 1
 
-#include "Nuclex/Audio/Processing/Normalization.h"
+#include "Nuclex/Audio/Processing/Reconstruction.h"
 
 // --------------------------------------------------------------------------------------------- //
 
