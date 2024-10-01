@@ -22,10 +22,10 @@ limitations under the License.
 
 #include "Nuclex/Audio/Config.h"
 
-#include "Nuclex/Audio/Processing/Rounding.h"
+#include "Nuclex/Audio/Processing/Quantization.h"
 #include "Nuclex/Audio/Processing/Reconstruction.h"
 
-#include <cstddef> // for stdf::size_t
+#include <cstddef> // for std::size_t
 #include <stdexcept> // for std::runtime_error
 #include <type_traits> // for std::is_same<>
 #include <vector> // for std::vector
@@ -208,7 +208,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
       midpoint <<= (8 - targetBitCount);
       while(3 < sampleCount) {
         std::int32_t scaled[4];
-        Rounding::MultiplyToNearestInt32x4(source, limit, scaled);
+        Quantization::MultiplyToNearestInt32x4(source, limit, scaled);
         target[0] = static_cast<TTargetSample>(scaled[0] + midpoint);
         target[1] = static_cast<TTargetSample>(scaled[1] + midpoint);
         target[2] = static_cast<TTargetSample>(scaled[2] + midpoint);
@@ -219,7 +219,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
       }
       while(0 < sampleCount) {
         target[0] = static_cast<TTargetSample>(
-          Rounding::NearestInt32(source[0] * limit) + midpoint
+          Quantization::NearestInt32(source[0] * limit) + midpoint
         );
         ++source;
         ++target;
@@ -242,7 +242,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
         std::size_t shift = sizeof(TTargetSample) * 8 - targetBitCount;
         while(3 < sampleCount) {
           std::int32_t scaled[4];
-          Rounding::MultiplyToNearestInt32x4(source, limit, scaled);
+          Quantization::MultiplyToNearestInt32x4(source, limit, scaled);
           target[0] = static_cast<TTargetSample>(scaled[0]) << shift;
           target[1] = static_cast<TTargetSample>(scaled[1]) << shift;
           target[2] = static_cast<TTargetSample>(scaled[2]) << shift;
@@ -253,7 +253,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
         }
         while(0 < sampleCount) {
           target[0] = static_cast<TTargetSample>(
-            Rounding::NearestInt32(source[0] * limit)
+            Quantization::NearestInt32(source[0] * limit)
           ) << shift;
           ++source;
           ++target;
@@ -268,7 +268,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
         std::size_t shift = sizeof(TTargetSample) * 8 - targetBitCount;
         while(3 < sampleCount) {
           std::int32_t scaled[4];
-          Rounding::MultiplyToNearestInt32x4(source, limit, scaled);
+          Quantization::MultiplyToNearestInt32x4(source, limit, scaled);
           target[0] = static_cast<TTargetSample>(scaled[0]) << shift;
           target[1] = static_cast<TTargetSample>(scaled[1]) << shift;
           target[2] = static_cast<TTargetSample>(scaled[2]) << shift;
@@ -279,7 +279,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
         }
         while(0 < sampleCount) {
           target[0] = static_cast<TTargetSample>(
-            Rounding::NearestInt32(source[0] * limit)
+            Quantization::NearestInt32(source[0] * limit)
           ) << shift;
           ++source;
           ++target;

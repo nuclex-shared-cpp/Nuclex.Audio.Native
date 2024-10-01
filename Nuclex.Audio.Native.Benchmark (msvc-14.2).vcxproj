@@ -202,9 +202,10 @@
   <ItemGroup>
     <ClInclude Include="Include\Nuclex\Audio\Errors\CorruptedFileError.h" />
     <ClInclude Include="Include\Nuclex\Audio\Errors\UnsupportedFormatError.h" />
+    <ClInclude Include="Include\Nuclex\Audio\Processing\BitExtension.h" />
     <ClInclude Include="Include\Nuclex\Audio\Processing\DecibelConverter.h" />
-    <ClInclude Include="Include\Nuclex\Audio\Processing\Normalization.h" />
-    <ClInclude Include="Include\Nuclex\Audio\Processing\Rounding.h" />
+    <ClInclude Include="Include\Nuclex\Audio\Processing\Quantization.h" />
+    <ClInclude Include="Include\Nuclex\Audio\Processing\Reconstruction.h" />
     <ClInclude Include="Include\Nuclex\Audio\Processing\SampleConverter.h" />
     <ClInclude Include="Include\Nuclex\Audio\Processing\VolumeDetector.h" />
     <ClInclude Include="Include\Nuclex\Audio\Storage\AudioCodec.h" />
@@ -240,9 +241,10 @@
     <ClInclude Include="Source\Platform\WindowsApi.h" />
     <ClCompile Include="Source\Platform\WindowsFileApi.cpp" />
     <ClInclude Include="Source\Platform\WindowsFileApi.h" />
+    <ClCompile Include="Source\Processing\BitExtension.cpp" />
     <ClCompile Include="Source\Processing\DecibelConverter.cpp" />
-    <ClCompile Include="Source\Processing\Normalization.cpp" />
-    <ClCompile Include="Source\Processing\Rounding.cpp" />
+    <ClCompile Include="Source\Processing\Quantization.cpp" />
+    <ClCompile Include="Source\Processing\Reconstruction.cpp" />
     <ClCompile Include="Source\Processing\SampleConverter.cpp" />
     <ClCompile Include="Source\Processing\VolumeDetector.cpp" />
     <ClCompile Include="Source\Storage\Flac\FlacAudioCodec.cpp" />

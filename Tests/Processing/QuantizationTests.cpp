@@ -20,7 +20,7 @@ limitations under the License.
 // If the library is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_AUDIO_SOURCE 1
 
-#include "Nuclex/Audio//Processing/Rounding.h"
+#include "Nuclex/Audio//Processing/Quantization.h"
 #include "../ExpectRange.h"
 
 #include <gtest/gtest.h>
@@ -36,33 +36,33 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(RoundingTests, CanRoundFloatToNearestInteger) {
-    EXPECT_EQ(Rounding::NearestInt32(-0.2f), 0);
-    EXPECT_EQ(Rounding::NearestInt32(0.2f), 0);
+  TEST(QuantizationTests, CanRoundFloatToNearestInteger) {
+    EXPECT_EQ(Quantization::NearestInt32(-0.2f), 0);
+    EXPECT_EQ(Quantization::NearestInt32(0.2f), 0);
 
-    EXPECT_EQ(Rounding::NearestInt32(-0.6f), -1);
-    EXPECT_EQ(Rounding::NearestInt32(0.6f), 1);
+    EXPECT_EQ(Quantization::NearestInt32(-0.6f), -1);
+    EXPECT_EQ(Quantization::NearestInt32(0.6f), 1);
 
-    EXPECT_EQ(Rounding::NearestInt32(-10000.6f), -10001);
-    EXPECT_EQ(Rounding::NearestInt32(10000.6f), 10001);
+    EXPECT_EQ(Quantization::NearestInt32(-10000.6f), -10001);
+    EXPECT_EQ(Quantization::NearestInt32(10000.6f), 10001);
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(RoundingTests, CanRoundDoubleToNearestInteger) {
-    EXPECT_EQ(Rounding::NearestInt32(-0.2), 0);
-    EXPECT_EQ(Rounding::NearestInt32(0.2), 0);
+  TEST(QuantizationTests, CanRoundDoubleToNearestInteger) {
+    EXPECT_EQ(Quantization::NearestInt32(-0.2), 0);
+    EXPECT_EQ(Quantization::NearestInt32(0.2), 0);
 
-    EXPECT_EQ(Rounding::NearestInt32(-0.6), -1);
-    EXPECT_EQ(Rounding::NearestInt32(0.6), 1);
+    EXPECT_EQ(Quantization::NearestInt32(-0.6), -1);
+    EXPECT_EQ(Quantization::NearestInt32(0.6), 1);
 
-    EXPECT_EQ(Rounding::NearestInt32(-10000.6), -10001);
-    EXPECT_EQ(Rounding::NearestInt32(10000.6), 10001);
+    EXPECT_EQ(Quantization::NearestInt32(-10000.6), -10001);
+    EXPECT_EQ(Quantization::NearestInt32(10000.6), 10001);
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(RoundingTests, CanRoundFourFloatsToNearestIntegers) {
+  TEST(QuantizationTests, CanRoundFourFloatsToNearestIntegers) {
     float values[8] = {
       -12345.25f, -12345.75f, -2.0f, -0.0f,
       12345.25f, 12345.75f, 2.0f, 0.0f,
@@ -70,8 +70,8 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
     std::int32_t integers[8];
 
-    Rounding::NearestInt32x4(values, integers);
-    Rounding::NearestInt32x4(values + 4, integers + 4);
+    Quantization::NearestInt32x4(values, integers);
+    Quantization::NearestInt32x4(values + 4, integers + 4);
 
     EXPECT_EQ(integers[0], -12345);
     EXPECT_EQ(integers[1], -12346);
@@ -85,7 +85,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(RoundingTests, CanRoundFourDoublesToNearestIntegers) {
+  TEST(QuantizationTests, CanRoundFourDoublesToNearestIntegers) {
     double values[8] = {
       -12345.25, -12345.75, -2.0, -0.0,
       12345.25, 12345.75, 2.0, 0.0,
@@ -93,8 +93,8 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
     std::int32_t integers[8];
 
-    Rounding::NearestInt32x4(values, integers);
-    Rounding::NearestInt32x4(values + 4, integers + 4);
+    Quantization::NearestInt32x4(values, integers);
+    Quantization::NearestInt32x4(values + 4, integers + 4);
 
     EXPECT_EQ(integers[0], -12345);
     EXPECT_EQ(integers[1], -12346);
@@ -108,7 +108,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(RoundingTests, CanMultiplyAndRoundFourFloatsToNearestIntegers) {
+  TEST(QuantizationTests, CanMultiplyAndRoundFourFloatsToNearestIntegers) {
     float values[8] = {
       -12345.13f, -12345.33f, -2.0f, -0.0f,
       12345.13f, 12345.33f, 2.0f, 0.0f,
@@ -116,8 +116,8 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
     std::int32_t integers[8];
 
-    Rounding::MultiplyToNearestInt32x4(values, 2.4f, integers);
-    Rounding::MultiplyToNearestInt32x4(values + 4, 2.4f, integers + 4);
+    Quantization::MultiplyToNearestInt32x4(values, 2.4f, integers);
+    Quantization::MultiplyToNearestInt32x4(values + 4, 2.4f, integers + 4);
 
     EXPECT_EQ(integers[0], -29628);
     EXPECT_EQ(integers[1], -29629);
@@ -131,7 +131,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(RoundingTests, CanMultiplyAndRoundFourDoublesToNearestIntegers) {
+  TEST(QuantizationTests, CanMultiplyAndRoundFourDoublesToNearestIntegers) {
     double values[8] = {
       -12345.13, -12345.33, -2.0, -0.0,
       12345.13, 12345.33, 2.0, 0.0,
@@ -139,8 +139,8 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
     std::int32_t integers[8];
 
-    Rounding::MultiplyToNearestInt32x4(values, 2.4, integers);
-    Rounding::MultiplyToNearestInt32x4(values + 4, 2.4, integers + 4);
+    Quantization::MultiplyToNearestInt32x4(values, 2.4, integers);
+    Quantization::MultiplyToNearestInt32x4(values + 4, 2.4, integers + 4);
 
     EXPECT_EQ(integers[0], -29628);
     EXPECT_EQ(integers[1], -29629);
@@ -154,7 +154,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(RoundingTests, CanMultiplyAndRoundFourFloatsAsDoublesToNearestIntegers) {
+  TEST(QuantizationTests, CanMultiplyAndRoundFourFloatsAsDoublesToNearestIntegers) {
     float values[8] = {
       -2123456.2f, -2123456.8f, -2.0f, -0.0f,
       2123456.2f, 2123456.8f, 2.0f, 0.0f,
@@ -166,8 +166,8 @@ namespace Nuclex { namespace Audio { namespace Processing {
     // was peformed on single precision floating point numbers.
     //
     // Practically, it doesn't make any difference...
-    Rounding::MultiplyToNearestInt32x4(values, 21.3, integers);
-    Rounding::MultiplyToNearestInt32x4(values + 4, 21.3, integers + 4);
+    Quantization::MultiplyToNearestInt32x4(values, 21.3, integers);
+    Quantization::MultiplyToNearestInt32x4(values + 4, 21.3, integers + 4);
 
     EXPECT_RANGE(integers[0], -45229618, -45229616);
     EXPECT_RANGE(integers[1], -45229630, -45229628);

@@ -17,8 +17,8 @@ limitations under the License.
 */
 #pragma endregion // Apache License 2.0
 
-#ifndef NUCLEX_AUDIO_PROCESSING_ROUNDING_H
-#define NUCLEX_AUDIO_PROCESSING_ROUNDING_H
+#ifndef NUCLEX_AUDIO_PROCESSING_QUANTIZATION_H
+#define NUCLEX_AUDIO_PROCESSING_QUANTIZATION_H
 
 #include "Nuclex/Audio/Config.h"
 
@@ -55,7 +55,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Helper methods to round floating point values to integers</summary>
+  /// <summary>Helper methods to convert floating point values to quantized integers</summary>
   /// <remarks>
   ///   <para>
   ///     This is a relatively tame wrapper for some SIMD instructions with fallbacks.
@@ -63,11 +63,11 @@ namespace Nuclex { namespace Audio { namespace Processing {
   ///     integers is also pretty common, so this class offers a variant that does that.
   ///   </para>
   /// </remarks>
-  class Rounding {
+  class Quantization {
 
     /// <summary>Rounds a floating point value to the nearest integer</summary>
     /// <param name="value">Floating point value that will be rounded</param>
-    /// <returns>The 32-bit integer narest to the floating point value</returns>
+    /// <returns>The 32-bit integer nearest to the floating point value</returns>
     /// <remarks>
     ///   This is a bit wasteful as it excutes a whole SIMD 4-operand instruction
     ///   for a single value, but we want all inputs to go through the exact same
@@ -78,7 +78,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
     /// <summary>Rounds a floating point value to the nearest integer</summary>
     /// <param name="value">Floating point value that will be rounded</param>
-    /// <returns>The 32-bit integer narest to the floating point value</returns>
+    /// <returns>The 32-bit integer nearest to the floating point value</returns>
     /// <remarks>
     ///   This is a bit wasteful as it excutes a whole SIMD 4-operand instruction
     ///   for a single value, but we want all inputs to go through the exact same
@@ -129,7 +129,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  inline std::int32_t Rounding::NearestInt32(float value) {
+  inline std::int32_t Quantization::NearestInt32(float value) {
 #if defined(NUCLEX_AUDIO_HAVE_SSE2)
     return _mm_cvtss_si32(_mm_set_ss(value));
 //#elif defined(__ARM_NEON)
@@ -141,7 +141,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  inline std::int32_t Rounding::NearestInt32(double value) {
+  inline std::int32_t Quantization::NearestInt32(double value) {
 #if defined(NUCLEX_AUDIO_HAVE_SSE2)
     return _mm_cvtsd_si32(_mm_set_sd(value));
 //#elif defined(__ARM_NEON)
@@ -153,7 +153,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  inline void Rounding::NearestInt32x4(
+  inline void Quantization::NearestInt32x4(
     const float *values/*[4]*/, std::int32_t *results/*[4]*/
   ) {
 #if defined(NUCLEX_AUDIO_HAVE_SSE2)
@@ -175,7 +175,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  inline void Rounding::NearestInt32x4(
+  inline void Quantization::NearestInt32x4(
     const double *values/*[4]*/, std::int32_t *results/*[4]*/
   ) {
 #if defined(NUCLEX_AUDIO_HAVE_SSE2)
@@ -201,7 +201,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  inline void Rounding::MultiplyToNearestInt32x4(
+  inline void Quantization::MultiplyToNearestInt32x4(
     const float *values/*[4]*/, float factor, std::int32_t *results/*[4]*/
   ) {
 #if defined(NUCLEX_AUDIO_HAVE_SSE2)
@@ -226,7 +226,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  inline void Rounding::MultiplyToNearestInt32x4(
+  inline void Quantization::MultiplyToNearestInt32x4(
     const float *values/*[4]*/, double factor, std::int32_t *results/*[4]*/
   ) {
 #if defined(NUCLEX_AUDIO_HAVE_SSE2)
@@ -270,7 +270,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
-  inline void Rounding::MultiplyToNearestInt32x4(
+  inline void Quantization::MultiplyToNearestInt32x4(
     const double *values/*[4]*/, double factor, std::int32_t *results/*[4]*/
   ) {
 #if defined(NUCLEX_AUDIO_HAVE_SSE2)
@@ -307,4 +307,4 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
 }}} // namespace Nuclex::Audio::Processing
 
-#endif // NUCLEX_AUDIO_PROCESSING_ROUNDING_H
+#endif // NUCLEX_AUDIO_PROCESSING_QUANTIZATION_H

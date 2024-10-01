@@ -200,10 +200,12 @@
     <Text Include="Documents\EventBenchmark.md" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Include\Nuclex\Audio\Processing\BitExtension.h" />
     <ClInclude Include="Include\Nuclex\Audio\Processing\DecibelConverter.h" />
     <ClInclude Include="Include\Nuclex\Audio\Errors\CorruptedFileError.h" />
     <ClInclude Include="Include\Nuclex\Audio\Errors\UnsupportedFormatError.h" />
-    <ClInclude Include="Include\Nuclex\Audio\Processing\Normalization.h" />
+    <ClInclude Include="Include\Nuclex\Audio\Processing\Quantization.h" />
+    <ClInclude Include="Include\Nuclex\Audio\Processing\Reconstruction.h" />
     <ClInclude Include="Include\Nuclex\Audio\Processing\SampleConverter.h" />
     <ClInclude Include="Include\Nuclex\Audio\Processing\VolumeDetector.h" />
     <ClInclude Include="Include\Nuclex\Audio\Storage\AudioCodec.h" />
@@ -217,17 +219,17 @@
     <ClInclude Include="Include\Nuclex\Audio\ContainerInfo.h" />
     <ClInclude Include="Include\Nuclex\Audio\Track.h" />
     <ClInclude Include="Include\Nuclex\Audio\TrackInfo.h" />
-    <ClInclude Include="Include\Nuclex\Audio\Processing\Rounding.h" />
     <ClInclude Include="Source\Storage\Waveform\WaveformTrackDecoder.h" />
     <ClInclude Include="Source\Storage\Waveform\WaveformParser.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Processing\Normalization.cpp" />
-    <ClCompile Include="Source\Processing\Rounding.cpp" />
+    <ClCompile Include="Source\Processing\BitExtension.cpp" />
     <ClCompile Include="Source\Processing\DecibelConverter.cpp" />
     <ClCompile Include="Source\Errors\CorruptedFileError.cpp" />
     <ClCompile Include="Source\Errors\UnsupportedFormatError.cpp" />
     <ClCompile Include="Source\Platform\FlacApi.cpp" />
+    <ClCompile Include="Source\Processing\Quantization.cpp" />
+    <ClCompile Include="Source\Processing\Reconstruction.cpp" />
     <ClCompile Include="Source\Processing\SampleConverter.cpp" />
     <ClCompile Include="Source\Storage\Waveform\WaveformTrackDecoder.cpp" />
     <ClCompile Include="Source\Storage\Waveform\WaveformParser.cpp" />
@@ -314,8 +316,9 @@
     <ClCompile Include="Source\Track.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Tests\Processing\NormalizationTests.cpp" />
-    <ClCompile Include="Tests\Processing\RoundingTests.cpp" />
+    <ClCompile Include="Tests\Processing\BitExtensionTests.cpp" />
+    <ClCompile Include="Tests\Processing\QuantizationTests.cpp" />
+    <ClCompile Include="Tests\Processing\ReconstructionTests.cpp" />
     <ClCompile Include="Tests\Processing\SampleConverterTest.cpp" />
     <ClCompile Include="Tests\Processing\SineWaveDetectorTest.cpp" />
     <ClCompile Include="Tests\Processing\SineWaveDetector.cpp" />

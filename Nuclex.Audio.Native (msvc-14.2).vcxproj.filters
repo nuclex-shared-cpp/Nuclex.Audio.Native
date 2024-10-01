@@ -136,10 +136,13 @@
     <ClInclude Include="Include\Nuclex\Audio\Processing\VolumeDetector.h">
       <Filter>Include\Processing</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Nuclex\Audio\Processing\Rounding.h">
+    <ClInclude Include="Include\Nuclex\Audio\Processing\BitExtension.h">
       <Filter>Include\Processing</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Nuclex\Audio\Processing\Normalization.h">
+    <ClInclude Include="Include\Nuclex\Audio\Processing\Quantization.h">
+      <Filter>Include\Processing</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\Processing\Reconstruction.h">
       <Filter>Include\Processing</Filter>
     </ClInclude>
   </ItemGroup>
@@ -381,10 +384,13 @@
     <ClCompile Include="Source\Processing\VolumeDetector.cpp">
       <Filter>Source\Processing</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Processing\Rounding.cpp">
+    <ClCompile Include="Source\Processing\BitExtension.cpp">
       <Filter>Source\Processing</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Processing\Normalization.cpp">
+    <ClCompile Include="Source\Processing\Quantization.cpp">
+      <Filter>Source\Processing</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Processing\Reconstruction.cpp">
       <Filter>Source\Processing</Filter>
     </ClCompile>
   </ItemGroup>
