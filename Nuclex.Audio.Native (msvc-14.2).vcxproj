@@ -213,6 +213,7 @@
     <ClInclude Include="Include\Nuclex\Audio\Storage\AudioCodec.h" />
     <ClInclude Include="Include\Nuclex\Audio\Storage\AudioLoader.h" />
     <ClInclude Include="Include\Nuclex\Audio\Storage\AudioTrackDecoder.h" />
+    <ClInclude Include="Include\Nuclex\Audio\Storage\AudioTrackDecoderInternal.h" />
     <ClInclude Include="Include\Nuclex\Audio\Storage\VirtualFile.h" />
     <ClInclude Include="Include\Nuclex\Audio\AudioSampleFormat.h" />
     <ClInclude Include="Include\Nuclex\Audio\Channel.h" />
@@ -261,6 +262,9 @@
     <ClInclude Include="Source\Storage\Flac\FlacVirtualFileAdapter.h" />
     <ClCompile Include="Source\Storage\Opus\OpusReader.cpp" />
     <ClCompile Include="Source\Storage\Opus\OpusTrackDecoder.cpp" />
+    <ClCompile Include="Source\Storage\RealFile.Linux.cpp" />
+    <ClCompile Include="Source\Storage\RealFile.Posix.cpp" />
+    <ClCompile Include="Source\Storage\RealFile.Windows.cpp" />
     <ClCompile Include="Source\Storage\Shared\ChannelOrderFactory.cpp" />
     <ClCompile Include="Source\Storage\Shared\VirtualFileAdapterState.cpp" />
     <ClInclude Include="Source\Storage\Opus\OpusReader.h" />
@@ -307,7 +311,6 @@
     <ClCompile Include="Source\Storage\AudioTrackDecoder.cpp" />
     <ClCompile Include="Source\Storage\EndianReader.cpp" />
     <ClInclude Include="Source\Storage\EndianReader.h" />
-    <ClCompile Include="Source\Storage\RealFile.cpp" />
     <ClInclude Include="Source\Storage\RealFile.h" />
     <ClCompile Include="Source\Storage\VirtualFile.cpp" />
     <ClCompile Include="Source\AudioSampleFormat.cpp" />
@@ -333,6 +336,9 @@
       <LinkObjects>false</LinkObjects>
       <TreatOutputAsContent>true</TreatOutputAsContent>
     </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Source\Storage\WavPack\WavPackReader.Decoding.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

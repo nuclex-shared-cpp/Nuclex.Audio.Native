@@ -177,6 +177,38 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
+  TEST(WavPackTrackDecoderTest, Decodes24BitTo16BitQuantized) {
+    std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
+      GetResourcesDirectory() + u8"wavpack-stereo-int24-v416.wv"
+    );
+
+    WavPackTrackDecoder decoder(file);
+
+    std::size_t frameCount = decoder.CountFrames();
+    std::size_t channelCount = decoder.CountChannels();
+
+    std::vector<std::int16_t> samples(frameCount * channelCount);
+    decoder.DecodeInterleaved(samples.data(), 0, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(WavPackTrackDecoderTest, Decodes16BitTo32BitQuantized) {
+    std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
+      GetResourcesDirectory() + u8"wavpack-stereo-int16-v416.wv"
+    );
+
+    WavPackTrackDecoder decoder(file);
+
+    std::size_t frameCount = decoder.CountFrames();
+    std::size_t channelCount = decoder.CountChannels();
+
+    std::vector<std::int32_t> samples(frameCount * channelCount);
+    decoder.DecodeInterleaved(samples.data(), 0, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
 }}}} // namespace Nuclex::Audio::Storage::WavPack
 
 #endif // defined(NUCLEX_AUDIO_HAVE_WAVPACK)

@@ -197,9 +197,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="Documents\EventBenchmark.md" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="Include\Nuclex\Audio\Processing\BitExtension.h" />
     <ClInclude Include="Include\Nuclex\Audio\Processing\DecibelConverter.h" />
     <ClInclude Include="Include\Nuclex\Audio\Errors\CorruptedFileError.h" />
@@ -223,6 +220,8 @@
     <ClInclude Include="Source\Storage\Waveform\WaveformParser.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Storage\RealFile.Linux.cpp" />
+    <ClCompile Include="Source\Storage\RealFile.Windows.cpp" />
     <ClCompile Include="Source\Processing\BitExtension.cpp" />
     <ClCompile Include="Source\Processing\DecibelConverter.cpp" />
     <ClCompile Include="Source\Errors\CorruptedFileError.cpp" />
@@ -231,6 +230,7 @@
     <ClCompile Include="Source\Processing\Quantization.cpp" />
     <ClCompile Include="Source\Processing\Reconstruction.cpp" />
     <ClCompile Include="Source\Processing\SampleConverter.cpp" />
+    <ClCompile Include="Source\Storage\AudioTrackDecoderInternal.cpp" />
     <ClCompile Include="Source\Storage\Waveform\WaveformTrackDecoder.cpp" />
     <ClCompile Include="Source\Storage\Waveform\WaveformParser.cpp" />
     <ClCompile Include="Source\Processing\VolumeDetector.cpp" />
@@ -305,7 +305,7 @@
     <ClCompile Include="Source\Storage\AudioTrackDecoder.cpp" />
     <ClCompile Include="Source\Storage\EndianReader.cpp" />
     <ClInclude Include="Source\Storage\EndianReader.h" />
-    <ClCompile Include="Source\Storage\RealFile.cpp" />
+    <ClCompile Include="Source\Storage\RealFile.Posix.cpp" />
     <ClInclude Include="Source\Storage\RealFile.h" />
     <ClCompile Include="Source\Storage\VirtualFile.cpp" />
     <ClCompile Include="Source\AudioSampleFormat.cpp" />
@@ -367,6 +367,9 @@
       <LinkObjects>false</LinkObjects>
       <TreatOutputAsContent>true</TreatOutputAsContent>
     </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Source\Storage\WavPack\WavPackReader.Decoding.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

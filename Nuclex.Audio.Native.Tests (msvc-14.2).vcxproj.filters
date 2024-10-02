@@ -349,7 +349,7 @@
     <ClInclude Include="Source\Storage\EndianReader.h">
       <Filter>Source\Storage</Filter>
     </ClInclude>
-    <ClCompile Include="Source\Storage\RealFile.cpp">
+    <ClCompile Include="Source\Storage\RealFile.Posix.cpp">
       <Filter>Source\Storage</Filter>
     </ClCompile>
     <ClCompile Include="Source\Storage\VirtualFile.cpp">
@@ -457,6 +457,15 @@
     <ClCompile Include="Tests\Processing\ReconstructionTests.cpp">
       <Filter>Tests\Processing</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Storage\AudioTrackDecoderInternal.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\RealFile.Windows.cpp">
+      <Filter>Source\Storage</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\RealFile.Linux.cpp">
+      <Filter>Source\Storage</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Tests\Processing\SampleConverterTest.cpp">
@@ -530,15 +539,17 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="Documents\EventBenchmark.md" />
     <Text Include="ReadMe.md" />
     <Text Include="Notice.md" />
     <Text Include="License.md" />
-    <Text Include="Dependencies.md">
-      <Filter>Documents</Filter>
-    </Text>
+    <Text Include="Dependencies.md" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Nuclex.Support.Native.ref" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Source\Storage\WavPack\WavPackReader.Decoding.inl">
+      <Filter>Source\Storage\WavPack</Filter>
+    </None>
   </ItemGroup>
 </Project>

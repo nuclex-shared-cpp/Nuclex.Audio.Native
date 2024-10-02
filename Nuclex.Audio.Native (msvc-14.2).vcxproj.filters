@@ -145,6 +145,9 @@
     <ClInclude Include="Include\Nuclex\Audio\Processing\Reconstruction.h">
       <Filter>Include\Processing</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\Storage\AudioTrackDecoderInternal.h">
+      <Filter>Include\Storage</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Errors\CorruptedFileError.cpp">
@@ -318,9 +321,6 @@
     <ClInclude Include="Source\Storage\EndianReader.h">
       <Filter>Source\Storage</Filter>
     </ClInclude>
-    <ClCompile Include="Source\Storage\RealFile.cpp">
-      <Filter>Source\Storage</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Storage\VirtualFile.cpp">
       <Filter>Source\Storage</Filter>
     </ClCompile>
@@ -393,6 +393,15 @@
     <ClCompile Include="Source\Processing\Reconstruction.cpp">
       <Filter>Source\Processing</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Storage\RealFile.Linux.cpp">
+      <Filter>Source\Storage</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\RealFile.Posix.cpp">
+      <Filter>Source\Storage</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\RealFile.Windows.cpp">
+      <Filter>Source\Storage</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Documents\EventBenchmark.md" />
@@ -403,5 +412,10 @@
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Nuclex.Support.Native.ref" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Source\Storage\WavPack\WavPackReader.Decoding.inl">
+      <Filter>Source\Storage\WavPack</Filter>
+    </None>
   </ItemGroup>
 </Project>

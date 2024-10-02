@@ -22,6 +22,7 @@ limitations under the License.
 
 #include "Nuclex/Audio/Config.h"
 
+#include <cstddef> // for std::size_t
 #include <cstdint> // for std::uint8_t, std::int16_t, std::int32_t
 
 namespace Nuclex { namespace Audio { namespace Storage {
