@@ -45,9 +45,27 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
+  TEST(BitExtensionTests, CanShiftAndRepeatBitPattern) {
+    std::int32_t input = 0x01230000;
+    std::int32_t repeated = BitExtension::ShiftAndRepeatSigned(4, input, 11, 0x000FFE00);
+
+    EXPECT_EQ(repeated, 0x12324600);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   TEST(BitExtensionTests, CanRepeatBitPatternForNegativeIntegers) {
     std::int32_t input = std::int32_t(0x84200000);
     std::int32_t repeated = BitExtension::RepeatSigned(input, 11, 0x000FFE00);
+
+    EXPECT_EQ(repeated, std::int32_t(0x84208400));
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(BitExtensionTests, CanShiftAndRepeatBitPatternForNegativeIntegers) {
+    std::int32_t input = std::int32_t(0xF8420000);
+    std::int32_t repeated = BitExtension::ShiftAndRepeatSigned(4, input, 11, 0x000FFE00);
 
     EXPECT_EQ(repeated, std::int32_t(0x84208400));
   }
@@ -63,9 +81,27 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
+  TEST(BitExtensionTests, CanShiftAndTripleBitPattern) {
+    std::int32_t input = 0x01230000;
+    std::int32_t repeated = BitExtension::ShiftAndTripleSigned(4, input, 11, 0x000FFE00);
+
+    EXPECT_EQ(repeated, 0x12324648);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   TEST(BitExtensionTests, CanTripleBitPatternForNegativeIntegers) {
     std::int32_t input = std::int32_t(0x84200000);
     std::int32_t repeated = BitExtension::TripleSigned(input, 11, 0x000FFE00);
+
+    EXPECT_EQ(repeated, std::int32_t(0x84208410));
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(BitExtensionTests, CanShiftAndTripleBitPatternForNegativeIntegers) {
+    std::int32_t input = std::int32_t(0xF8420000);
+    std::int32_t repeated = BitExtension::ShiftAndTripleSigned(4, input, 11, 0x000FFE00);
 
     EXPECT_EQ(repeated, std::int32_t(0x84208410));
   }
@@ -77,6 +113,20 @@ namespace Nuclex { namespace Audio { namespace Processing {
     std::int32_t repeated[4];
 
     BitExtension::RepeatSignedx4(input, 11, 0x000FFE00, repeated);
+
+    EXPECT_EQ(repeated[0], 0x12324600);
+    EXPECT_EQ(repeated[1], 0x23446800);
+    EXPECT_EQ(repeated[2], 0x34568A00);
+    EXPECT_EQ(repeated[3], 0x4568AC00);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(BitExtensionTests, CanShiftAndRepeatBitPatternOfFourIntegers) {
+    std::int32_t input[4] = { 0x01230000, 0x02340000, 0x03450000, 0x04560000 };
+    std::int32_t repeated[4];
+
+    BitExtension::ShiftAndRepeatSignedx4(4, input, 11, 0x000FFE00, repeated);
 
     EXPECT_EQ(repeated[0], 0x12324600);
     EXPECT_EQ(repeated[1], 0x23446800);
@@ -105,11 +155,45 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
+  TEST(BitExtensionTests, CanShiftAndRepeatBitPatternOfFourNegativeIntegers) {
+    std::int32_t input[4] = {
+      std::int32_t(0xF8760000),
+      std::int32_t(0xF8640000),
+      std::int32_t(0xF8520000),
+      std::int32_t(0xF8400000)
+    };
+    std::int32_t repeated[4];
+
+    BitExtension::ShiftAndRepeatSignedx4(4, input, 11, 0x000FFE00, repeated);
+
+    EXPECT_EQ(repeated[0], std::int32_t(0x8760EC00));
+    EXPECT_EQ(repeated[1], std::int32_t(0x8640C800));
+    EXPECT_EQ(repeated[2], std::int32_t(0x8520A400));
+    EXPECT_EQ(repeated[3], std::int32_t(0x84008000));
+  }
+
+
+  // ------------------------------------------------------------------------------------------- //
+
   TEST(BitExtensionTests, CanTripleBitPatternOfFourIntegers) {
     std::int32_t input[4] = { 0x12300000, 0x23400000, 0x34500000, 0x45600000 };
     std::int32_t repeated[4];
 
     BitExtension::TripleSignedx4(input, 11, 0x000FFE00, repeated);
+
+    EXPECT_EQ(repeated[0], 0x12324648);
+    EXPECT_EQ(repeated[1], 0x2344688D);
+    EXPECT_EQ(repeated[2], 0x34568AD1);
+    EXPECT_EQ(repeated[3], 0x4568AD15);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(BitExtensionTests, CanShiftAndTripleBitPatternOfFourIntegers) {
+    std::int32_t input[4] = { 0x01230000, 0x02340000, 0x03450000, 0x04560000 };
+    std::int32_t repeated[4];
+
+    BitExtension::ShiftAndTripleSignedx4(4, input, 11, 0x000FFE00, repeated);
 
     EXPECT_EQ(repeated[0], 0x12324648);
     EXPECT_EQ(repeated[1], 0x2344688D);
@@ -129,6 +213,25 @@ namespace Nuclex { namespace Audio { namespace Processing {
     std::int32_t repeated[4];
 
     BitExtension::TripleSignedx4(input, 11, 0x000FFE00, repeated);
+
+    EXPECT_EQ(repeated[0], std::int32_t(0x8760EC1D));
+    EXPECT_EQ(repeated[1], std::int32_t(0x8640C819));
+    EXPECT_EQ(repeated[2], std::int32_t(0x8520A414));
+    EXPECT_EQ(repeated[3], std::int32_t(0x84008010));
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(BitExtensionTests, CanShiftAndTripleBitPatternOfFourNegativeIntegers) {
+    std::int32_t input[4] = {
+      std::int32_t(0xF8760000),
+      std::int32_t(0xF8640000),
+      std::int32_t(0xF8520000),
+      std::int32_t(0xF8400000)
+    };
+    std::int32_t repeated[4];
+
+    BitExtension::ShiftAndTripleSignedx4(4, input, 11, 0x000FFE00, repeated);
 
     EXPECT_EQ(repeated[0], std::int32_t(0x8760EC1D));
     EXPECT_EQ(repeated[1], std::int32_t(0x8640C819));

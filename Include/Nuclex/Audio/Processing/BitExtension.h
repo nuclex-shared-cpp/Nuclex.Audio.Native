@@ -68,23 +68,46 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
     /// <summary>Repeats the specified number of bits in a signed integer</summary>
     /// <param name="value">Integer in which bits will be repeated</param>
-    /// <param name="bitCount">Number of bits to repeat</param>
+    /// <param name="shift">Number of bits to shift to the right</param>
+    /// <param name="mask">Mask of the bits to keep after right-shifting</param>
     /// <returns>The 32-bit integer with the specified number of bits repeated</returns>
     public: static inline std::int32_t RepeatSigned(
       std::int32_t value, int shift, std::int32_t mask
     );
 
-    /// <summary>Repeats the specified number of bits in a signed integer twice</summary>
-    /// <param name="value">Integer in which bits will be repeated twice</param>
-    /// <param name="bitCount">Number of bits to repeat twice</param>
-    /// <returns>The 32-bit integer with the specified number of bits repeated twice</returns>
+    /// <summary>Repeats the specified number of bits in a signed integer</summary>
+    /// <param name="preShift">Number of bits to shift to the left first</param>
+    /// <param name="value">Integer in which bits will be repeated</param>
+    /// <param name="shift">Number of bits to shift to the right</param>
+    /// <param name="mask">Mask of the bits to keep after right-shifting</param>
+    /// <returns>The 32-bit integer with the specified number of bits repeated</returns>
+    public: static inline std::int32_t ShiftAndRepeatSigned(
+      int preShift, std::int32_t value, int shift, std::int32_t mask
+    );
+
+    /// <summary>Triples the specified number of bits in a signed integer</summary>
+    /// <param name="value">Integer in which bits will be tripled</param>
+    /// <param name="shift">Number of bits to shift to the right (twice)</param>
+    /// <param name="mask">Mask of the bits to keep after right-shifting once</param>
+    /// <returns>The 32-bit integer with the specified number of bits tripled</returns>
     public: static inline std::int32_t TripleSigned(
       std::int32_t value, int shift, std::int32_t mask
     );
 
+    /// <summary>Triples the specified number of bits in a signed integer</summary>
+    /// <param name="preShift">Number of bits to shift to the left first</param>
+    /// <param name="value">Integer in which bits will be tripled</param>
+    /// <param name="shift">Number of bits to shift to the right (twice)</param>
+    /// <param name="mask">Mask of the bits to keep after right-shifting once</param>
+    /// <returns>The 32-bit integer with the specified number of bits tripled</returns>
+    public: static inline std::int32_t ShiftAndTripleSigned(
+      int preShift, std::int32_t value, int shift, std::int32_t mask
+    );
+
     /// <summary>Repeats the specified number of bits in 4 signed integers</summary>
     /// <param name="values">Integers in which bits will be repeated</param>
-    /// <param name="bitCount">Number of bits to repeat</param>
+    /// <param name="shift">Number of bits to shift to the right</param>
+    /// <param name="mask">Mask of the bits to keep after right-shifting</param>
     /// <param name="results">Receives the integers with repeated bits</param>
     public: static inline void RepeatSignedx4(
       const std::int32_t *values/*[4]*/,
@@ -92,11 +115,38 @@ namespace Nuclex { namespace Audio { namespace Processing {
       std::int32_t *results/*[4]*/
     );
 
-    /// <summary>Repeats the specified number of bits in 4 signed integers twice</summary>
-    /// <param name="values">Integers in which bits will be repeated twice</param>
-    /// <param name="bitCount">Number of bits to repeat twice</param>
-    /// <param name="results">Receives the integers with twice repeated bits</param>
+    /// <summary>Repeats the specified number of bits in 4 signed integers</summary>
+    /// <param name="preShift">Number of bits to shift to the left first</param>
+    /// <param name="values">Integers in which bits will be repeated</param>
+    /// <param name="shift">Number of bits to shift to the right</param>
+    /// <param name="mask">Mask of the bits to keep after right-shifting</param>
+    /// <param name="results">Receives the integers with repeated bits</param>
+    public: static inline void ShiftAndRepeatSignedx4(
+      int preShift,
+      const std::int32_t *values/*[4]*/,
+      int shift, std::int32_t mask,
+      std::int32_t *results/*[4]*/
+    );
+
+    /// <summary>Triples the specified number of bits in 4 signed integers</summary>
+    /// <param name="values">Integers in which bits will be tripled</param>
+    /// <param name="shift">Number of bits to shift to the right (twice)</param>
+    /// <param name="mask">Mask of the bits to keep after right-shifting once</param>
+    /// <param name="results">Receives the integers with tripled bits</param>
     public: static inline void TripleSignedx4(
+      const std::int32_t *values/*[4]*/,
+      int shift, std::int32_t mask,
+      std::int32_t *results/*[4]*/
+    );
+
+    /// <summary>Triples the specified number of bits in 4 signed integers</summary>
+    /// <param name="preShift">Number of bits to shift to the left first</param>
+    /// <param name="values">Integers in which bits will be tripled</param>
+    /// <param name="shift">Number of bits to shift to the right (twice)</param>
+    /// <param name="mask">Mask of the bits to keep after right-shifting once</param>
+    /// <param name="results">Receives the integers with tripled bits</param>
+    public: static inline void ShiftAndTripleSignedx4(
+      int preShift,
       const std::int32_t *values/*[4]*/,
       int shift, std::int32_t mask,
       std::int32_t *results/*[4]*/
@@ -123,6 +173,30 @@ namespace Nuclex { namespace Audio { namespace Processing {
     );
 //#elif defined(__ARM_NEON)
 #else
+    return value | ((value >> shift) & mask);
+#endif
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  inline std::int32_t BitExtension::ShiftAndRepeatSigned(
+    int preShift, std::int32_t value, int shift, std::int32_t mask
+  ) {
+#if defined(NUCLEX_AUDIO_HAVE_SSE2)
+    __m128i input = _mm_slli_epi32(_mm_set1_epi32(value), preShift);
+
+    return _mm_cvtsi128_si32(
+      _mm_or_si128(
+        input,
+        _mm_and_si128(
+          _mm_srai_epi32(input, shift), // should use _srli_ but I want to match the C++ code.
+          _mm_set1_epi32(mask)
+        )
+      )
+    );
+//#elif defined(__ARM_NEON)
+#else
+    value <<= preShift;
     return value | ((value >> shift) & mask);
 #endif
   }
@@ -157,6 +231,35 @@ namespace Nuclex { namespace Audio { namespace Processing {
 
   // ------------------------------------------------------------------------------------------- //
 
+  inline std::int32_t BitExtension::ShiftAndTripleSigned(
+    int preShift, std::int32_t value, int shift, std::int32_t mask
+  ) {
+#if defined(NUCLEX_AUDIO_HAVE_SSE2)
+    __m128i input = _mm_slli_epi32(_mm_set1_epi32(value), preShift);
+    __m128i shifted = _mm_and_si128(
+      _mm_srai_epi32(input, shift), // should use _srli_ but I want to match the C++ code.
+      _mm_set1_epi32(mask)
+    );
+
+    return _mm_cvtsi128_si32(
+      _mm_or_si128(
+        input,
+        _mm_or_si128(
+          shifted,
+          _mm_srai_epi32(shifted, shift)
+        )
+      )
+    );
+//#elif defined(__ARM_NEON)
+#else
+    value <<= preShift;
+    std::int32_t shifted = (value >> shift) & mask;
+    return value | shifted | (shifted >> shift);
+#endif
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   inline void BitExtension::RepeatSignedx4(
     const std::int32_t *values/*[4]*/,
     int shift, std::int32_t mask,
@@ -181,6 +284,50 @@ namespace Nuclex { namespace Audio { namespace Processing {
     results[1] = values[1] | ((values[1] >> shift) & mask);
     results[2] = values[2] | ((values[2] >> shift) & mask);
     results[3] = values[3] | ((values[3] >> shift) & mask);
+#endif
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  inline void BitExtension::ShiftAndRepeatSignedx4(
+    int preShift,
+    const std::int32_t* values/*[4]*/,
+    int shift, std::int32_t mask,
+    std::int32_t* results/*[4]*/
+  ) {
+#if defined(NUCLEX_AUDIO_HAVE_SSE2)
+    __m128i input = _mm_slli_epi32(
+      _mm_loadu_si128(reinterpret_cast<const __m128i*>(values)), preShift
+    );
+
+    _mm_storeu_si128(
+      reinterpret_cast<__m128i*>(results),
+      _mm_or_si128(
+        input,
+        _mm_and_si128(
+          _mm_srai_epi32(input, shift), // should use _srli_ but I want to match the C++ code.
+          _mm_set1_epi32(mask)
+        )
+      )
+    );
+//#elif defined(__ARM_NEON)
+#else
+    {
+      std::int32_t shifted0 = values[0] << preShift;
+      results[0] = shifted0 | ((shifted0 >> shift) & mask);
+    }
+    {
+      std::int32_t shifted1 = values[1] << preShift;
+      results[1] = shifted1 | ((shifted1 >> shift) & mask);
+    }
+    {
+      std::int32_t shifted2 = values[2] << preShift;
+      results[2] = shifted2 | ((shifted2 >> shift) & mask);
+    }
+    {
+      std::int32_t shifted3 = values[3] << preShift;
+      results[3] = shifted3 | ((shifted3 >> shift) & mask);
+    }
 #endif
   }
 
@@ -225,6 +372,58 @@ namespace Nuclex { namespace Audio { namespace Processing {
     {
       std::int32_t shifted3 = (values[3] >> shift) & mask;
       results[3] = values[3] | shifted3 | (shifted3 >> shift);
+    }
+#endif
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  inline void BitExtension::ShiftAndTripleSignedx4(
+    int preShift,
+    const std::int32_t *values/*[4]*/,
+    int shift, std::int32_t mask,
+    std::int32_t *results/*[4]*/
+  ) {
+#if defined(NUCLEX_AUDIO_HAVE_SSE2)
+    __m128i input = _mm_slli_epi32(
+      _mm_loadu_si128(reinterpret_cast<const __m128i *>(values)), preShift
+    );
+    __m128i shifted = _mm_and_si128(
+      _mm_srai_epi32(input, shift), // should use _srli_ but I want to match the C++ code.
+      _mm_set1_epi32(mask)
+    );
+
+    _mm_storeu_si128(
+      reinterpret_cast<__m128i *>(results),
+      _mm_or_si128(
+        input,
+        _mm_or_si128(
+          shifted,
+          _mm_srai_epi32(shifted, shift)
+        )
+      )
+    );
+//#elif defined(__ARM_NEON)
+#else
+    {
+      std::int32_t input0 = values[0] << preShift;
+      std::int32_t shifted0 = (input0 >> shift) & mask;
+      results[0] = input0 | shifted0 | (shifted0 >> shift);
+    }
+    {
+      std::int32_t input1 = values[1] << preShift;
+      std::int32_t shifted1 = (input1 >> shift) & mask;
+      results[1] = input1 | shifted1 | (shifted1 >> shift);
+    }
+    {
+      std::int32_t input2 = values[2] << preShift;
+      std::int32_t shifted2 = (input2 >> shift) & mask;
+      results[2] = input2 | shifted2 | (shifted2 >> shift);
+    }
+    {
+      std::int32_t input3 = values[3] << preShift;
+      std::int32_t shifted3 = (input3 >> shift) & mask;
+      results[3] = input3 | shifted3 | (shifted3 >> shift);
     }
 #endif
   }
