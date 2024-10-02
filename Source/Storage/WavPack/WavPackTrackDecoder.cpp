@@ -52,6 +52,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     this->totalFrameCount = this->reader.CountTotalFrames();
     this->channelOrder = this->reader.GetChannelOrder();
     this->nativeSampleFormat = this->reader.GetSampleFormat();
+
+    this->reader.PrepareForDecoding();
   }
 
   // ------------------------------------------------------------------------------------------- //

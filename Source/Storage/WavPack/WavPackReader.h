@@ -120,6 +120,15 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     /// <returns>The frame cursor, pointing at the frame that will be decoded next</returns>
     public: std::uint64_t GetFrameCursorPosition() const;
 
+    /// <summary>Sets the reader up to decode audio samples</summary>
+    /// <remarks>
+    ///   By default, the WavPackReader only initializes its internal data structures to
+    ///   be able to read metadata. Before calling the Decode...() methods, this method
+    ///   needs to be called once. It will complete the set up and enable the WavPackReader
+    ///   to decode audio samples.
+    /// </remarks>
+    public: void PrepareForDecoding();
+
     /// <summary>Moves the frame cursor to the specified location</summary>
     /// <param name="frameIndex">Index of the frame that should be decoded next</param>
     public: void Seek(std::uint64_t frameIndex);
@@ -214,6 +223,26 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     private: std::size_t sampleRate;
     /// <summary>Index of the frame that will be decoded next</summary>
     private: std::uint64_t frameCursor;
+
+    /// <summary>Signature for the interleaved decode method</summary>
+    private: template<typename TSample>
+    using DecodeInterleavedFunction = void (WavPackReader::*)(TSample *, std::size_t);
+
+    /// <summary>Signature for the channel-separated decode method</summary>
+    private: template<typename TSample>
+    using DecodeSeparatedFunction = void (WavPackReader::*)(TSample *[], std::size_t);
+
+    private: DecodeInterleavedFunction<std::uint8_t> decodeInterleavedUint8;
+    private: DecodeInterleavedFunction<std::int16_t> decodeInterleavedInt16;
+    private: DecodeInterleavedFunction<std::int32_t> decodeInterleavedInt32;
+    private: DecodeInterleavedFunction<float> decodeInterleavedFloat;
+    private: DecodeInterleavedFunction<double> decodeInterleavedDouble;
+
+    private: DecodeSeparatedFunction<std::uint8_t> decodeSeparatedUint8;
+    private: DecodeSeparatedFunction<std::int16_t> decodeSeparatedInt16;
+    private: DecodeSeparatedFunction<std::int32_t> decodeSeparatedInt32;
+    private: DecodeSeparatedFunction<float> decodeSeparatedFloat;
+    private: DecodeSeparatedFunction<double> decodeSeparatedDouble;
 
   };
 

@@ -92,7 +92,17 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     bytesPerSample(0),
     channelCount(0),
     sampleRate(0),
-    frameCursor(0) {
+    frameCursor(0),
+    decodeInterleavedUint8(),
+    decodeInterleavedInt16(),
+    decodeInterleavedInt32(),
+    decodeInterleavedFloat(),
+    decodeInterleavedDouble(),
+    decodeSeparatedUint8(),
+    decodeSeparatedInt16(),
+    decodeSeparatedInt32(),
+    decodeSeparatedFloat(),
+    decodeSeparatedDouble() {
 
     // Set up a WavPack stream reader with adapter methods that will perform all reads
     // on the provided virtual file.
@@ -128,7 +138,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   // ------------------------------------------------------------------------------------------- //
 
   void WavPackReader::ReadMetadata(TrackInfo &target) {
-    target.ChannelCount = Platform::WavPackApi::GetNumChannels(this->context);
+    target.ChannelCount = this->channelCount;
 
     target.ChannelPlacements = static_cast<ChannelPlacement>(
       Platform::WavPackApi::GetChannelMask(this->context)
@@ -203,6 +213,84 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
+  void WavPackReader::PrepareForDecoding() {
+    if(mode & MODE_FLOAT) {
+      this->decodeInterleavedUint8 = (
+        &WavPackReader::decodeInterleavedAndConvert<std::uint8_t, false, 0>
+      );
+    } else if(this->bitsPerSample < 8) { // We just assume it's not under 4...
+      this->decodeInterleavedUint8 = (
+        &WavPackReader::decodeInterleavedAndConvert<std::uint8_t, false, 2>
+      );
+    } else if(this->bitsPerSample < 9) { // Exact match, specify 1 for no repeats
+      this->decodeInterleavedUint8 = (
+        &WavPackReader::decodeInterleavedAndConvert<std::uint8_t, false, 1>
+      );
+    } else { // Decodes to 9 or more bits, specify -1 to indicate truncation
+      this->decodeInterleavedUint8 = (
+        &WavPackReader::decodeInterleavedAndConvert<std::uint8_t, false, -1>
+      );
+    }
+
+    if(mode & MODE_FLOAT) {
+      this->decodeInterleavedInt16 = (
+        &WavPackReader::decodeInterleavedAndConvert<std::int16_t, false, 0>
+      );
+    } else if(this->bitsPerSample < 9) { // 8 bits or fewer need two repeats
+      this->decodeInterleavedInt16 = (
+        &WavPackReader::decodeInterleavedAndConvert<std::int16_t, false, 3>
+      );
+    } else if(this->bitsPerSample < 16) { // 15 bits or fewer need one repeat
+      this->decodeInterleavedInt16 = (
+        &WavPackReader::decodeInterleavedAndConvert<std::int16_t, false, 2>
+      );
+    } else if(this->bitsPerSample < 17) { // Exact match, specify 1 for no repeats
+      this->decodeInterleavedInt16 = (
+        &WavPackReader::decodeInterleavedAndConvert<std::int16_t, false, 1>
+      );
+    } else { // Decodes to 17 or more bits, specify -1 to indicate truncation
+      this->decodeInterleavedInt16 = (
+        &WavPackReader::decodeInterleavedAndConvert<std::int16_t, true, -1>
+      );
+    }
+
+    if(mode & MODE_FLOAT) {
+      this->decodeInterleavedInt32 = (
+        &WavPackReader::decodeInterleavedAndConvert<std::int32_t, false, 0>
+      );
+    } else if(this->bitsPerSample < 17) { // 16 bits or fewer needs two repeats
+      this->decodeInterleavedInt32 = (
+        &WavPackReader::decodeInterleavedAndConvert<std::int32_t, false, 3>
+      );
+    } else if(this->bitsPerSample < 32) { // fewer than 32 bits needs one repeat
+      this->decodeInterleavedInt32 = (
+        &WavPackReader::decodeInterleavedAndConvert<std::int32_t, true, 2>
+      );
+    }
+
+    if(mode & MODE_FLOAT) {
+      this->decodeInterleavedDouble = (
+        &WavPackReader::decodeInterleavedAndConvert<double, false, 0>
+      );
+    } else if(this->bitsPerSample < 17) {
+      this->decodeInterleavedFloat = (
+        &WavPackReader::decodeInterleavedAndConvert<float, false>
+      );
+      this->decodeInterleavedDouble = (
+        &WavPackReader::decodeInterleavedAndConvert<double, false>
+      );
+    } else {
+      this->decodeInterleavedFloat = (
+        &WavPackReader::decodeInterleavedAndConvert<float, true>
+      );
+      this->decodeInterleavedDouble = (
+        &WavPackReader::decodeInterleavedAndConvert<double, true>
+      );
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   void WavPackReader::Seek(std::uint64_t frameIndex) {
 
     // ISSUE: SeekSample64() is documented as bringing the context into an invalid state
@@ -220,15 +308,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   template<> void WavPackReader::DecodeInterleaved<std::uint8_t>(
     std::uint8_t *target, std::size_t frameCount
   ) {
-    if(mode & MODE_FLOAT) {
-      decodeInterleavedAndConvert<std::uint8_t, false, 0>(target, frameCount);
-    } else if(this->bitsPerSample < 8) { // We just assume it's not under 4...
-      decodeInterleavedAndConvert<std::uint8_t, false, 2>(target, frameCount);
-    } else if(this->bitsPerSample < 9) { // Exact match, specify 1 for no repeats
-      decodeInterleavedAndConvert<std::uint8_t, false, 1>(target, frameCount);
-    } else { // Decodes to 9 or more bits, specify -1 to indicate truncation
-      decodeInterleavedAndConvert<std::uint8_t, false, -1>(target, frameCount);
-    }
+    (this->*decodeInterleavedUint8)(target, frameCount);
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -236,17 +316,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   template<> void WavPackReader::DecodeInterleaved<std::int16_t>(
     std::int16_t *target, std::size_t frameCount
   ) {
-    if(mode & MODE_FLOAT) {
-      decodeInterleavedAndConvert<std::int16_t, false, 0>(target, frameCount);
-    } else if(this->bitsPerSample < 9) { // 8 bits or fewer need two repeats
-      decodeInterleavedAndConvert<std::int16_t, false, 3>(target, frameCount);
-    } else if(this->bitsPerSample < 16) { // 15 bits or fewer need one repeat
-      decodeInterleavedAndConvert<std::int16_t, false, 2>(target, frameCount);
-    } else if(this->bitsPerSample < 17) { // Exact match, specify 1 for no repeats
-      decodeInterleavedAndConvert<std::int16_t, false, 1>(target, frameCount);
-    } else { // Decodes to 17 or more bits, specify -1 to indicate truncation
-      decodeInterleavedAndConvert<std::int16_t, true, -1>(target, frameCount);
-    }
+    (this->*decodeInterleavedInt16)(target, frameCount);
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -254,12 +324,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   template<> void WavPackReader::DecodeInterleaved<std::int32_t>(
     std::int32_t *target, std::size_t frameCount
   ) {
-    if(mode & MODE_FLOAT) {
-      decodeInterleavedAndConvert<std::int32_t, false, 0>(target, frameCount);
-    } else if(this->bitsPerSample < 17) { // 16 bits or fewer needs two repeats
-      decodeInterleavedAndConvert<std::int32_t, false, 3>(target, frameCount);
-    } else if(this->bitsPerSample < 32) { // fewer than 32 bits needs one repeat
-      decodeInterleavedAndConvert<std::int32_t, true, 2>(target, frameCount);
+    if((mode & MODE_FLOAT) || (this->bitsPerSample != 32)) {
+      (this->*decodeInterleavedInt32)(target, frameCount);
     } else { // 32 bits (only case remaining) can be decoded directly into user buffer
       std::uint32_t unpackedFrameCount = Platform::WavPackApi::UnpackSamples(
         this->state->Error, // exception_ptr that will receive VirtualFile exceptions
@@ -307,10 +373,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
         );
       }
 
-    } else if(this->bitsPerSample < 17) {
-      decodeInterleavedAndConvert<float, false>(target, frameCount);
     } else {
-      decodeInterleavedAndConvert<float, true>(target, frameCount);
+      (this->*decodeInterleavedFloat)(target, frameCount);
     }
   }
 
@@ -319,13 +383,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   template<> void WavPackReader::DecodeInterleaved<double>(
     double *target, std::size_t frameCount
   ) {
-    if(mode & MODE_FLOAT) {
-      decodeInterleavedAndConvert<double, false, 0>(target, frameCount);
-    } else if(this->bitsPerSample < 17) {
-      decodeInterleavedAndConvert<double, false>(target, frameCount);
-    } else {
-      decodeInterleavedAndConvert<double, true>(target, frameCount);
-    }
+    (this->*decodeInterleavedDouble)(target, frameCount);
   }
 
   // ------------------------------------------------------------------------------------------- //
