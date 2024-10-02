@@ -222,8 +222,12 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   ) {
     if(mode & MODE_FLOAT) {
       decodeInterleavedAndConvert<std::uint8_t, false, 0>(target, frameCount);
-    } else { // If target is uint8_t, we simply assume that bits per sample will be longer.
+    } else if(this->bitsPerSample < 8) { // We just assume it's not under 4...
+      decodeInterleavedAndConvert<std::uint8_t, false, 2>(target, frameCount);
+    } else if(this->bitsPerSample < 9) { // Exact match, specify 1 for no repeats
       decodeInterleavedAndConvert<std::uint8_t, false, 1>(target, frameCount);
+    } else { // Decodes to 9 or more bits, specify -1 to indicate truncation
+      decodeInterleavedAndConvert<std::uint8_t, false, -1>(target, frameCount);
     }
   }
 
@@ -234,12 +238,14 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   ) {
     if(mode & MODE_FLOAT) {
       decodeInterleavedAndConvert<std::int16_t, false, 0>(target, frameCount);
-    } else if(this->bitsPerSample < 16) {
+    } else if(this->bitsPerSample < 9) { // 8 bits or fewer need two repeats
+      decodeInterleavedAndConvert<std::int16_t, false, 3>(target, frameCount);
+    } else if(this->bitsPerSample < 16) { // 15 bits or fewer need one repeat
       decodeInterleavedAndConvert<std::int16_t, false, 2>(target, frameCount);
-    } else if(this->bitsPerSample < 17) {
+    } else if(this->bitsPerSample < 17) { // Exact match, specify 1 for no repeats
       decodeInterleavedAndConvert<std::int16_t, false, 1>(target, frameCount);
-    } else {
-      decodeInterleavedAndConvert<std::int16_t, true, 1>(target, frameCount);
+    } else { // Decodes to 17 or more bits, specify -1 to indicate truncation
+      decodeInterleavedAndConvert<std::int16_t, true, -1>(target, frameCount);
     }
   }
 
@@ -250,11 +256,11 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
   ) {
     if(mode & MODE_FLOAT) {
       decodeInterleavedAndConvert<std::int32_t, false, 0>(target, frameCount);
-    } else if(this->bitsPerSample < 17) {
+    } else if(this->bitsPerSample < 17) { // 16 bits or fewer needs two repeats
       decodeInterleavedAndConvert<std::int32_t, false, 3>(target, frameCount);
-    } else if(this->bitsPerSample < 32) {
+    } else if(this->bitsPerSample < 32) { // fewer than 32 bits needs one repeat
       decodeInterleavedAndConvert<std::int32_t, true, 2>(target, frameCount);
-    } else {
+    } else { // 32 bits (only case remaining) can be decoded directly into user buffer
       std::uint32_t unpackedFrameCount = Platform::WavPackApi::UnpackSamples(
         this->state->Error, // exception_ptr that will receive VirtualFile exceptions
         this->context,

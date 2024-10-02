@@ -144,8 +144,12 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     ///   type has more than 16 bits is trivial to determine via sizeof())
     /// </typename>
     /// <typename name="WidenFactor">
-    ///   How many times the *decoded* bits have to be repeated to fill the output
-    ///   data type. Set to 0 (zero) if the *decoded* data type is float.
+    ///   How many times the *decoded* bits have to be repeated to fill the output.
+    ///   -1: Data needs to be truncated
+    ///    0: Data is float, factor does not apply
+    ///   +1: Exact match, only copy
+    ///   +2: Bit pattern needs to be repeated once
+    ///   +3: Bit pattern needs to be tripled
     /// <typename>
     /// <param name="target">Buffer into which the samples will be written</param>
     /// <param name="frameCount">Number of frame that should be decoded</param>
@@ -157,7 +161,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     private: template<
       typename TSample, // output type
       bool BitsPerSampleOver16 = false, // for decoded bits per sample, not TSample
-      std::size_t WidenFactor = 1 // set to 0 if decoded samples are float!
+      int WidenFactor = 1 // set to 0 if decoded samples are float!
     >
     void decodeInterleavedAndConvert(TSample *target, std::size_t frameCount);
 
