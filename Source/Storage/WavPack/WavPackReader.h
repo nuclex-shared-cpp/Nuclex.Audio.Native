@@ -176,15 +176,30 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
     /// <summary>Decodes samples from the audio file and converts them</summary>
     /// <typename name="TSample">Type of samples to convert to</typename>
+    /// <typename name="BitsPerSampleOver16">
+    ///   Whether the *decoded* bits per sample is above 16 (whether the output
+    ///   type has more than 16 bits is trivial to determine via sizeof())
+    /// </typename>
+    /// <typename name="WidenFactor">
+    ///   How many times the *decoded* bits have to be repeated to fill the output.
+    ///   -1: Data needs to be truncated
+    ///    0: Data is float, factor does not apply
+    ///   +1: Exact match, only copy
+    ///   +2: Bit pattern needs to be repeated once
+    ///   +3: Bit pattern needs to be tripled
+    /// <typename>
     /// <param name="targets">Buffers into which the channels will be written</param>
     /// <param name="frameCount">Number of frame that should be decoded</param>
     /// <remarks>
-    ///   This method is invoked if the channels need to be separated. Since libopusfile
-    ///   always delivers samples in interleaved format, each sample needs an additional
-    ///   copy this way. If a sample format other than float is the target, it will also
-    ///   performing an SSE2 SIMD-enhanced conversion at the decoded block level.
+    ///   This method is invoked if a target format other than float is requested,
+    ///   performing an SSE2 SIMD-enhanced conversion of the samples to the requested
+    ///   target type at the decoded block level and also separating the channels.
     /// </remarks>
-    private: template<typename TSample>
+    private: template<
+      typename TSample, // output type
+      bool BitsPerSampleOver16 = false, // for decoded bits per sample, not TSample
+      int WidenFactor = 1 // set to 0 if decoded samples are float!
+    >
     void decodeInterleavedConvertAndSeparate(TSample *targets[], std::size_t frameCount);
 
     /// <summary>File the reader is accessing</summary>
@@ -232,16 +247,25 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     private: template<typename TSample>
     using DecodeSeparatedFunction = void (WavPackReader::*)(TSample *[], std::size_t);
 
+    /// <summary>Decodes the opened file's data to interleaved 8-bit integers</summary>
     private: DecodeInterleavedFunction<std::uint8_t> decodeInterleavedUint8;
+    /// <summary>Decodes the opened file's data to interleaved 16-bit integers</summary>
     private: DecodeInterleavedFunction<std::int16_t> decodeInterleavedInt16;
+    /// <summary>Decodes the opened file's data to interleaved 32-bit integers</summary>
     private: DecodeInterleavedFunction<std::int32_t> decodeInterleavedInt32;
+    /// <summary>Decodes the opened file's data to interleaved floats</summary>
     private: DecodeInterleavedFunction<float> decodeInterleavedFloat;
+    /// <summary>Decodes the opened file's data to interleaved doubles</summary>
     private: DecodeInterleavedFunction<double> decodeInterleavedDouble;
-
+    /// <summary>Decodes the opened file's data to separate 8-bit channels</summary>
     private: DecodeSeparatedFunction<std::uint8_t> decodeSeparatedUint8;
+    /// <summary>Decodes the opened file's data to separate 16-bit channels</summary>
     private: DecodeSeparatedFunction<std::int16_t> decodeSeparatedInt16;
+    /// <summary>Decodes the opened file's data to separate 32-bit channels</summary>
     private: DecodeSeparatedFunction<std::int32_t> decodeSeparatedInt32;
+    /// <summary>Decodes the opened file's data to separate float channels</summary>
     private: DecodeSeparatedFunction<float> decodeSeparatedFloat;
+    /// <summary>Decodes the opened file's data to separate double channels</summary>
     private: DecodeSeparatedFunction<double> decodeSeparatedDouble;
 
   };

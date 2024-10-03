@@ -25,8 +25,6 @@ limitations under the License.
 #if defined(NUCLEX_AUDIO_HAVE_WAVPACK)
 
 #include "Nuclex/Audio/TrackInfo.h"
-#include "Nuclex/Audio/Processing/Quantization.h"
-#include "Nuclex/Audio/Processing/Reconstruction.h"
 
 #include "./WavPackVirtualFileAdapter.h"
 #include "../Shared/ChannelOrderFactory.h"

@@ -30,9 +30,42 @@ limitations under the License.
 #include "../../Processing/SineWaveDetector.h"
 #include "../../ExpectRange.h"
 
+#include "Nuclex/Audio/Processing/SampleConverter.h"
+
 namespace {
 
   // ------------------------------------------------------------------------------------------- //
+
+  void verifyStereoTestChannels(const std::vector<float> &samples, std::size_t channelCount) {
+    std::size_t frameCount = samples.size() / channelCount;
+
+    ASSERT_EQ(channelCount, 2U);
+
+    // Left signal should be at 0° phase, 25 Hz and have an amplitude of 1.0
+    {
+      Nuclex::Audio::Processing::SineWaveDetector left;
+      left.DetectAmplitude(samples.data(), frameCount, channelCount);
+      left.AddSamples(samples.data(), frameCount, channelCount);
+
+      EXPECT_RANGE(left.GetFrequency(44100), 24.9f, 25.1f);
+      EXPECT_RANGE(left.GetAmplitude(), 0.9f, 1.1f);
+      EXPECT_RANGE(left.GetPhase360(), -0.5f, 0.5f);
+      EXPECT_LT(left.GetError(), 0.0001f);
+    }
+
+    // Right signal should be at 180° phase, 25 Hz and have an amplitude of 1.0
+    {
+      Nuclex::Audio::Processing::SineWaveDetector right;
+      right.DetectAmplitude(samples.data() + 1, frameCount, channelCount);
+      right.AddSamples(samples.data() + 1, frameCount, channelCount);
+
+      EXPECT_RANGE(right.GetFrequency(44100), 24.9f, 25.1f);
+      EXPECT_RANGE(right.GetAmplitude(), 0.9f, 1.1f);
+      EXPECT_RANGE(right.GetPhase360(), 179.5f, 180.5f); // or -180.0 .. -179.5...
+      EXPECT_LT(right.GetError(), 0.0001f);
+    }
+  }
+
   // ------------------------------------------------------------------------------------------- //
 
 } // anonymous namespace
@@ -97,7 +130,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(WavPackTrackDecoderTest, DecodesFloatingPoint) {
+  TEST(WavPackTrackDecoderTest, DecodesFloatingPointDirect) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
       GetResourcesDirectory() + u8"wavpack-stereo-float32-v416.wv"
     );
@@ -110,34 +143,12 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     std::vector<float> samples(frameCount * channelCount);
     decoder.DecodeInterleaved(samples.data(), 0, frameCount);
 
-    // Left signal should be at 0° phase, 25 Hz and have an amplitude of 1.0
-    {
-      Processing::SineWaveDetector left;
-      left.DetectAmplitude(samples.data(), frameCount * 2, channelCount);
-      left.AddSamples(samples.data(), frameCount * 2, channelCount);
-
-      EXPECT_RANGE(left.GetFrequency(44100), 24.9f, 25.1f);
-      EXPECT_RANGE(left.GetAmplitude(), 0.9f, 1.1f);
-      EXPECT_RANGE(left.GetPhase360(), -0.5f, 0.5f);
-      EXPECT_LT(left.GetError(), 0.0001f);
-    }
-
-    // Right signal should be at 180° phase, 25 Hz and have an amplitude of 1.0
-    {
-      Processing::SineWaveDetector right;
-      right.DetectAmplitude(samples.data() + 1, frameCount * 2, channelCount);
-      right.AddSamples(samples.data() + 1, frameCount * 2, channelCount);
-
-      EXPECT_RANGE(right.GetFrequency(44100), 24.9f, 25.1f);
-      EXPECT_RANGE(right.GetAmplitude(), 0.9f, 1.1f);
-      EXPECT_RANGE(right.GetPhase360(), 179.5f, 180.5f); // or -180.0 .. -179.5...
-      EXPECT_LT(right.GetError(), 0.0001f);
-    }
+    verifyStereoTestChannels(samples, channelCount);
   }
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(WavPackTrackDecoderTest, Decodes24BitQuantized) {
+  TEST(WavPackTrackDecoderTest, Decodes24BitQuantizedToFloat) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
       GetResourcesDirectory() + u8"wavpack-stereo-int24-v416.wv"
     );
@@ -150,29 +161,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     std::vector<float> samples(frameCount * channelCount);
     decoder.DecodeInterleaved(samples.data(), 0, frameCount);
 
-    // Left signal should be at 0° phase, 25 Hz and have an amplitude of 1.0
-    {
-      Processing::SineWaveDetector left;
-      left.DetectAmplitude(samples.data(), frameCount, channelCount);
-      left.AddSamples(samples.data(), frameCount, channelCount);
-
-      EXPECT_RANGE(left.GetFrequency(44100), 24.9f, 25.1f);
-      EXPECT_RANGE(left.GetAmplitude(), 0.9f, 1.1f);
-      EXPECT_RANGE(left.GetPhase360(), -0.5f, 0.5f);
-      EXPECT_LT(left.GetError(), 0.0001f);
-    }
-
-    // Right signal should be at 180° phase, 25 Hz and have an amplitude of 1.0
-    {
-      Processing::SineWaveDetector right;
-      right.DetectAmplitude(samples.data() + 1, frameCount, channelCount);
-      right.AddSamples(samples.data() + 1, frameCount, channelCount);
-
-      EXPECT_RANGE(right.GetFrequency(44100), 24.9f, 25.1f);
-      EXPECT_RANGE(right.GetAmplitude(), 0.9f, 1.1f);
-      EXPECT_RANGE(right.GetPhase360(), 179.5f, 180.5f); // or -180.0 .. -179.5...
-      EXPECT_LT(right.GetError(), 0.0001f);
-    }
+    verifyStereoTestChannels(samples, channelCount);
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -189,6 +178,14 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
     std::vector<std::int16_t> samples(frameCount * channelCount);
     decoder.DecodeInterleaved(samples.data(), 0, frameCount);
+
+    {
+      std::vector<float> floatSamples(frameCount * channelCount);
+      Processing::SampleConverter::Reconstruct(
+        samples.data(), 16, floatSamples.data(), samples.size()
+      );
+      verifyStereoTestChannels(floatSamples, channelCount);
+    }
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -205,6 +202,14 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
     std::vector<std::int32_t> samples(frameCount * channelCount);
     decoder.DecodeInterleaved(samples.data(), 0, frameCount);
+
+    {
+      std::vector<float> floatSamples(frameCount * channelCount);
+      Processing::SampleConverter::Reconstruct(
+        samples.data(), 32, floatSamples.data(), samples.size()
+      );
+      verifyStereoTestChannels(floatSamples, channelCount);
+    }
   }
 
   // ------------------------------------------------------------------------------------------- //

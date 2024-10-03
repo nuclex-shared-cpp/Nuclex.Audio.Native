@@ -471,9 +471,9 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
               );
             }
             ++sampleIndex;
-          }
-        }
-      }
+          } // for each channel
+        } // for each frame
+      } // beauty scope
 
       // Advance the target buffer pointers
       for(std::size_t channelIndex = 0; channelIndex < this->channelCount; ++channelIndex) {
