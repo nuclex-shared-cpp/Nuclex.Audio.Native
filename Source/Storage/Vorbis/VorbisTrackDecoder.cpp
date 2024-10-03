@@ -102,48 +102,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
   void VorbisTrackDecoder::DecodeInterleavedUint8(
     std::uint8_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
-    (void)buffer;
-    (void)startFrame;
-    (void)frameCount;
-    throw std::runtime_error(u8"Not implemented yet");
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  void VorbisTrackDecoder::DecodeInterleavedInt16(
-    std::int16_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
-  ) const {
-    (void)buffer;
-    (void)startFrame;
-    (void)frameCount;
-    throw std::runtime_error(u8"Not implemented yet");
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  void VorbisTrackDecoder::DecodeInterleavedInt32(
-    std::int32_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
-  ) const {
-    (void)buffer;
-    (void)startFrame;
-    (void)frameCount;
-    throw std::runtime_error(u8"Not implemented yet");
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  void VorbisTrackDecoder::DecodeInterleavedFloat(
-    float *buffer, const std::uint64_t startFrame, const std::size_t frameCount
-  ) const {
-    if(std::numeric_limits<std::uint32_t>::max() < frameCount) {
-      throw std::logic_error(u8"Unable to decode this many samples in one call");
-    }
-    if(startFrame >= this->totalFrameCount) {
-      throw std::out_of_range(u8"Start sample index is out of bounds");
-    }
-    if(this->totalFrameCount < startFrame + frameCount) {
-      throw std::out_of_range(u8"Decode sample count goes beyond the end of audio data");
-    }
+    verifyDecodeRange(startFrame, frameCount);
 
     {
       std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
@@ -155,6 +114,70 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
       }
 
       this->reader.DecodeInterleaved(buffer, frameCount);
+
+    } // mutex lock scope
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void VorbisTrackDecoder::DecodeInterleavedInt16(
+    std::int16_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
+  ) const {
+    verifyDecodeRange(startFrame, frameCount);
+
+    {
+      std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
+
+      // If the caller requests to read from a location that is not where the file cursor
+      // is currently at, we need to seek to that position first.
+      if(this->reader.GetFrameCursorPosition() != startFrame) {
+        this->reader.Seek(startFrame);
+      }
+
+      this->reader.DecodeInterleaved(buffer, frameCount);
+
+    } // mutex lock scope
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void VorbisTrackDecoder::DecodeInterleavedInt32(
+    std::int32_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
+  ) const {
+    verifyDecodeRange(startFrame, frameCount);
+
+    {
+      std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
+
+      // If the caller requests to read from a location that is not where the file cursor
+      // is currently at, we need to seek to that position first.
+      if(this->reader.GetFrameCursorPosition() != startFrame) {
+        this->reader.Seek(startFrame);
+      }
+
+      this->reader.DecodeInterleaved(buffer, frameCount);
+
+    } // mutex lock scope
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void VorbisTrackDecoder::DecodeInterleavedFloat(
+    float *buffer, const std::uint64_t startFrame, const std::size_t frameCount
+  ) const {
+    verifyDecodeRange(startFrame, frameCount);
+
+    {
+      std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
+
+      // If the caller requests to read from a location that is not where the file cursor
+      // is currently at, we need to seek to that position first.
+      if(this->reader.GetFrameCursorPosition() != startFrame) {
+        this->reader.Seek(startFrame);
+      }
+
+      this->reader.DecodeInterleaved(buffer, frameCount);
+
     } // mutex lock scope
   }
 
@@ -163,10 +186,20 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
   void VorbisTrackDecoder::DecodeInterleavedDouble(
     double *buffer, const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
-    (void)buffer;
-    (void)startFrame;
-    (void)frameCount;
-    throw std::runtime_error(u8"Not implemented yet");
+    verifyDecodeRange(startFrame, frameCount);
+
+    {
+      std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
+
+      // If the caller requests to read from a location that is not where the file cursor
+      // is currently at, we need to seek to that position first.
+      if(this->reader.GetFrameCursorPosition() != startFrame) {
+        this->reader.Seek(startFrame);
+      }
+
+      this->reader.DecodeInterleaved(buffer, frameCount);
+
+    } // mutex lock scope
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -174,10 +207,20 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
   void VorbisTrackDecoder::DecodeSeparatedUint8(
     std::uint8_t *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
-    (void)buffers;
-    (void)startFrame;
-    (void)frameCount;
-    throw std::runtime_error(u8"Not implemented yet");
+    verifyDecodeRange(startFrame, frameCount);
+
+    {
+      std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
+
+      // If the caller requests to read from a location that is not where the file cursor
+      // is currently at, we need to seek to that position first.
+      if(this->reader.GetFrameCursorPosition() != startFrame) {
+        this->reader.Seek(startFrame);
+      }
+
+      this->reader.DecodeSeparated(buffers, frameCount);
+
+    } // mutex lock scope
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -185,10 +228,20 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
   void VorbisTrackDecoder::DecodeSeparatedInt16(
     std::int16_t *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
-    (void)buffers;
-    (void)startFrame;
-    (void)frameCount;
-    throw std::runtime_error(u8"Not implemented yet");
+    verifyDecodeRange(startFrame, frameCount);
+
+    {
+      std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
+
+      // If the caller requests to read from a location that is not where the file cursor
+      // is currently at, we need to seek to that position first.
+      if(this->reader.GetFrameCursorPosition() != startFrame) {
+        this->reader.Seek(startFrame);
+      }
+
+      this->reader.DecodeSeparated(buffers, frameCount);
+
+    } // mutex lock scope
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -196,10 +249,20 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
   void VorbisTrackDecoder::DecodeSeparatedInt32(
     std::int32_t *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
-    (void)buffers;
-    (void)startFrame;
-    (void)frameCount;
-    throw std::runtime_error(u8"Not implemented yet");
+    verifyDecodeRange(startFrame, frameCount);
+
+    {
+      std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
+
+      // If the caller requests to read from a location that is not where the file cursor
+      // is currently at, we need to seek to that position first.
+      if(this->reader.GetFrameCursorPosition() != startFrame) {
+        this->reader.Seek(startFrame);
+      }
+
+      this->reader.DecodeSeparated(buffers, frameCount);
+
+    } // mutex lock scope
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -207,10 +270,20 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
   void VorbisTrackDecoder::DecodeSeparatedFloat(
     float *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
-    (void)buffers;
-    (void)startFrame;
-    (void)frameCount;
-    throw std::runtime_error(u8"Not implemented yet");
+    verifyDecodeRange(startFrame, frameCount);
+
+    {
+      std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
+
+      // If the caller requests to read from a location that is not where the file cursor
+      // is currently at, we need to seek to that position first.
+      if(this->reader.GetFrameCursorPosition() != startFrame) {
+        this->reader.Seek(startFrame);
+      }
+
+      this->reader.DecodeSeparated(buffers, frameCount);
+
+    } // mutex lock scope
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -218,10 +291,36 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
   void VorbisTrackDecoder::DecodeSeparatedDouble(
     double *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
   ) const {
-    (void)buffers;
-    (void)startFrame;
-    (void)frameCount;
-    throw std::runtime_error(u8"Not implemented yet");
+    verifyDecodeRange(startFrame, frameCount);
+
+    {
+      std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
+
+      // If the caller requests to read from a location that is not where the file cursor
+      // is currently at, we need to seek to that position first.
+      if(this->reader.GetFrameCursorPosition() != startFrame) {
+        this->reader.Seek(startFrame);
+      }
+
+      this->reader.DecodeSeparated(buffers, frameCount);
+
+    } // mutex lock scope
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void VorbisTrackDecoder::verifyDecodeRange(
+    const std::uint64_t startFrame, const std::size_t frameCount
+  ) const {
+    if(std::numeric_limits<std::uint32_t>::max() < frameCount) {
+      throw std::logic_error(u8"Unable to decode this many samples in one call");
+    }
+    if(startFrame >= this->totalFrameCount) {
+      throw std::out_of_range(u8"Start sample index is out of bounds");
+    }
+    if(this->totalFrameCount < startFrame + frameCount) {
+      throw std::out_of_range(u8"Decode sample count goes beyond the end of audio data");
+    }
   }
 
   // ------------------------------------------------------------------------------------------- //

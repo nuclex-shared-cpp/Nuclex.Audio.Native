@@ -29,10 +29,12 @@ limitations under the License.
 #include "../../Platform/VorbisApi.h" // for VorbisApi
 
 #include "Nuclex/Audio/Errors/CorruptedFileError.h"
+#include "Nuclex/Audio/Processing/Quantization.h"
 
 #include "Nuclex/Audio/TrackInfo.h"
 
 #include <stdexcept> // for std::runtime_error
+#include <algorithm> // for std::copy_n()
 #include <cassert> // for assert()
 
 namespace {
@@ -153,14 +155,117 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void VorbisReader::DecodeSeparated(float **&buffer, std::size_t frameCount) {
+  template<> void VorbisReader::DecodeInterleaved<std::uint8_t>(
+    std::uint8_t *target, std::size_t frameCount
+  ) {
+    decodeSeparatedConvertAndInterleave(target, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void VorbisReader::DecodeInterleaved<std::int16_t>(
+    std::int16_t *target, std::size_t frameCount
+  ) {
+    decodeSeparatedConvertAndInterleave(target, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void VorbisReader::DecodeInterleaved<std::int32_t>(
+    std::int32_t *target, std::size_t frameCount
+  ) {
+    decodeSeparatedConvertAndInterleave(target, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void VorbisReader::DecodeInterleaved<float>(
+    float *target, std::size_t frameCount
+  ) {
+    decodeSeparatedConvertAndInterleave(target, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void VorbisReader::DecodeInterleaved<double>(
+    double *target, std::size_t frameCount
+  ) {
+    decodeSeparatedConvertAndInterleave(target, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void VorbisReader::DecodeSeparated<std::uint8_t>(
+    std::uint8_t *targets[], std::size_t frameCount
+  ) {
+    decodeSeparatedAndConvert(targets, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void VorbisReader::DecodeSeparated<std::int16_t>(
+    std::int16_t *targets[], std::size_t frameCount
+  ) {
+    decodeSeparatedAndConvert(targets, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void VorbisReader::DecodeSeparated<std::int32_t>(
+    std::int32_t *targets[], std::size_t frameCount
+  ) {
+    decodeSeparatedAndConvert(targets, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void VorbisReader::DecodeSeparated<float>(
+    float *targets[], std::size_t frameCount
+  ) {
+    decodeSeparatedAndConvert(targets, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void VorbisReader::DecodeSeparated<double>(
+    double *targets[], std::size_t frameCount
+  ) {
+    decodeSeparatedAndConvert(targets, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<typename TSample>
+  void VorbisReader::decodeSeparatedConvertAndInterleave(
+    TSample *target, std::size_t frameCount
+  ) {
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<typename TSample>
+  void VorbisReader::decodeSeparatedAndConvert(
+    TSample *targets[], std::size_t frameCount
+  ) {
+
+    // The channel pointers are in a caller-provided array, if we changed them,
+    // we'd trash the caller's own pointers, so we have to take a copy.
+    std::vector<TSample *> mutableTargets(this->channelCount);
+    for(std::size_t index = 0; index < this->channelCount; ++index) {
+      mutableTargets[index] = targets[index];
+    }
+
     while(frameCount >= 1) {
 
+      // Unfortunately, libvorbisfile will not decode into a buffer we provide,
+      // but hand out its own buffers. This means we are unable to decode directly
+      // into caller-provided buffers and will, at the minimum, have to do a copy.
+      float **samples = nullptr;
       int streamIndex = -1;
       std::size_t decodedFrameCount = Platform::VorbisApi::ReadFloat(
         this->state->Error,
         this->vorbisFile,
-        buffer,
+        samples,
         static_cast<int>(frameCount), // * this->channelCount,
         streamIndex
       );
@@ -169,28 +274,105 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
           u8"Unexpected end of audio stream decoding Vorbis file. File truncated?"
         );
       }
+
+      // Since libvorbisfile deigned the code a success, we need to take record of
+      // the new frame cursor position even if we fail the decode due to some other
+      // issue in the code that follows.
+      this->frameCursor += decodedFrameCount;
+
       if(streamIndex != 0) {
         throw std::runtime_error(
-          u8"Vorbis playback encountered a second stream. Multi-stream files are not supported."
+          u8"Vorbis decoding reached another stream. Multi-stream files are not supported."
         );
       }
 
-      //float *left = samples[0];
-      //float *right = samples[1];
+      // Floating point can be memory-copied into the output buffers unchanged
+      if constexpr(std::is_same<TSample, float>::value) {
+        for(std::size_t channelIndex = 0; channelIndex < this->channelCount; ++channelIndex) {
+          std::copy_n(samples[channelIndex], decodedFrameCount, mutableTargets[channelIndex]);
+          mutableTargets[channelIndex] += decodedFrameCount;
+        }
+      } else if constexpr(std::is_same<TSample, double>::value) { // float -> double
+        for(std::size_t channelIndex = 0; channelIndex < this->channelCount; ++channelIndex) {
+          double *target = mutableTargets[channelIndex];
+          float *source = samples[channelIndex];
+          for(std::size_t sampleIndex = 0; sampleIndex < decodedFrameCount; ++sampleIndex) {
+            target[sampleIndex] = static_cast<double>(source[sampleIndex]);
+          }
 
-      this->frameCursor += decodedFrameCount;
+          mutableTargets[channelIndex] += decodedFrameCount;
+        }
+      } else { // float -> integer
+        typedef typename std::conditional<
+          sizeof(TSample) < 3, float, double
+        >::type LimitType;
+        LimitType limit = static_cast<LimitType>(
+          (std::uint32_t(1) << (sizeof(TSample) * 8 - 1)) - 1
+        );
 
-      buffer += decodedFrameCount * this->channelCount;
-      if(decodedFrameCount > frameCount) {
-        assert((frameCount >= decodedFrameCount) && u8"Read stays within buffer bounds");
-        break;
+        for(std::size_t channelIndex = 0; channelIndex < this->channelCount; ++channelIndex) {
+          std::size_t sampleCount = decodedFrameCount;
+          TSample *target = mutableTargets[channelIndex];
+          float *source = samples[channelIndex];
+
+          while(3 < sampleCount) {
+            std::int32_t scaled[4];
+            Processing::Quantization::MultiplyToNearestInt32x4(
+              source, limit, scaled
+            );
+
+            if constexpr(std::is_same<TSample, std::uint8_t>::value) {
+              target[0] = static_cast<TSample>(scaled[0] + 128);
+              target[1] = static_cast<TSample>(scaled[0] + 128);
+              target[2] = static_cast<TSample>(scaled[0] + 128);
+              target[3] = static_cast<TSample>(scaled[0] + 128);
+            } else {
+              target[0] = static_cast<TSample>(scaled[0]);
+              target[1] = static_cast<TSample>(scaled[0]);
+              target[2] = static_cast<TSample>(scaled[0]);
+              target[3] = static_cast<TSample>(scaled[0]);
+            }
+
+            source += 4;
+            target += 4;
+            sampleCount -=4;
+          }
+          while(0 < sampleCount) {
+            std::int32_t scaled[4];
+            Processing::Quantization::MultiplyToNearestInt32x4(
+              source, limit, scaled
+            );
+
+            if constexpr(std::is_same<TSample, std::uint8_t>::value) {
+              target[0] = static_cast<TSample>(
+                Processing::Quantization::NearestInt32(
+                  static_cast<LimitType>(source[0]) * limit
+                ) + 128
+              );
+            } else {
+              target[0] = static_cast<TSample>(
+                Processing::Quantization::NearestInt32(
+                  static_cast<LimitType>(source[0]) * limit
+                )
+              );
+            }
+
+            ++source;
+            ++target;
+            --sampleCount;
+          }
+
+          mutableTargets[channelIndex] += decodedFrameCount;
+        }
       }
+
       frameCount -= decodedFrameCount;
     }
+
   }
 
   // ------------------------------------------------------------------------------------------- //
-
+#if 0
   void VorbisReader::DecodeInterleaved(float *buffer, std::size_t frameCount) {
     while(frameCount >= 1) {
 
@@ -226,6 +408,44 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
     }
   }
 
+  // ------------------------------------------------------------------------------------------- //
+
+  void VorbisReader::DecodeSeparated(float **&buffer, std::size_t frameCount) {
+    while(frameCount >= 1) {
+
+      int streamIndex = -1;
+      std::size_t decodedFrameCount = Platform::VorbisApi::ReadFloat(
+        this->state->Error,
+        this->vorbisFile,
+        buffer,
+        static_cast<int>(frameCount), // * this->channelCount,
+        streamIndex
+      );
+      if(decodedFrameCount == 0) {
+        throw Errors::CorruptedFileError(
+          u8"Unexpected end of audio stream decoding Vorbis file. File truncated?"
+        );
+      }
+      if(streamIndex != 0) {
+        throw std::runtime_error(
+          u8"Vorbis playback encountered a second stream. Multi-stream files are not supported."
+        );
+      }
+
+      //float *left = samples[0];
+      //float *right = samples[1];
+
+      this->frameCursor += decodedFrameCount;
+
+      buffer += decodedFrameCount * this->channelCount;
+      if(decodedFrameCount > frameCount) {
+        assert((frameCount >= decodedFrameCount) && u8"Read stays within buffer bounds");
+        break;
+      }
+      frameCount -= decodedFrameCount;
+    }
+  }
+#endif
   // ------------------------------------------------------------------------------------------- //
 
 }}}} // namespace Nuclex::Audio::Storage::Vorbis

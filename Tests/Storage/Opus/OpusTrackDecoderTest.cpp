@@ -27,6 +27,7 @@ limitations under the License.
 #include "../ByteArrayAsFile.h"
 #include "../FailingVirtualFile.h"
 #include "../ResourceDirectoryLocator.h"
+#include "../TestAudioVerifier.h"
 #include "../../Processing/SineWaveDetector.h"
 #include "../../ExpectRange.h"
 

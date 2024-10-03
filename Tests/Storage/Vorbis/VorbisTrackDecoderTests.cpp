@@ -27,6 +27,7 @@ limitations under the License.
 #include "../ByteArrayAsFile.h"
 #include "../FailingVirtualFile.h"
 #include "../ResourceDirectoryLocator.h"
+#include "../TestAudioVerifier.h"
 #include "../../Processing/SineWaveDetector.h"
 #include "../../ExpectRange.h"
 
@@ -93,29 +94,26 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
     std::vector<float> samples(frameCount * channelCount);
     decoder.DecodeInterleaved(samples.data(), 0, frameCount);
 
-    // Left signal should be at 0° phase, 25 Hz and have an amplitude of 1.0
-    {
-      Processing::SineWaveDetector left;
-      left.DetectAmplitude(samples.data(), frameCount * 2, channelCount);
-      left.AddSamples(samples.data(), frameCount * 2, channelCount);
+    TestAudioVerifier::VerifyStereo(samples, channelCount);
+  }
 
-      EXPECT_RANGE(left.GetFrequency(48000), 24.8f, 25.2f);
-      EXPECT_RANGE(left.GetAmplitude(), 0.9f, 1.1f);
-      EXPECT_RANGE(left.GetPhase360(), -0.5f, 0.5f);
-      EXPECT_LT(left.GetError(), 0.0001f);
-    }
+  // ------------------------------------------------------------------------------------------- //
 
-    // Right signal should be at 180° phase, 25 Hz and have an amplitude of 1.0
-    {
-      Processing::SineWaveDetector right;
-      right.DetectAmplitude(samples.data() + 1, frameCount * 2, channelCount);
-      right.AddSamples(samples.data() + 1, frameCount * 2, channelCount);
+  TEST(VorbisTrackDecoderTest, DecodesFloatingPointSeparated) {
+    std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
+      GetResourcesDirectory() + u8"vorbis-stereo-v142.ogg"
+    );
 
-      EXPECT_RANGE(right.GetFrequency(48000), 24.8f, 25.2f);
-      EXPECT_RANGE(right.GetAmplitude(), 0.9f, 1.1f);
-      EXPECT_RANGE(right.GetPhase360(), 179.5f, 180.5f); // or -180.0 .. -179.5...
-      EXPECT_LT(right.GetError(), 0.0001f);
-    }
+    VorbisTrackDecoder decoder(file);
+
+    std::size_t frameCount = decoder.CountFrames();
+
+    std::vector<float> leftSamples(frameCount);
+    std::vector<float> rightSamples(frameCount);
+    float *channels[] = { leftSamples.data(), rightSamples.data() };
+    decoder.DecodeSeparated(channels, 0, frameCount);
+
+    TestAudioVerifier::VerifyStereo(leftSamples, rightSamples);
   }
 
   // ------------------------------------------------------------------------------------------- //

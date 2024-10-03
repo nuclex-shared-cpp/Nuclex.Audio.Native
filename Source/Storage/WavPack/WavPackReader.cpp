@@ -30,6 +30,8 @@ limitations under the License.
 #include "../Shared/ChannelOrderFactory.h"
 #include "../../Platform/WavPackApi.h"
 
+#include "Nuclex/Audio/Errors/CorruptedFileError.h"
+
 // This is a bit "nasty" - for efficient decoding, we want to decode
 // from block boundaries and by whole blocks. However, that information is
 // not readily available from the public libwavpack API. One option would

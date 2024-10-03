@@ -152,10 +152,10 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
       // Record the new frame cursor position that the libwavpack decoding context will
       // now have assumes. This is important so we know when a seek is needed, even if
       // we should decide "fail" the decode on our side.
-      frameCursor += unpackedFrameCount;
+      this->frameCursor += unpackedFrameCount;
 
       if(unpackedFrameCount != decodeChunkSize) {
-        throw std::runtime_error(
+        throw Errors::CorruptedFileError(
           u8"libwavpack unpacked a different number of samples than was requested. "
           u8"Truncated file?"
         );
@@ -474,10 +474,10 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
       // Record the new frame cursor position that the libwavpack decoding context will
       // now have assumes. This is important so we know when a seek is needed, even if
       // we should decide "fail" the decode on our side.
-      frameCursor += unpackedFrameCount;
+      this->frameCursor += unpackedFrameCount;
 
       if(unpackedFrameCount != decodeChunkSize) {
-        throw std::runtime_error(
+        throw Errors::CorruptedFileError(
           u8"libwavpack unpacked a different number of samples than was requested. "
           u8"Truncated file?"
         );
@@ -643,8 +643,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
       } // if decoded data is float / int32
 
       // Sort the interleaved samples into each channel buffer. We know that a multiple
-      // of the channel count was decoded (since op_read_float() returns the number of
-      // frames), so we can simply run a nested loop to sort this out.
+      // of the channel count was decoded (since we can only request full frames from
+      // libwavpack), so we can simply run a nested loop to sort this out.
       {
         typedef typename std::conditional<
           targetTypeIsFloat, TSample, std::int32_t
