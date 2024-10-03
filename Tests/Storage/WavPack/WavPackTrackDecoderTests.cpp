@@ -68,6 +68,40 @@ namespace {
 
   // ------------------------------------------------------------------------------------------- //
 
+  void verifyStereoTestChannels(
+    const std::vector<float> &leftSamples, const std::vector<float> &rightSamples
+  ) {
+    std::size_t frameCount = leftSamples.size();
+
+    ASSERT_EQ(leftSamples.size(), rightSamples.size());
+
+    // Left signal should be at 0° phase, 25 Hz and have an amplitude of 1.0
+    {
+      Nuclex::Audio::Processing::SineWaveDetector left;
+      left.DetectAmplitude(leftSamples.data(), frameCount);
+      left.AddSamples(leftSamples.data(), frameCount);
+
+      EXPECT_RANGE(left.GetFrequency(44100), 24.9f, 25.1f);
+      EXPECT_RANGE(left.GetAmplitude(), 0.9f, 1.1f);
+      EXPECT_RANGE(left.GetPhase360(), -0.5f, 0.5f);
+      EXPECT_LT(left.GetError(), 0.0001f);
+    }
+
+    // Right signal should be at 180° phase, 25 Hz and have an amplitude of 1.0
+    {
+      Nuclex::Audio::Processing::SineWaveDetector right;
+      right.DetectAmplitude(rightSamples.data(), frameCount);
+      right.AddSamples(rightSamples.data(), frameCount);
+
+      EXPECT_RANGE(right.GetFrequency(44100), 24.9f, 25.1f);
+      EXPECT_RANGE(right.GetAmplitude(), 0.9f, 1.1f);
+      EXPECT_RANGE(right.GetPhase360(), 179.5f, 180.5f); // or -180.0 .. -179.5...
+      EXPECT_LT(right.GetError(), 0.0001f);
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
 } // anonymous namespace
 
 namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
@@ -148,6 +182,25 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
+  TEST(WavPackTrackDecoderTest, DecodesFloatingPointSeparated) {
+    std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
+      GetResourcesDirectory() + u8"wavpack-stereo-float32-v416.wv"
+    );
+
+    WavPackTrackDecoder decoder(file);
+
+    std::size_t frameCount = decoder.CountFrames();
+
+    std::vector<float> leftSamples(frameCount);
+    std::vector<float> rightSamples(frameCount);
+    float *channels[] = { leftSamples.data(), rightSamples.data() };
+    decoder.DecodeSeparated(channels, 0, frameCount);
+
+    verifyStereoTestChannels(leftSamples, rightSamples);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   TEST(WavPackTrackDecoderTest, Decodes24BitQuantizedToFloat) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
       GetResourcesDirectory() + u8"wavpack-stereo-int24-v416.wv"
@@ -162,6 +215,25 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     decoder.DecodeInterleaved(samples.data(), 0, frameCount);
 
     verifyStereoTestChannels(samples, channelCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(WavPackTrackDecoderTest, Decodes24BitQuantizedToFloatSeparated) {
+    std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
+      GetResourcesDirectory() + u8"wavpack-stereo-int24-v416.wv"
+    );
+
+    WavPackTrackDecoder decoder(file);
+
+    std::size_t frameCount = decoder.CountFrames();
+
+    std::vector<float> leftSamples(frameCount);
+    std::vector<float> rightSamples(frameCount);
+    float *channels[] = { leftSamples.data(), rightSamples.data() };
+    decoder.DecodeSeparated(channels, 0, frameCount);
+
+    verifyStereoTestChannels(leftSamples, rightSamples);
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -190,6 +262,35 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
   // ------------------------------------------------------------------------------------------- //
 
+  TEST(WavPackTrackDecoderTest, Decodes24BitTo16BitQuantizedSeparated) {
+    std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
+      GetResourcesDirectory() + u8"wavpack-stereo-int24-v416.wv"
+    );
+
+    WavPackTrackDecoder decoder(file);
+
+    std::size_t frameCount = decoder.CountFrames();
+
+    std::vector<std::int16_t> leftSamples(frameCount);
+    std::vector<std::int16_t> rightSamples(frameCount);
+    std::int16_t *channels[] = { leftSamples.data(), rightSamples.data() };
+    decoder.DecodeSeparated(channels, 0, frameCount);
+
+    {
+      std::vector<float> leftFloatSamples(frameCount);
+      std::vector<float> rightFloatSamples(frameCount);
+      Processing::SampleConverter::Reconstruct(
+        leftSamples.data(), 16, leftFloatSamples.data(), frameCount
+      );
+      Processing::SampleConverter::Reconstruct(
+        rightSamples.data(), 16, rightFloatSamples.data(), frameCount
+      );
+      verifyStereoTestChannels(leftFloatSamples, rightFloatSamples);
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   TEST(WavPackTrackDecoderTest, Decodes16BitTo32BitQuantized) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
       GetResourcesDirectory() + u8"wavpack-stereo-int16-v416.wv"
@@ -209,6 +310,36 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
         samples.data(), 32, floatSamples.data(), samples.size()
       );
       verifyStereoTestChannels(floatSamples, channelCount);
+    }
+  }
+
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(WavPackTrackDecoderTest, Decodes16BitTo32BitQuantizedSeparated) {
+    std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
+      GetResourcesDirectory() + u8"wavpack-stereo-int16-v416.wv"
+    );
+
+    WavPackTrackDecoder decoder(file);
+
+    std::size_t frameCount = decoder.CountFrames();
+
+    std::vector<std::int32_t> leftSamples(frameCount);
+    std::vector<std::int32_t> rightSamples(frameCount);
+    std::int32_t *channels[] = { leftSamples.data(), rightSamples.data() };
+    decoder.DecodeSeparated(channels, 0, frameCount);
+
+    {
+      std::vector<float> leftFloatSamples(frameCount);
+      std::vector<float> rightFloatSamples(frameCount);
+      Processing::SampleConverter::Reconstruct(
+        leftSamples.data(), 32, leftFloatSamples.data(), frameCount
+      );
+      Processing::SampleConverter::Reconstruct(
+        rightSamples.data(), 32, rightFloatSamples.data(), frameCount
+      );
+      verifyStereoTestChannels(leftFloatSamples, rightFloatSamples);
     }
   }
 

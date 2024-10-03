@@ -286,7 +286,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
         } else { // if target type is ^^ double ^^ / vv integer vv
 
           // If the target data type has fewer bits, samples need to be truncated
-          if constexpr(WidenFactor == -1) {
+          if constexpr(targetIntegerHasFewerBits) {
 
             int truncateShift = shift + this->bitsPerSample - 16;
             for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
@@ -302,7 +302,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
             }
             target += sampleCount;
 
-          } else if constexpr(WidenFactor == 1) { // Same number of bits
+          } else if constexpr(decodedIntegerMatchesTargetBits) { // Same number of bits
 
             // Reasoning: output types are 8, 16 or 32-bit (and 32-bit is handled separately),
             // so if we reach a match, there is no shifting required at all (see note on
@@ -390,13 +390,6 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
         } // if target type is double / integer
 #pragma endregion // Convert integers to floats, doubles or integers
       } // if decoded data is float / int32
-
-      // Buffer was filled by the sample conversion method above, update the buffer pointer
-      // to point to where the next batch of samples needs to be written
-      if(unpackedFrameCount > frameCount) {
-        assert((frameCount >= unpackedFrameCount) && u8"Read stays within buffer bounds");
-        break;
-      }
 
       frameCount -= unpackedFrameCount;
 
@@ -509,7 +502,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
             (std::uint32_t(1) << (sizeof(TSample) * 8 - 1)) - 1
           );
 
-          std::int32_t *convertedInts = reinterpret_cast<std::int32_t>(decodeBuffer.data());
+          std::int32_t *convertedInts = reinterpret_cast<std::int32_t *>(decodeBuffer.data());
           while(3 < sampleCount) {
             Nuclex::Audio::Processing::Quantization::MultiplyToNearestInt32x4(
               decodedFloats, limit, convertedInts
@@ -586,7 +579,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
           std::int32_t *convertedInts = reinterpret_cast<std::int32_t *>(decodeBuffer.data());
 
           // If the target data type has fewer bits, samples need to be truncated
-          if constexpr(WidenFactor == -1) {
+          if constexpr(targetIntegerHasFewerBits) {
 
             int truncateShift = shift + this->bitsPerSample - 16;
             for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
@@ -595,7 +588,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
               );
             }
 
-          } else if constexpr(WidenFactor >= 2) { // target integer is longer, bits need to be extended
+          } else if constexpr(!decodedIntegerMatchesTargetBits) { // target integer is longer
 
             int topShift = 32 - this->bitsPerSample - shift;
             int repeatShift = this->bitsPerSample - 1;
@@ -649,11 +642,35 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 #pragma endregion // Convert integers to floats, doubles or integers
       } // if decoded data is float / int32
 
-      // Buffer was filled by the sample conversion method above, update the buffer pointer
-      // to point to where the next batch of samples needs to be written
-      if(unpackedFrameCount > frameCount) {
-        assert((frameCount >= unpackedFrameCount) && u8"Read stays within buffer bounds");
-        break;
+      // Sort the interleaved samples into each channel buffer. We know that a multiple
+      // of the channel count was decoded (since op_read_float() returns the number of
+      // frames), so we can simply run a nested loop to sort this out.
+      {
+        typedef typename std::conditional<
+          targetTypeIsFloat, TSample, std::int32_t
+        >::type DecodedType;
+        DecodedType *decoded = reinterpret_cast<DecodedType *>(decodeBuffer.data());
+
+        std::size_t sampleIndex = 0;
+        for(std::size_t frameIndex = 0; frameIndex < unpackedFrameCount; ++frameIndex) {
+          for(std::size_t channelIndex = 0; channelIndex < this->channelCount; ++channelIndex) {
+            if constexpr(std::is_same<TSample, std::uint8_t>::value) {
+              mutableTargets[channelIndex][frameIndex] = static_cast<TSample>(
+                decoded[sampleIndex] + 128
+              );
+            } else {
+              mutableTargets[channelIndex][frameIndex] = static_cast<TSample>(
+                decoded[sampleIndex]
+              );
+            }
+            ++sampleIndex;
+          } // for each channel
+        } // for each frame
+      } // beauty scope
+
+      // Advance the target buffer pointers
+      for(std::size_t channelIndex = 0; channelIndex < this->channelCount; ++channelIndex) {
+        mutableTargets[channelIndex] += unpackedFrameCount;
       }
 
       frameCount -= unpackedFrameCount;
