@@ -56,7 +56,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
       right.DetectAmplitude(samples.data() + 1, frameCount, channelCount);
       right.AddSamples(samples.data() + 1, frameCount, channelCount);
 
-      EXPECT_RANGE(right.GetFrequency(44100), 24.9f, 25.1f);
+      EXPECT_RANGE(right.GetFrequency(sampleRate), 24.9f, 25.1f);
       EXPECT_RANGE(right.GetAmplitude(), 0.9f, 1.1f);
       EXPECT_RANGE(right.GetPhase360(), 179.5f, 180.5f); // or -180.0 .. -179.5...
       EXPECT_LT(right.GetError(), 0.0001f);

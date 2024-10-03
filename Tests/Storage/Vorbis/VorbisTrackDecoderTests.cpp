@@ -94,7 +94,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
     std::vector<float> samples(frameCount * channelCount);
     decoder.DecodeInterleaved(samples.data(), 0, frameCount);
 
-    TestAudioVerifier::VerifyStereo(samples, channelCount);
+    TestAudioVerifier::VerifyStereo(samples, channelCount, 48000);
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -113,7 +113,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
     float *channels[] = { leftSamples.data(), rightSamples.data() };
     decoder.DecodeSeparated(channels, 0, frameCount);
 
-    TestAudioVerifier::VerifyStereo(leftSamples, rightSamples);
+    TestAudioVerifier::VerifyStereo(leftSamples, rightSamples, 48000);
   }
 
   // ------------------------------------------------------------------------------------------- //
