@@ -243,8 +243,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
     while(0 < frameCount) {
 
       // Unfortunately, libvorbisfile will not decode into a buffer we provide,
-      // but hand out its own buffers. This means we are unable to decode directly
-      // into caller-provided buffers and will, at the minimum, have to do a copy.
+      // but hand out its own buffers.
       float **samples = nullptr;
       int streamIndex = -1;
       std::size_t decodedFrameCount = Platform::VorbisApi::ReadFloat(
@@ -324,11 +323,6 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
             sampleCount -=4;
           }
           while(0 < sampleCount) {
-            std::int32_t scaled[4];
-            Processing::Quantization::MultiplyToNearestInt32x4(
-              source, limit, scaled
-            );
-
             if constexpr(std::is_same<TSample, std::uint8_t>::value) {
               channelTarget[0] = static_cast<TSample>(
                 Processing::Quantization::NearestInt32(
@@ -454,11 +448,6 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
             sampleCount -=4;
           }
           while(0 < sampleCount) {
-            std::int32_t scaled[4];
-            Processing::Quantization::MultiplyToNearestInt32x4(
-              source, limit, scaled
-            );
-
             if constexpr(std::is_same<TSample, std::uint8_t>::value) {
               target[0] = static_cast<TSample>(
                 Processing::Quantization::NearestInt32(
