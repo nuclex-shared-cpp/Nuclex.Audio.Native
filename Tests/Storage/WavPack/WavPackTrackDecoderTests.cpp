@@ -249,7 +249,6 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     }
   }
 
-
   // ------------------------------------------------------------------------------------------- //
 
   TEST(WavPackTrackDecoderTest, Decodes16BitTo32BitQuantizedSeparated) {
