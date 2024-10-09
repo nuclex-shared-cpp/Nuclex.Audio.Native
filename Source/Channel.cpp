@@ -21,24 +21,14 @@ License along with this library
 // If the library is compiled as a DLL, this ensures symbols are exported
 #define NUCLEX_AUDIO_SOURCE 1
 
-#include "Nuclex/Audio/Track.h"
+#include "Nuclex/Audio/Channel.h"
 
 namespace Nuclex { namespace Audio {
 
   // ------------------------------------------------------------------------------------------- //
 
-  void TrackBase::SetName(
-    const std::optional<std::string> &newName /* = std::optional<std::string>() */
-  ) {
-    this->name = newName;
-  }
-
-  // ------------------------------------------------------------------------------------------- //
-
-  void TrackBase::SetLanguageCode(
-    const std::optional<std::string> &newLanguageCode /* = std::optional<std::string>() */
-  ) {
-    this->languageCode = newLanguageCode;
+  void ChannelBase::SetPlacement(ChannelPlacement newPlacement) {
+    this->placement= newPlacement;
   }
 
   // ------------------------------------------------------------------------------------------- //

@@ -30,7 +30,13 @@ namespace Nuclex { namespace Audio {
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Audio track containing a variable number of channels</summary>
-  class NUCLEX_AUDIO_TYPE Track {
+  class NUCLEX_AUDIO_TYPE TrackBase {
+
+    public: NUCLEX_AUDIO_API TrackBase() :
+      name(),
+      languageCode() {}
+
+    public: NUCLEX_AUDIO_API ~TrackBase() = default;
 
 
     /// <summary>The name of this audio track, if provided by the container</summary>

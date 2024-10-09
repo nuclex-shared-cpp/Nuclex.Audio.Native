@@ -61,8 +61,23 @@
     <ClInclude Include="Include\Nuclex\Audio\Errors\CorruptedFileError.h">
       <Filter>Include\Errors</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Nuclex\Audio\Storage\VirtualFile.h">
-      <Filter>Include\Storage</Filter>
+    <ClInclude Include="Include\Nuclex\Audio\Processing\BitExtension.h">
+      <Filter>Include\Processing</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\Processing\DecibelConverter.h">
+      <Filter>Include\Processing</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\Processing\Quantization.h">
+      <Filter>Include\Processing</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\Processing\Reconstruction.h">
+      <Filter>Include\Processing</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\Processing\SampleConverter.h">
+      <Filter>Include\Processing</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\Processing\VolumeDetector.h">
+      <Filter>Include\Processing</Filter>
     </ClInclude>
     <ClInclude Include="Include\Nuclex\Audio\Storage\AudioCodec.h">
       <Filter>Include\Storage</Filter>
@@ -71,6 +86,9 @@
       <Filter>Include\Storage</Filter>
     </ClInclude>
     <ClInclude Include="Include\Nuclex\Audio\Storage\AudioTrackDecoder.h">
+      <Filter>Include\Storage</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\Storage\VirtualFile.h">
       <Filter>Include\Storage</Filter>
     </ClInclude>
     <ClInclude Include="Include\Nuclex\Audio\AudioSampleFormat.h">
@@ -93,60 +111,6 @@
     </ClInclude>
     <ClInclude Include="Include\Nuclex\Audio\TrackInfo.h">
       <Filter>Include</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Storage\Shared\ChannelOrderFactory.h">
-      <Filter>Source\Storage\Shared</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Storage\Opus\OpusReader.h">
-      <Filter>Source\Storage\Opus</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Storage\Opus\OpusTrackDecoder.h">
-      <Filter>Source\Storage\Opus</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Storage\Vorbis\VorbisAudioCodec.h">
-      <Filter>Source\Storage\Vorbis</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Storage\Vorbis\VorbisDetection.h">
-      <Filter>Source\Storage\Vorbis</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Storage\Vorbis\VorbisReader.h">
-      <Filter>Source\Storage\Vorbis</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Storage\Vorbis\VorbisTrackDecoder.h">
-      <Filter>Source\Storage\Vorbis</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Storage\Vorbis\VorbisVirtualFileAdapter.h">
-      <Filter>Source\Storage\Vorbis</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Platform\VorbisApi.h">
-      <Filter>Source\Platform</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Storage\Waveform\WaveformParser.h">
-      <Filter>Source\Storage\Waveform</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Storage\Waveform\WaveformTrackDecoder.h">
-      <Filter>Source\Storage\Waveform</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Nuclex\Audio\Processing\DecibelConverter.h">
-      <Filter>Include\Processing</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Nuclex\Audio\Processing\SampleConverter.h">
-      <Filter>Include\Processing</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Nuclex\Audio\Processing\VolumeDetector.h">
-      <Filter>Include\Processing</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Nuclex\Audio\Processing\BitExtension.h">
-      <Filter>Include\Processing</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Nuclex\Audio\Processing\Quantization.h">
-      <Filter>Include\Processing</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Nuclex\Audio\Processing\Reconstruction.h">
-      <Filter>Include\Processing</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Nuclex\Audio\Storage\AudioTrackDecoderInternal.h">
-      <Filter>Include\Storage</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -186,6 +150,12 @@
     <ClInclude Include="Source\Platform\PosixFileApi.h">
       <Filter>Source\Platform</Filter>
     </ClInclude>
+    <ClCompile Include="Source\Platform\VorbisApi.cpp">
+      <Filter>Source\Platform</Filter>
+    </ClCompile>
+    <ClInclude Include="Source\Platform\VorbisApi.h">
+      <Filter>Source\Platform</Filter>
+    </ClInclude>
     <ClCompile Include="Source\Platform\WavPackApi.cpp">
       <Filter>Source\Platform</Filter>
     </ClCompile>
@@ -203,6 +173,36 @@
     </ClCompile>
     <ClInclude Include="Source\Platform\WindowsFileApi.h">
       <Filter>Source\Platform</Filter>
+    </ClInclude>
+    <ClCompile Include="Source\Processing\BitExtension.cpp">
+      <Filter>Source\Processing</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Processing\DecibelConverter.cpp">
+      <Filter>Source\Processing</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Processing\Quantization.cpp">
+      <Filter>Source\Processing</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Processing\Reconstruction.cpp">
+      <Filter>Source\Processing</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Processing\SampleConverter.cpp">
+      <Filter>Source\Processing</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Processing\VolumeDetector.cpp">
+      <Filter>Source\Processing</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\Flac\FlacAudioCodec.cpp">
+      <Filter>Source\Storage\Flac</Filter>
+    </ClCompile>
+    <ClInclude Include="Source\Storage\Flac\FlacAudioCodec.h">
+      <Filter>Source\Storage\Flac</Filter>
+    </ClInclude>
+    <ClCompile Include="Source\Storage\Flac\FlacDetection.cpp">
+      <Filter>Source\Storage\Flac</Filter>
+    </ClCompile>
+    <ClInclude Include="Source\Storage\Flac\FlacDetection.h">
+      <Filter>Source\Storage\Flac</Filter>
     </ClInclude>
     <ClCompile Include="Source\Storage\Flac\FlacReader.cpp">
       <Filter>Source\Storage\Flac</Filter>
@@ -222,18 +222,6 @@
     <ClInclude Include="Source\Storage\Flac\FlacVirtualFileAdapter.h">
       <Filter>Source\Storage\Flac</Filter>
     </ClInclude>
-    <ClCompile Include="Source\Storage\Flac\FlacAudioCodec.cpp">
-      <Filter>Source\Storage\Flac</Filter>
-    </ClCompile>
-    <ClInclude Include="Source\Storage\Flac\FlacAudioCodec.h">
-      <Filter>Source\Storage\Flac</Filter>
-    </ClInclude>
-    <ClCompile Include="Source\Storage\Flac\FlacDetection.cpp">
-      <Filter>Source\Storage\Flac</Filter>
-    </ClCompile>
-    <ClInclude Include="Source\Storage\Flac\FlacDetection.h">
-      <Filter>Source\Storage\Flac</Filter>
-    </ClInclude>
     <ClCompile Include="Source\Storage\Opus\OpusAudioCodec.cpp">
       <Filter>Source\Storage\Opus</Filter>
     </ClCompile>
@@ -244,6 +232,18 @@
       <Filter>Source\Storage\Opus</Filter>
     </ClCompile>
     <ClInclude Include="Source\Storage\Opus\OpusDetection.h">
+      <Filter>Source\Storage\Opus</Filter>
+    </ClInclude>
+    <ClCompile Include="Source\Storage\Opus\OpusReader.cpp">
+      <Filter>Source\Storage\Opus</Filter>
+    </ClCompile>
+    <ClInclude Include="Source\Storage\Opus\OpusReader.h">
+      <Filter>Source\Storage\Opus</Filter>
+    </ClInclude>
+    <ClCompile Include="Source\Storage\Opus\OpusTrackDecoder.cpp">
+      <Filter>Source\Storage\Opus</Filter>
+    </ClCompile>
+    <ClInclude Include="Source\Storage\Opus\OpusTrackDecoder.h">
       <Filter>Source\Storage\Opus</Filter>
     </ClInclude>
     <ClCompile Include="Source\Storage\Opus\OpusVirtualFileAdapter.cpp">
@@ -258,11 +258,41 @@
     <ClInclude Include="Source\Storage\Shared\VirtualFileAdapterState.h">
       <Filter>Source\Storage\Shared</Filter>
     </ClInclude>
-    <ClCompile Include="Source\Storage\Waveform\WaveformReader.cpp">
-      <Filter>Source\Storage\Waveform</Filter>
+    <ClCompile Include="Source\Storage\Shared\ChannelOrderFactory.cpp">
+      <Filter>Source\Storage\Shared</Filter>
     </ClCompile>
-    <ClInclude Include="Source\Storage\Waveform\WaveformReader.h">
-      <Filter>Source\Storage\Waveform</Filter>
+    <ClInclude Include="Source\Storage\Shared\ChannelOrderFactory.h">
+      <Filter>Source\Storage\Shared</Filter>
+    </ClInclude>
+    <ClCompile Include="Source\Storage\Vorbis\VorbisAudioCodec.cpp">
+      <Filter>Source\Storage\Vorbis</Filter>
+    </ClCompile>
+    <ClInclude Include="Source\Storage\Vorbis\VorbisAudioCodec.h">
+      <Filter>Source\Storage\Vorbis</Filter>
+    </ClInclude>
+    <ClCompile Include="Source\Storage\Vorbis\VorbisDetection.cpp">
+      <Filter>Source\Storage\Vorbis</Filter>
+    </ClCompile>
+    <ClInclude Include="Source\Storage\Vorbis\VorbisDetection.h">
+      <Filter>Source\Storage\Vorbis</Filter>
+    </ClInclude>
+    <ClCompile Include="Source\Storage\Vorbis\VorbisReader.cpp">
+      <Filter>Source\Storage\Vorbis</Filter>
+    </ClCompile>
+    <ClInclude Include="Source\Storage\Vorbis\VorbisReader.h">
+      <Filter>Source\Storage\Vorbis</Filter>
+    </ClInclude>
+    <ClCompile Include="Source\Storage\Vorbis\VorbisTrackDecoder.cpp">
+      <Filter>Source\Storage\Vorbis</Filter>
+    </ClCompile>
+    <ClInclude Include="Source\Storage\Vorbis\VorbisTrackDecoder.h">
+      <Filter>Source\Storage\Vorbis</Filter>
+    </ClInclude>
+    <ClCompile Include="Source\Storage\Vorbis\VorbisVirtualFileAdapter.cpp">
+      <Filter>Source\Storage\Vorbis</Filter>
+    </ClCompile>
+    <ClInclude Include="Source\Storage\Vorbis\VorbisVirtualFileAdapter.h">
+      <Filter>Source\Storage\Vorbis</Filter>
     </ClInclude>
     <ClCompile Include="Source\Storage\Waveform\WaveformAudioCodec.cpp">
       <Filter>Source\Storage\Waveform</Filter>
@@ -274,6 +304,27 @@
       <Filter>Source\Storage\Waveform</Filter>
     </ClCompile>
     <ClInclude Include="Source\Storage\Waveform\WaveformDetection.h">
+      <Filter>Source\Storage\Waveform</Filter>
+    </ClInclude>
+    <ClCompile Include="Source\Storage\Waveform\WaveformParser.cpp">
+      <Filter>Source\Storage\Waveform</Filter>
+    </ClCompile>
+    <ClInclude Include="Source\Storage\Waveform\WaveformParser.h">
+      <Filter>Source\Storage\Waveform</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Storage\Waveform\WaveformReader.Conversion.inl">
+      <Filter>Source\Storage\Waveform</Filter>
+    </ClInclude>
+    <ClCompile Include="Source\Storage\Waveform\WaveformReader.cpp">
+      <Filter>Source\Storage\Waveform</Filter>
+    </ClCompile>
+    <ClInclude Include="Source\Storage\Waveform\WaveformReader.h">
+      <Filter>Source\Storage\Waveform</Filter>
+    </ClInclude>
+    <ClCompile Include="Source\Storage\Waveform\WaveformTrackDecoder.cpp">
+      <Filter>Source\Storage\Waveform</Filter>
+    </ClCompile>
+    <ClInclude Include="Source\Storage\Waveform\WaveformTrackDecoder.h">
       <Filter>Source\Storage\Waveform</Filter>
     </ClInclude>
     <ClCompile Include="Source\Storage\WavPack\WavPackAudioCodec.cpp">
@@ -291,6 +342,9 @@
     <ClCompile Include="Source\Storage\WavPack\WavPackReader.cpp">
       <Filter>Source\Storage\WavPack</Filter>
     </ClCompile>
+    <ClInclude Include="Source\Storage\WavPack\WavPackReader.Decoding.inl">
+      <Filter>Source\Storage\WavPack</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Storage\WavPack\WavPackReader.h">
       <Filter>Source\Storage\WavPack</Filter>
     </ClInclude>
@@ -306,21 +360,33 @@
     <ClInclude Include="Source\Storage\WavPack\WavPackVirtualFileAdapter.h">
       <Filter>Source\Storage\WavPack</Filter>
     </ClInclude>
+    <ClCompile Include="Source\Storage\AudioLoader.cpp">
+      <Filter>Source\Storage</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Storage\AudioTrackDecoder.cpp">
       <Filter>Source\Storage</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Storage\EndianReader.cpp">
-      <Filter>Source\Storage</Filter>
+    <ClCompile Include="Source\Storage\AudioTrackDecoderInternal.cpp">
+      <Filter>Source</Filter>
     </ClCompile>
-    <ClInclude Include="Source\Storage\RealFile.h">
-      <Filter>Source\Storage</Filter>
-    </ClInclude>
-    <ClCompile Include="Source\Storage\AudioLoader.cpp">
+    <ClCompile Include="Source\Storage\EndianReader.cpp">
       <Filter>Source\Storage</Filter>
     </ClCompile>
     <ClInclude Include="Source\Storage\EndianReader.h">
       <Filter>Source\Storage</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Storage\RealFile.h">
+      <Filter>Source\Storage</Filter>
+    </ClInclude>
+    <ClCompile Include="Source\Storage\RealFile.Linux.cpp">
+      <Filter>Source\Storage</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\RealFile.Posix.cpp">
+      <Filter>Source\Storage</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\RealFile.Windows.cpp">
+      <Filter>Source\Storage</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Storage\VirtualFile.cpp">
       <Filter>Source\Storage</Filter>
     </ClCompile>
@@ -342,69 +408,19 @@
     <ClCompile Include="Source\TrackInfo.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Storage\Shared\ChannelOrderFactory.cpp">
-      <Filter>Source\Storage\Shared</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Storage\Opus\OpusReader.cpp">
-      <Filter>Source\Storage\Opus</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Storage\Opus\OpusTrackDecoder.cpp">
-      <Filter>Source\Storage\Opus</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Storage\Vorbis\VorbisAudioCodec.cpp">
-      <Filter>Source\Storage\Vorbis</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Storage\Vorbis\VorbisDetection.cpp">
-      <Filter>Source\Storage\Vorbis</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Storage\Vorbis\VorbisReader.cpp">
-      <Filter>Source\Storage\Vorbis</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Storage\Vorbis\VorbisTrackDecoder.cpp">
-      <Filter>Source\Storage\Vorbis</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Storage\Vorbis\VorbisVirtualFileAdapter.cpp">
-      <Filter>Source\Storage\Vorbis</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Platform\VorbisApi.cpp">
-      <Filter>Source\Platform</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Storage\Waveform\WaveformParser.cpp">
-      <Filter>Source\Storage\Waveform</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Storage\Waveform\WaveformTrackDecoder.cpp">
-      <Filter>Source\Storage\Waveform</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Processing\DecibelConverter.cpp">
-      <Filter>Source\Processing</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Processing\SampleConverter.cpp">
-      <Filter>Source\Processing</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Processing\VolumeDetector.cpp">
-      <Filter>Source\Processing</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Processing\BitExtension.cpp">
-      <Filter>Source\Processing</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Processing\Quantization.cpp">
-      <Filter>Source\Processing</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Processing\Reconstruction.cpp">
-      <Filter>Source\Processing</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Storage\RealFile.Linux.cpp">
-      <Filter>Source\Storage</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Storage\RealFile.Posix.cpp">
-      <Filter>Source\Storage</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Storage\RealFile.Windows.cpp">
-      <Filter>Source\Storage</Filter>
+    <ClCompile Include="Source\Channel.cpp">
+      <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Nuclex.Audio.Native.def">
+      <Filter>Resources</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
     <Text Include="Documents\EventBenchmark.md" />
+  </ItemGroup>
+  <ItemGroup>
     <Text Include="ReadMe.md" />
     <Text Include="Notice.md" />
     <Text Include="License.md" />
@@ -412,10 +428,5 @@
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Nuclex.Support.Native.ref" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Source\Storage\WavPack\WavPackReader.Decoding.inl">
-      <Filter>Source\Storage\WavPack</Filter>
-    </None>
   </ItemGroup>
 </Project>
