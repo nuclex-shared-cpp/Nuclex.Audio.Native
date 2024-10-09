@@ -32,6 +32,8 @@ License along with this library
 #include <cstdio> // for FILE, ::fopen(), etc.
 #endif
 
+#include <mutex> // for std::mutex
+
 namespace Nuclex { namespace Audio { namespace Storage {
 
   // ------------------------------------------------------------------------------------------- //
@@ -86,6 +88,8 @@ namespace Nuclex { namespace Audio { namespace Storage {
     private: std::uint64_t length;
     /// <summary>Current position within the file</summary>
     private: mutable std::uint64_t position;
+    /// <summary>Mutex that must be held for seeking and reading</summary>
+    private: mutable std::mutex readMutex;
 
   };
 

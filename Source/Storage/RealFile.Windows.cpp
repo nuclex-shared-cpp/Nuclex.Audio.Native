@@ -62,6 +62,8 @@ namespace Nuclex { namespace Audio { namespace Storage {
   void RealFile::ReadAt(
     std::uint64_t start, std::size_t byteCount, std::byte *buffer
   ) const {
+    std::lock_guard<std::mutex> readMutexScope(this->readMutex);
+
     if(start != this->position) {
       Platform::WindowsFileApi::Seek(this->fileHandle, start, FILE_BEGIN);
       this->position = start;
@@ -91,6 +93,8 @@ namespace Nuclex { namespace Audio { namespace Storage {
   void RealFile::WriteAt(
     std::uint64_t start, std::size_t byteCount, const std::byte *buffer
   ) {
+    std::lock_guard<std::mutex> readMutexScope(this->readMutex);
+
     if(start != this->position) {
       if(start > this->length) { // Don't allow writing past end with gap
         Platform::WindowsFileApi::ThrowExceptionForFileAccessError(
