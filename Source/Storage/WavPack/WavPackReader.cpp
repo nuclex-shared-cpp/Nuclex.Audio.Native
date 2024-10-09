@@ -490,6 +490,6 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
 }}}} // namespace Nuclex::Audio::Storage::WavPack
 
-#include "WavPackReader.Decoding.inl"
+#include "./WavPackReader.Decoding.inl"
 
 #endif // defined(NUCLEX_AUDIO_HAVE_WAVPACK)

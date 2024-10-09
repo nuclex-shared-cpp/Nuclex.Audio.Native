@@ -147,26 +147,21 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     void DecodeSeparated(TSample *targets[], std::size_t frameCount);
 
     /// <summary>Decodes samples from the audio file and converts them</summary>
-    /// <typename name="TSample">Type of samples to convert to</typename>
-    /// <typename name="BitsPerSampleOver16">
+    /// <typeparam name="TSample">Type of samples to convert to</typeparam>
+    /// <typeparam name="BitsPerSampleOver16">
     ///   Whether the *decoded* bits per sample is above 16 (whether the output
     ///   type has more than 16 bits is trivial to determine via sizeof())
-    /// </typename>
-    /// <typename name="WidenFactor">
+    /// </typeparam>
+    /// <typeparam name="WidenFactor">
     ///   How many times the *decoded* bits have to be repeated to fill the output.
     ///   -1: Data needs to be truncated
     ///    0: Data is float, factor does not apply
     ///   +1: Exact match, only copy
     ///   +2: Bit pattern needs to be repeated once
     ///   +3: Bit pattern needs to be tripled
-    /// <typename>
+    /// </typeparam>
     /// <param name="target">Buffer into which the samples will be written</param>
-    /// <param name="frameCount">Number of frame that should be decoded</param>
-    /// <remarks>
-    ///   This method is invoked if a target format other than float is requested,
-    ///   performing an SSE2 SIMD-enhanced conversion of the samples to the requested
-    ///   target type at the decoded block level.
-    /// </remarks>
+    /// <param name="frameCount">Number of frames that should be decoded</param>
     private: template<
       typename TSample, // output type
       bool BitsPerSampleOver16 = false, // for decoded bits per sample, not TSample
@@ -175,19 +170,19 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
     void decodeInterleavedAndConvert(TSample *target, std::size_t frameCount);
 
     /// <summary>Decodes samples from the audio file and converts them</summary>
-    /// <typename name="TSample">Type of samples to convert to</typename>
-    /// <typename name="BitsPerSampleOver16">
+    /// <typeparam name="TSample">Type of samples to convert to</typeparam>
+    /// <typeparam name="BitsPerSampleOver16">
     ///   Whether the *decoded* bits per sample is above 16 (whether the output
     ///   type has more than 16 bits is trivial to determine via sizeof())
-    /// </typename>
-    /// <typename name="WidenFactor">
+    /// </typeparam>
+    /// <typeparam name="WidenFactor">
     ///   How many times the *decoded* bits have to be repeated to fill the output.
     ///   -1: Data needs to be truncated
     ///    0: Data is float, factor does not apply
     ///   +1: Exact match, only copy
     ///   +2: Bit pattern needs to be repeated once
     ///   +3: Bit pattern needs to be tripled
-    /// <typename>
+    /// </typeparam>
     /// <param name="targets">Buffers into which the channels will be written</param>
     /// <param name="frameCount">Number of frame that should be decoded</param>
     /// <remarks>

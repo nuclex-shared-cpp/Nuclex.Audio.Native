@@ -36,17 +36,20 @@ limitations under the License.
 //
 // Below you'll find two rather complex templated methods that use compile-time 'if constexpr'
 // to build the exact code path to convert to the 5 supported output formats. Overall, each of
-// the two methods has 17 specializations generated at compile time. The 5 selected
-// specializations are referenced by function pointer, allowing the CPU to see where the code
-// is going without even doing branch prediction.
+// the two methods has fewer than 17 specializations generated at compile time. The 5 selected
+// specializations matching an opened file's sample format are referenced by function pointer,
+// allowing the CPU to see where the code is going without even doing branch prediction.
 //
 // Whether compile-time checks or runtime checks, the complexity is there regardless, however.
 // I haven't found a more elegant way to express this:
+//
 //   - Turning it into yet another level of indirection via a 'DecodedSampleConverter' class
 //     or something would turn what compiles into a simple loop into a complex nest of methods.
+//
 //   - Copy and pasting the method into 17 variants would reveal to the reader that it is
 //     actually just one almost trivial decoding loop that it comes down to, but duplicate
 //     all the code for the loop, chunking, decode call, etc.
+//
 //   - Runtime code generation goes against my simplicity principle. This library's code should
 //     be something you stuff into 'yer olde C++ compiler and obtain a binary that works,
 //     not a binary that fails at runtime because it can't generate code for your RISC-V CPU
@@ -75,7 +78,7 @@ namespace {
       decodeChunkSize = static_cast<std::size_t>(
         GET_BLOCK_INDEX(context->streams[0]->wphdr) +
         context->streams[0]->wphdr.block_samples -
-        context->streams[0]->sample_index
+        0 // context->streams[0]->sample_index // We might be reading more than this block only
       );
 #else
       decodeChunkSize = this->sampleRate / 2;
@@ -246,7 +249,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
         // This shift moves the sample bits to the right so the entire sample value is
         // in the least significant bits and the limit calculated above fits.
         //
-        std::size_t shift = this->bytesPerSample * 8 - this->bitsPerSample;
+        int shift = static_cast<int>(this->bytesPerSample * 8 - this->bitsPerSample);
 
         if constexpr(targetTypeIsFloat) {
 
@@ -288,7 +291,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
           // If the target data type has fewer bits, samples need to be truncated
           if constexpr(targetIntegerHasFewerBits) {
 
-            int truncateShift = shift + this->bitsPerSample - 16;
+            int truncateShift = static_cast<int>(shift + this->bitsPerSample - 16);
             for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
               if constexpr(std::is_same<TSample, std::uint8_t>::value) {
                 target[sampleIndex] = static_cast<TSample>(
@@ -318,8 +321,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
           } else { // target integer is longer, bits need to be extended
 
-            int topShift = 32 - this->bitsPerSample - shift;
-            int repeatShift = this->bitsPerSample - 1;
+            int topShift = static_cast<int>(32 - this->bitsPerSample - shift);
+            int repeatShift = static_cast<int>(this->bitsPerSample - 1);
 
             // Build a mask that will cover the bits that should be occupied after
             // the first "repeat shift" - this is needed to cut off the sign bit
@@ -538,7 +541,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
         // This shift moves the sample bits to the right so the entire sample value is
         // in the least significant bits and the limit calculated above fits.
         //
-        std::size_t shift = this->bytesPerSample * 8 - this->bitsPerSample;
+        int shift = static_cast<int>(this->bytesPerSample * 8 - this->bitsPerSample);
 
         if constexpr(targetTypeIsFloat) {
 
@@ -554,7 +557,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
           // Now convert the samples. Negative numbers make it through this because C++ is
           // doing arithmetic shifts on the int32s and the signal reconstruction code casts
           // whole int32s to floats/doubles.
-          float *convertedFloats = reinterpret_cast<float *>(decodeBuffer.data());
+          TSample *convertedFloats = reinterpret_cast<TSample *>(decodeBuffer.data());
           while(3 < sampleCount) {
             Nuclex::Audio::Processing::Reconstruction::ShiftAndDivideInt32ToFloatx4(
               decodedInts, shift, limit, convertedFloats
@@ -581,7 +584,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
           // If the target data type has fewer bits, samples need to be truncated
           if constexpr(targetIntegerHasFewerBits) {
 
-            int truncateShift = shift + this->bitsPerSample - 16;
+            int truncateShift = static_cast<int>(shift + this->bitsPerSample - 16);
             for(std::size_t sampleIndex = 0; sampleIndex < sampleCount; ++sampleIndex) {
               convertedInts[sampleIndex] = static_cast<TSample>(
                 decodedInts[sampleIndex] >> truncateShift
@@ -590,8 +593,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace WavPack {
 
           } else if constexpr(!decodedIntegerMatchesTargetBits) { // target integer is longer
 
-            int topShift = 32 - this->bitsPerSample - shift;
-            int repeatShift = this->bitsPerSample - 1;
+            int topShift = static_cast<int>(32 - this->bitsPerSample - shift);
+            int repeatShift = static_cast<int>(this->bitsPerSample - 1);
 
             // Build a mask that will cover the bits that should be occupied after
             // the first "repeat shift" - this is needed to cut off the sign bit
