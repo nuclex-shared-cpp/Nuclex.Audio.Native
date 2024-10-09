@@ -54,6 +54,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
     this->channelOrder = this->reader.GetChannelOrder();
 
     this->totalFrameCount = this->reader.CountTotalFrames();
+
+    this->reader.PrepareForReading();
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -144,13 +146,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
       throw std::out_of_range(u8"Decode sample count goes beyond the end of audio data");
     }
 
-    {
-      std::lock_guard<std::mutex> decodingMutexScope(this->decodingMutex);
-
-      //this->reader.DecodeInterleaved(buffer, frameCount);
-      (void)buffer;
-
-    } // mutex lock scope
+    this->reader.ReadInterleaved<float>(buffer, startFrame, frameCount);
   }
 
   // ------------------------------------------------------------------------------------------- //

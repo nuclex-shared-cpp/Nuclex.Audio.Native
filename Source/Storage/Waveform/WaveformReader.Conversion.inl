@@ -70,7 +70,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
       if(frameCount < readChunkSize) {
         readFrameCount = frameCount;
       } else {
-        readChunkSize = readChunkSize;
+        readFrameCount = readChunkSize;
       }
 
       // Read into our intermediate buffer.
@@ -81,6 +81,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
       );
       startFrame += readFrameCount;
 
+      std::size_t readSampleCount = readFrameCount * this->trackInfo.ChannelCount;
+
       if constexpr(storedSamplesAreFloat) {
         typedef typename std::conditional<
           WidenFactor == -1, float, double // -1 indicates float, -2 indicates double
@@ -90,10 +92,10 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
         if constexpr(targetTypeIsFloat) {
 
           // Whether target is float or double -> just cast the floats
-          for(std::size_t sampleIndex = 0; sampleIndex < readFrameCount; ++sampleIndex) {
+          for(std::size_t sampleIndex = 0; sampleIndex < readSampleCount; ++sampleIndex) {
             target[sampleIndex] = static_cast<double>(decodedFloats[sampleIndex]);
           }
-          target += readFrameCount;
+          target += readSampleCount;
 
         } else { // if target type is ^^ floating point ^^ / vv integer vv
 
@@ -106,7 +108,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
             (std::uint32_t(1) << (sizeof(TSample) * 8 - 1)) - 1
           );
 
-          while(3 < readFrameCount) {
+          while(3 < readSampleCount) {
             std::int32_t scaled[4];
             Nuclex::Audio::Processing::Quantization::MultiplyToNearestInt32x4(
               decodedFloats, limit, scaled
@@ -124,9 +126,9 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
             }
             decodedFloats += 4;
             target += 4;
-            readFrameCount -= 4;
+            readSampleCount -= 4;
           }
-          while(0 < readFrameCount) {
+          while(0 < readSampleCount) {
             if constexpr(std::is_same<TSample, std::uint8_t>::value) {
               target[0] = static_cast<TSample>(
                 Nuclex::Audio::Processing::Quantization::NearestInt32(
@@ -142,7 +144,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
             }
             ++decodedFloats;
             ++target;
-            --readFrameCount;
+            --readSampleCount;
           }
         } // if target type is double / integer
 
