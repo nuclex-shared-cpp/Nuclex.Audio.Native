@@ -1,4 +1,4 @@
-                               #pragma region Apache License 2.0
+#pragma region Apache License 2.0
 /*
 Nuclex Native Framework
 Copyright (C) 2002-2024 Markus Ewald / Nuclex Development Labs
@@ -302,8 +302,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
       // In the original Waveform audio format specification, only 1 or 2 channels
       // were mentioned (without explicitly stating that more would be in violation).
-      // Either way, nobody cares, our only problem with more channels is that their
-      // placements are unknown, so we have to guess them.
+      // Either way, in the wild west of existing Waveform implementations, nobody cares,
+      // our only problem with more channels is we have to guess their placements.
       this->target.ChannelPlacements = (
         GuessChannelPlacement(this->target.ChannelCount)
       );

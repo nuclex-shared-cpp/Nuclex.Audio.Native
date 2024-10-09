@@ -89,7 +89,84 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
     /// <returns>A list of channels in the order they are interleaved</returns>
     public: std::vector<ChannelPlacement> GetChannelOrder() const;
 
-    //public: void ReadFrames()
+    /// <summary>Sets the reader up to decode audio samples</summary>
+    /// <remarks>
+    ///   By default, the WaveformReader only initializes its internal data structures to
+    ///   be able to read metadata. Before calling the Read...() methods, this method
+    ///   needs to be called once. It will complete the set up and enable the WaveformReader
+    ///   to read and convert audio samples.
+    /// </remarks>
+    public: void PrepareForReading();
+
+    /// <summary>Reads samples from the audio file in interleaved format</summary>
+    /// <typeparam name="TSample">Type of samples that will be decoded</typeparam>
+    /// <param name="target">Buffer into which the samples will be written</param>
+    /// <param name="startFrame">Frame from which on to read samples</param>
+    /// <param name="frameCount">Number of frame that should be decoded</param>
+    public: template<typename TSample>
+    void ReadInterleaved(TSample *target, std::uint64_t startFrame, std::size_t frameCount);
+
+    /// <summary>Reads samples from the audio file in interleaved format</summary>
+    /// <typeparam name="TSample">Type of samples that will be decoded</typeparam>
+    /// <param name="targets">Buffers into which the channels will be written</param>
+    /// <param name="startFrame">Frame from which on to read samples</param>
+    /// <param name="frameCount">Number of frame that should be decoded</param>
+    public: template<typename TSample>
+    void ReadSeparated(TSample *targets[], std::uint64_t startFrame, std::size_t frameCount);
+
+    /// <summary>Reads samples from the audio file and converts them</summary>
+    /// <typeparam name="TSample">Type of samples to convert to</typeparam>
+    /// <typeparam name="BitsPerSampleOver16">
+    ///   Whether the *stored* bits per sample is above 16 (whether the output
+    ///   type has more than 16 bits is trivial to determine via sizeof())
+    /// </typeparam>
+    /// <typeparam name="WidenFactor">
+    ///   How many times the *stored* bits have to be repeated to fill the output.
+    ///   -2: Data is double, factor does not apply
+    ///   -1: Data is float, factor does not apply
+    ///    0: Data needs to be truncated
+    ///   +1: Exact match, only copy
+    ///   +2: Bit pattern needs to be repeated once
+    ///   +3: Bit pattern needs to be tripled
+    /// </typeparam>
+    /// <param name="target">Buffer into which the samples will be written</param>
+    /// <param name="startFrame">Frame from which on to read samples</param>
+    /// <param name="frameCount">Number of frames that should be read</param>
+    private: template<
+      typename TSample, // output type
+      bool BitsPerSampleOver16 = false, // for decoded bits per sample, not TSample
+      int WidenFactor = 0 // set negative if decoded samples are float/double!
+    >
+    void readInterleavedAndConvert(
+      TSample *target, std::uint64_t startFrame, std::size_t frameCount
+    );
+
+    /// <summary>Reads samples from the audio file and converts them</summary>
+    /// <typeparam name="TSample">Type of samples to convert to</typeparam>
+    /// <typeparam name="BitsPerSampleOver16">
+    ///   Whether the *stored* bits per sample is above 16 (whether the output
+    ///   type has more than 16 bits is trivial to determine via sizeof())
+    /// </typeparam>
+    /// <typeparam name="WidenFactor">
+    ///   How many times the *stored* bits have to be repeated to fill the output.
+    ///   -2: Data is double, factor does not apply
+    ///   -1: Data is float, factor does not apply
+    ///    0: Data needs to be truncated
+    ///   +1: Exact match, only copy
+    ///   +2: Bit pattern needs to be repeated once
+    ///   +3: Bit pattern needs to be tripled
+    /// </typeparam>
+    /// <param name="targets">Buffers into which the channels will be written</param>
+    /// <param name="startFrame">Frame from which on to read samples</param>
+    /// <param name="frameCount">Number of frames that should be read</param>
+    private: template<
+      typename TSample, // output type
+      bool BitsPerSampleOver16 = false, // for decoded bits per sample, not TSample
+      int WidenFactor = 0 // set negative if decoded samples are float/double!
+    >
+    void readInterleavedConvertAndSeparate(
+      TSample *targets[], std::uint64_t startFrame, std::size_t frameCount
+    );
 
     /// <summary>File the reader is accessing</summary>
     private: std::shared_ptr<const VirtualFile> file;
@@ -103,6 +180,39 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
     private: std::uint64_t totalFrameCount;
     /// <summary>Number of bytes consumed per audio frame</summary>
     private: std::size_t bytesPerFrame;
+
+    /// <summary>Signature for the interleaved decode method</summary>
+    private: template<typename TSample>
+    using ReadInterleavedFunction = void (WaveformReader::*)(
+      TSample *, std::uint64_t, std::size_t
+    );
+
+    /// <summary>Signature for the channel-separated decode method</summary>
+    private: template<typename TSample>
+    using ReadSeparatedFunction = void (WaveformReader::*)(
+      TSample *[], std::uint64_t, std::size_t
+    );
+
+    /// <summary>Reads the opened file's data to interleaved 8-bit integers</summary>
+    private: ReadInterleavedFunction<std::uint8_t> readInterleavedUint8;
+    /// <summary>Reads the opened file's data to interleaved 16-bit integers</summary>
+    private: ReadInterleavedFunction<std::int16_t> readInterleavedInt16;
+    /// <summary>Reads the opened file's data to interleaved 32-bit integers</summary>
+    private: ReadInterleavedFunction<std::int32_t> readInterleavedInt32;
+    /// <summary>Reads the opened file's data to interleaved floats</summary>
+    private: ReadInterleavedFunction<float> readInterleavedFloat;
+    /// <summary>Reads the opened file's data to interleaved doubles</summary>
+    private: ReadInterleavedFunction<double> readInterleavedDouble;
+    /// <summary>Reads the opened file's data to separate 8-bit channels</summary>
+    private: ReadSeparatedFunction<std::uint8_t> readSeparatedUint8;
+    /// <summary>Reads the opened file's data to separate 16-bit channels</summary>
+    private: ReadSeparatedFunction<std::int16_t> readSeparatedInt16;
+    /// <summary>Reads the opened file's data to separate 32-bit channels</summary>
+    private: ReadSeparatedFunction<std::int32_t> readSeparatedInt32;
+    /// <summary>Reads the opened file's data to separate float channels</summary>
+    private: ReadSeparatedFunction<float> readSeparatedFloat;
+    /// <summary>Reads the opened file's data to separate double channels</summary>
+    private: ReadSeparatedFunction<double> readSeparatedDouble;
 
   };
 

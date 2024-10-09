@@ -343,7 +343,17 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
     trackInfo(),
     firstSampleOffset(std::uint64_t(-1)),
     totalFrameCount(0),
-    bytesPerFrame(0) {
+    bytesPerFrame(0),
+    readInterleavedUint8(),
+    readInterleavedInt16(),
+    readInterleavedInt32(),
+    readInterleavedFloat(),
+    readInterleavedDouble(),
+    readSeparatedUint8(),
+    readSeparatedInt16(),
+    readSeparatedInt32(),
+    readSeparatedFloat(),
+    readSeparatedDouble() {
 
     WaveformParser parser(this->trackInfo);
 
@@ -429,4 +439,236 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
   // ------------------------------------------------------------------------------------------- //
 
+  void WaveformReader::PrepareForReading() {
+    if(this->trackInfo.SampleFormat == AudioSampleFormat::Float_64) {
+      this->readInterleavedUint8 = (
+        &WaveformReader::readInterleavedAndConvert<std::uint8_t, false, -2>
+      );
+      this->readSeparatedUint8 = (
+        &WaveformReader::readInterleavedConvertAndSeparate<std::uint8_t, false, -2>
+      );
+    } else if(this->trackInfo.SampleFormat == AudioSampleFormat::Float_32) {
+      this->readInterleavedUint8 = (
+        &WaveformReader::readInterleavedAndConvert<std::uint8_t, false, -1>
+      );
+      this->readSeparatedUint8 = (
+        &WaveformReader::readInterleavedConvertAndSeparate<std::uint8_t, false, -1>
+      );
+    } else if(this->trackInfo.BitsPerSample < 8) { // We just assume it's not under 4...
+      this->readInterleavedUint8 = (
+        &WaveformReader::readInterleavedAndConvert<std::uint8_t, false, 2>
+      );
+      this->readSeparatedUint8 = (
+        &WaveformReader::readInterleavedConvertAndSeparate<std::uint8_t, false, 2>
+      );
+    } else if(this->trackInfo.BitsPerSample < 9) { // Exact match, specify 1 for no repeats
+      this->readInterleavedUint8 = (
+        &WaveformReader::readInterleavedAndConvert<std::uint8_t, false, 1>
+      );
+      this->readSeparatedUint8 = (
+        &WaveformReader::readInterleavedConvertAndSeparate<std::uint8_t, false, 1>
+      );
+    } else { // Decodes to 9 or more bits, specify 0 to indicate truncation
+      this->readInterleavedUint8 = (
+        &WaveformReader::readInterleavedAndConvert<std::uint8_t, false, 0>
+      );
+      this->readSeparatedUint8 = (
+        &WaveformReader::readInterleavedConvertAndSeparate<std::uint8_t, false, 0>
+      );
+    }
+
+    if(this->trackInfo.SampleFormat == AudioSampleFormat::Float_64) {
+      this->readInterleavedInt16 = (
+        &WaveformReader::readInterleavedAndConvert<std::int16_t, false, -2>
+      );
+      this->readSeparatedInt16 = (
+        &WaveformReader::readInterleavedConvertAndSeparate<std::int16_t, false, -2>
+      );
+    } else if(this->trackInfo.SampleFormat == AudioSampleFormat::Float_32) {
+      this->readInterleavedInt16 = (
+        &WaveformReader::readInterleavedAndConvert<std::int16_t, false, -1>
+      );
+      this->readSeparatedInt16 = (
+        &WaveformReader::readInterleavedConvertAndSeparate<std::int16_t, false, -1>
+      );
+    } else if(this->trackInfo.BitsPerSample < 9) { // 8 bits or fewer need two repeats
+      this->readInterleavedInt16 = (
+        &WaveformReader::readInterleavedAndConvert<std::int16_t, false, 3>
+      );
+      this->readSeparatedInt16 = (
+        &WaveformReader::readInterleavedConvertAndSeparate<std::int16_t, false, 3>
+      );
+    } else if(this->trackInfo.BitsPerSample < 16) { // 15 bits or fewer need one repeat
+      this->readInterleavedInt16 = (
+        &WaveformReader::readInterleavedAndConvert<std::int16_t, false, 2>
+      );
+      this->readSeparatedInt16 = (
+        &WaveformReader::readInterleavedConvertAndSeparate<std::int16_t, false, 2>
+      );
+    } else if(this->trackInfo.BitsPerSample < 17) { // Exact match, specify 1 for no repeats
+      this->readInterleavedInt16 = (
+        &WaveformReader::readInterleavedAndConvert<std::int16_t, false, 1>
+      );
+      this->readSeparatedInt16 = (
+        &WaveformReader::readInterleavedConvertAndSeparate<std::int16_t, false, 1>
+      );
+    } else { // Decodes to 17 or more bits, specify 0 to indicate truncation
+      this->readInterleavedInt16 = (
+        &WaveformReader::readInterleavedAndConvert<std::int16_t, true, 0>
+      );
+      this->readSeparatedInt16 = (
+        &WaveformReader::readInterleavedConvertAndSeparate<std::int16_t, true, 0>
+      );
+    }
+
+    if(this->trackInfo.SampleFormat == AudioSampleFormat::Float_64) {
+      this->readInterleavedInt32 = (
+        &WaveformReader::readInterleavedAndConvert<std::int32_t, false, -2>
+      );
+      this->readSeparatedInt32 = (
+        &WaveformReader::readInterleavedConvertAndSeparate<std::int32_t, false, -2>
+      );
+    } else if(this->trackInfo.SampleFormat == AudioSampleFormat::Float_32) {
+      this->readInterleavedInt32 = (
+        &WaveformReader::readInterleavedAndConvert<std::int32_t, false, -1>
+      );
+      this->readSeparatedInt32 = (
+        &WaveformReader::readInterleavedConvertAndSeparate<std::int32_t, false, -1>
+      );
+    } else if(this->trackInfo.BitsPerSample < 17) { // 16 bits or fewer needs two repeats
+      this->readInterleavedInt32 = (
+        &WaveformReader::readInterleavedAndConvert<std::int32_t, false, 3>
+      );
+      this->readSeparatedInt32 = (
+        &WaveformReader::readInterleavedConvertAndSeparate<std::int32_t, false, 3>
+      );
+    } else if(this->trackInfo.BitsPerSample < 32) { // fewer than 32 bits needs one repeat
+      this->readInterleavedInt32 = (
+        &WaveformReader::readInterleavedAndConvert<std::int32_t, true, 2>
+      );
+      this->readSeparatedInt32 = (
+        &WaveformReader::readInterleavedConvertAndSeparate<std::int32_t, true, 2>
+      );
+    } else {
+      this->readInterleavedInt32 = (
+        &WaveformReader::readInterleavedAndConvert<std::int32_t, true, 1>
+      );
+      this->readSeparatedInt32 = (
+        &WaveformReader::readInterleavedConvertAndSeparate<std::int32_t, true, 1>
+      );
+    }
+
+    if(this->trackInfo.SampleFormat == AudioSampleFormat::Float_64) {
+      this->readInterleavedFloat = (
+        &WaveformReader::readInterleavedAndConvert<float, false, -2>
+      );
+      this->readSeparatedFloat = (
+        &WaveformReader::readInterleavedConvertAndSeparate<float, false, -2>
+      );
+      this->readInterleavedDouble = (
+        &WaveformReader::readInterleavedAndConvert<double, false, -2>
+      );
+      this->readSeparatedDouble = (
+        &WaveformReader::readInterleavedConvertAndSeparate<double, false, -2>
+      );
+    } else if(this->trackInfo.SampleFormat == AudioSampleFormat::Float_32) {
+      this->readInterleavedFloat = (
+        &WaveformReader::readInterleavedAndConvert<float, false, -1>
+      );
+      this->readSeparatedFloat = (
+        &WaveformReader::readInterleavedConvertAndSeparate<float, false, -1>
+      );
+      this->readInterleavedDouble = (
+        &WaveformReader::readInterleavedAndConvert<double, false, -1>
+      );
+      this->readSeparatedDouble = (
+        &WaveformReader::readInterleavedConvertAndSeparate<double, false, -1>
+      );
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void WaveformReader::ReadInterleaved<std::uint8_t>(
+    std::uint8_t *target, std::uint64_t startFrame, std::size_t frameCount
+  ) {
+    (this->*readInterleavedUint8)(target, startFrame, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void WaveformReader::ReadInterleaved<std::int16_t>(
+    std::int16_t *target, std::uint64_t startFrame, std::size_t frameCount
+  ) {
+    (this->*readInterleavedInt16)(target, startFrame, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void WaveformReader::ReadInterleaved<std::int32_t>(
+    std::int32_t *target, std::uint64_t startFrame, std::size_t frameCount
+  ) {
+    (this->*readInterleavedInt32)(target, startFrame, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void WaveformReader::ReadInterleaved<float>(
+    float *target, std::uint64_t startFrame, std::size_t frameCount
+  ) {
+    (this->*readInterleavedFloat)(target, startFrame, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void WaveformReader::ReadInterleaved<double>(
+    double *target, std::uint64_t startFrame, std::size_t frameCount
+  ) {
+    (this->*readInterleavedDouble)(target, startFrame, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void WaveformReader::ReadSeparated<std::uint8_t>(
+    std::uint8_t *targets[], std::uint64_t startFrame, std::size_t frameCount
+  ) {
+    (this->*readSeparatedUint8)(targets, startFrame, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void WaveformReader::ReadSeparated<std::int16_t>(
+    std::int16_t *targets[], std::uint64_t startFrame, std::size_t frameCount
+  ) {
+    (this->*readSeparatedInt16)(targets, startFrame, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void WaveformReader::ReadSeparated<std::int32_t>(
+    std::int32_t *targets[], std::uint64_t startFrame, std::size_t frameCount
+  ) {
+    (this->*readSeparatedInt32)(targets, startFrame, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void WaveformReader::ReadSeparated<float>(
+    float *targets[], std::uint64_t startFrame, std::size_t frameCount
+  ) {
+    (this->*readSeparatedFloat)(targets, startFrame, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<> void WaveformReader::ReadSeparated<double>(
+    double *targets[], std::uint64_t startFrame, std::size_t frameCount
+  ) {
+    (this->*readSeparatedDouble)(targets, startFrame, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
 }}}} // namespace Nuclex::Audio::Storage::Waveform
+
+#include "./WaveformReader.Conversion.inl"

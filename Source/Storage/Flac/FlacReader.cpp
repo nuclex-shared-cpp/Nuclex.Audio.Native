@@ -330,6 +330,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Flac {
       // !! This includes an automatic call to Platform::FlacApi::ProcessSingle() !!
       Platform::FlacApi::SeekAbsolute(this->streamDecoder, this->frameCursor);
 
+      // Because the above seek attempt will have invoked the decoder callback
+      // and potentially read from the virtual file, check for errors.
       FileAdapterState::RethrowPotentialException(*state);
       if(static_cast<bool>(this->error)) {
         std::rethrow_exception(this->error);
