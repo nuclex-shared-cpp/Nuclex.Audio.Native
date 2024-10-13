@@ -53,6 +53,10 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
       std::is_same<TSample, double>::value
     );
 
+    // TODO: This may need endian flipping
+    //   If have yet to obtain any big endian Waveform audio files. Or a big endian
+    //   test machine / VM on which I can check this.
+
     // Allocate an intermedia buffer. We use std::byte because we're going to be
     // reading into it without knowing the actual data type in the file at compile time
     std::size_t readChunkSize = frameCount;
@@ -63,17 +67,15 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
     while(0 < frameCount) {
 
-      // If this is the last chunk or if the user requested less frames than the chunk
-      // size in the first place, limit the amount of data we request from libwavpack to
-      // the number of frames we actually need.
+      // Read frames up to the chunk size we calculated. If this is the last chunk
+      // or the user requested fewer frames than our desired chunk size, read all of
+      // the (remaining) samples.
       std::size_t readFrameCount;
       if(frameCount < readChunkSize) {
         readFrameCount = frameCount;
       } else {
         readFrameCount = readChunkSize;
       }
-
-      // Read into our intermediate buffer.
       this->file->ReadAt(
         startFrame * this->bytesPerFrame + this->firstSampleOffset,
         readFrameCount * this->bytesPerFrame,
@@ -91,9 +93,12 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
 
         if constexpr(targetTypeIsFloat) {
 
-          // Whether target is float or double -> just cast the floats
-          for(std::size_t sampleIndex = 0; sampleIndex < readSampleCount; ++sampleIndex) {
-            target[sampleIndex] = static_cast<double>(decodedFloats[sampleIndex]);
+          if constexpr(std::is_same<TSample, StoredFloatType>::value) {
+            std::copy_n(decodedFloats, readSampleCount, target);
+          } else {
+            for(std::size_t sampleIndex = 0; sampleIndex < readSampleCount; ++sampleIndex) {
+              target[sampleIndex] = static_cast<TSample>(decodedFloats[sampleIndex]);
+            }
           }
           target += readSampleCount;
 
@@ -146,9 +151,23 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
             ++target;
             --readSampleCount;
           }
-        } // if target type is double / integer
+        } // if target type is floating point / integer
 
-      } else { // if decoded data from libwavpack is ^^ float ^^ / vv int32 vv
+      } else { // if stored samples are ^^ float ^^ / vv int vv
+
+        // Here it gets a bit troublesome. The entire RIFF file format normally uses
+        // 16-bit alignment (i.e. chunks with odd sizes are padded to the next 16-bit
+        // boundary). This behavior could be kept or lifted for audio data.
+        //
+        // We assume this 16-bit alignment does not apply to the audio data (if some
+        // writing application wanted to, it could set the 'bytesPerFrame' to include
+        // padding and we would respect that, though).
+        //
+        // The next issue is audio samples with bit depths not dividable by 8. In this
+        // case, This
+        // is possible, but the specification doesn't state whether the occupied bits
+        // are the most significant 
+
 #if 0
         std::int32_t *decodedInts = reinterpret_cast<std::int32_t *>(decodeBuffer.data());
 

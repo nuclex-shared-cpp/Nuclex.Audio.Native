@@ -32,6 +32,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
   // ------------------------------------------------------------------------------------------- //
 
   class VirtualFile;
+  class AudioTrackEncoder;
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -318,8 +319,19 @@ namespace Nuclex { namespace Audio { namespace Storage {
     // Writing it in when the encoder stops isn't a big issue,
     // this library doesn't do streaming.
 
+    /// <summary>Builds an audio track encoder that writes into a file</summary>
+    /// <param name="outputFilePath">File into which the new encoder will write</param>
+    /// <returns>The new encoder, set up to write into a file in the specified path</returns>
+    public: virtual std::shared_ptr<AudioTrackEncoder> Build(
+      const std::string &outputFilePath
+    ) = 0;
 
-    //public: std::shared_ptr<AudioTrackEncoder> Build();
+    /// <summary>Builds an audio track encoder that writes into a virtual file</summary>
+    /// <param name="target">Virtual file that will receive the encoded audio data</param>
+    /// <returns>The new encoder, set up to write into a file in the specified file</returns>
+    public: virtual std::shared_ptr<AudioTrackEncoder> Build(
+      const std::shared_ptr<VirtualFile> &target
+    ) = 0;
 
   };
 

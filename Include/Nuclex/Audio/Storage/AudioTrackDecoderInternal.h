@@ -43,7 +43,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// <param name="startFrame">Index of the first frame to decode</param>
     /// <param name="frameCount">Number of audio frames that will be decoded</param>
     protected: virtual void DecodeInterleavedUint8(
-      std::uint8_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
+      std::uint8_t *buffer, std::uint64_t startFrame, std::size_t frameCount
     ) const = 0;
 
     /// <summary>Decodes audio frames, interleaved, into the target buffer</summary>
@@ -51,7 +51,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// <param name="startFrame">Index of the first frame to decode</param>
     /// <param name="frameCount">Number of audio frames that will be decoded</param>
     protected: virtual void DecodeInterleavedInt16(
-      std::int16_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
+      std::int16_t *buffer, std::uint64_t startFrame, std::size_t frameCount
     ) const = 0;
 
     /// <summary>Decodes audio frames, interleaved, into the target buffer</summary>
@@ -59,7 +59,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// <param name="startFrame">Index of the first frame to decode</param>
     /// <param name="frameCount">Number of audio frames that will be decoded</param>
     protected: virtual void DecodeInterleavedInt32(
-      std::int32_t *buffer, const std::uint64_t startFrame, const std::size_t frameCount
+      std::int32_t *buffer, std::uint64_t startFrame, std::size_t frameCount
     ) const = 0;
 
     /// <summary>Decodes audio frames, interleaved, into the target buffer</summary>
@@ -67,7 +67,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// <param name="startFrame">Index of the first frame to decode</param>
     /// <param name="frameCount">Number of audio frames that will be decoded</param>
     protected: virtual void DecodeInterleavedFloat(
-      float *buffer, const std::uint64_t startFrame, const std::size_t frameCount
+      float *buffer, std::uint64_t startFrame, std::size_t frameCount
     ) const = 0;
 
     /// <summary>Decodes audio frames, interleaved, into the target buffer</summary>
@@ -75,52 +75,47 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// <param name="startFrame">Index of the first frame to decode</param>
     /// <param name="frameCount">Number of audio frames that will be decoded</param>
     protected: virtual void DecodeInterleavedDouble(
-      double *buffer, const std::uint64_t startFrame, const std::size_t frameCount
+      double *buffer, std::uint64_t startFrame, std::size_t frameCount
     ) const = 0;
 
     /// <summary>Decodes audio channels, separated, into the target buffers</summary>
-    /// <typeparam name="TSample">Type of samples to decode as</typeparam>
     /// <param name="buffers">Buffers in which the channels will be stored</param>
     /// <param name="startFrame">Index of the first frame to decode</param>
     /// <param name="frameCount">Number of audio frames that will be decoded</param>
     protected: virtual void DecodeSeparatedUint8(
-      std::uint8_t *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+      std::uint8_t *buffers[], std::uint64_t startFrame, std::size_t frameCount
     ) const = 0;
 
     /// <summary>Decodes audio channels, separated, into the target buffers</summary>
-    /// <typeparam name="TSample">Type of samples to decode as</typeparam>
     /// <param name="buffers">Buffers in which the channels will be stored</param>
     /// <param name="startFrame">Index of the first frame to decode</param>
     /// <param name="frameCount">Number of audio frames that will be decoded</param>
     protected: virtual void DecodeSeparatedInt16(
-      std::int16_t *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+      std::int16_t *buffers[], std::uint64_t startFrame, std::size_t frameCount
     ) const = 0;
 
     /// <summary>Decodes audio channels, separated, into the target buffers</summary>
-    /// <typeparam name="TSample">Type of samples to decode as</typeparam>
     /// <param name="buffers">Buffers in which the channels will be stored</param>
     /// <param name="startFrame">Index of the first frame to decode</param>
     /// <param name="frameCount">Number of audio frames that will be decoded</param>
     protected: virtual void DecodeSeparatedInt32(
-      std::int32_t *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+      std::int32_t *buffers[], std::uint64_t startFrame, std::size_t frameCount
     ) const = 0;
 
     /// <summary>Decodes audio channels, separated, into the target buffers</summary>
-    /// <typeparam name="TSample">Type of samples to decode as</typeparam>
     /// <param name="buffers">Buffers in which the channels will be stored</param>
     /// <param name="startFrame">Index of the first frame to decode</param>
     /// <param name="frameCount">Number of audio frames that will be decoded</param>
     protected: virtual void DecodeSeparatedFloat(
-      float *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+      float *buffers[], std::uint64_t startFrame, std::size_t frameCount
     ) const = 0;
 
     /// <summary>Decodes audio channels, separated, into the target buffers</summary>
-    /// <typeparam name="TSample">Type of samples to decode as</typeparam>
     /// <param name="buffers">Buffers in which the channels will be stored</param>
     /// <param name="startFrame">Index of the first frame to decode</param>
     /// <param name="frameCount">Number of audio frames that will be decoded</param>
     protected: virtual void DecodeSeparatedDouble(
-      double *buffers[], const std::uint64_t startFrame, const std::size_t frameCount
+      double *buffers[], std::uint64_t startFrame, std::size_t frameCount
     ) const = 0;
 
   };

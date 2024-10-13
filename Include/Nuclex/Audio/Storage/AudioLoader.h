@@ -17,8 +17,8 @@ limitations under the License.
 */
 #pragma endregion // Apache License 2.0
 
-#ifndef NUCLEX_AUDIO_STORAGE_AUDIOLOADER_H
-#define NUCLEX_AUDIO_STORAGE_AUDIOLOADER_H
+#ifndef NUCLEX_AUDIO_STORAGE_AUDIOSAVER_H
+#define NUCLEX_AUDIO_STORAGE_AUDIOSAVER_H
 
 #include "Nuclex/Audio/Config.h"
 
@@ -28,15 +28,6 @@ limitations under the License.
 #include <unordered_map> // for std::unordered_map
 #include <memory> // for std::unique_ptr
 
-// I want to go with a similar design as Nuclex.Pixels.Native, but split encoding and
-// decoding into different classes because the two features are so asymmetrical in
-// their requirements.
-//
-// - The decoder needs to be /attachable/ to a track, so the track can stream more
-//   data if required (-> add Autonomize() or similar method)
-//
-// - The encoder needs progress reporting, pause/resume and cancellation support
-//
 // Naming
 // ------
 //
@@ -109,7 +100,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Manages a dynamic list of audio codecs and uses them to stream audio</summary>
+  /// <summary>Manages a set of audio codecs and uses them to decode audio files</summary>
   /// <remarks>
   ///   <para>
   ///     The actual workings of this class are rather simple. It allows you to register
@@ -137,11 +128,11 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// <summary>Frees all resources owned by an audio loader</summary>
     public: NUCLEX_AUDIO_API ~AudioLoader();
 
-    /// <summary>Registers an audio codec to load and/or save a file format</summary>
+    /// <summary>Registers an audio codec to load a file format</summary>
     /// <param name="codec">Audio codec that will be registered</param>
     public: NUCLEX_AUDIO_API void RegisterCodec(std::unique_ptr<AudioCodec> &&codec);
 
-    /// <summary>Registers an audio codec to load and/or save a file format</summary>
+    /// <summary>Registers an audio codec to load a file format</summary>
     /// <param name="TCodec">Type of audio codec that will be registered</param>
     public: template<typename TCodec>
     void RegisterCodec() {

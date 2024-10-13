@@ -5,18 +5,33 @@ This library encodes and decodes common audio file formats. It is intended
 for desktop applications and video games that wish to process audio in
 different codecs. It is not designed for network streaming.
 
-  - A lean and clean C++ interface that is easy to understand.
-  - Modular codec support, you can register custom codec implementations.
-  - Query information like sample format, channel layout and duration.
-  - Built-in support for Waveform audio files (`.wav`).
-  - Default build includes Ogg Vorbis, Opus, Flac and WavPack support.
-  - By default embeds all third-party libraries for minimal dependencies.
-  - Auto-detects file format when opening an audio file.
-  - Opens audio files via paths or through a custom I/O interface.
-  - Allows random access in audio data, decodes from any point as needed.
-  - Delivers audio samples as integers (1-32 bits) or floats (32/64 bits).
+  - ![Tidy](./Documents/images/feature-tidy.svg)
+    A lean and well-designed C++ interface that is easy to understand.
+  - ![Modular](./Documents/images/feature-modular.svg)
+    Modular codec support, you can register custom codec implementations.
+  - ![Tested](./Documents/images/feature-tested.svg)
+    Unit tested code
   - Robust library design that properly carries exceptions across C code.
-  - Unit tested code
+
+File formats
+
+  - Built-in support for Waveform audio files (`.wav`).
+  - Default build also includes Ogg Vorbis (`.ogg`), Opus (`.opus`),
+    Flac (`.flac`) and WavPack (`.wv`) support.
+  - All third-party libraries built from source and embedded for
+    minimal runtime dependencies.
+
+Functionality
+
+  - Quickly query metadata from audio files - title, sample format,
+    duration, channel count and layout, sample rate and more.
+  - Type-safe decoding to `uint8`, `int16`, `int32`, `float` or `double`
+    using the most direct path.
+  - Sample format conversion via optimized SSE2 SIMD instructions
+    and fallback for non-x64 platforms.
+  - Detects the file format when opening an audio file.
+  - Opens audio files via paths or through a custom I/O interface.
+  - Random access in audio data, decodes from any point as needed.
 
 It's distinguishing feature is probably how easy it is to use without
 sacrificing features or efficiency for it.

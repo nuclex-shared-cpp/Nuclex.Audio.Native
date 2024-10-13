@@ -24,12 +24,13 @@ limitations under the License.
 
 #if defined(NUCLEX_AUDIO_HAVE_VORBIS)
 
+#include "Nuclex/Audio/Processing/SampleConverter.h"
+
 #include "../ByteArrayAsFile.h"
 #include "../FailingVirtualFile.h"
 #include "../ResourceDirectoryLocator.h"
 #include "../TestAudioVerifier.h"
 #include "../../Processing/SineWaveDetector.h"
-#include "Nuclex/Audio/Processing/SampleConverter.h"
 #include "../../ExpectRange.h"
 
 namespace {
@@ -82,7 +83,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(VorbisTrackDecoderTest, DecodesFloatingPoint) {
+  TEST(VorbisTrackDecoderTest, DecodesToFloatingPoint) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
       GetResourcesDirectory() + u8"vorbis-stereo-v142.ogg"
     );
@@ -100,7 +101,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(VorbisTrackDecoderTest, DecodesFloatingPointSeparated) {
+  TEST(VorbisTrackDecoderTest, DecodesToSeparatedFloatingPoint) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
       GetResourcesDirectory() + u8"vorbis-stereo-v142.ogg"
     );
@@ -119,7 +120,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(VorbisTrackDecoderTest, Decodes16BitQuantized) {
+  TEST(VorbisTrackDecoderTest, DecodesTo16BitQuantized) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
       GetResourcesDirectory() + u8"vorbis-stereo-v142.ogg"
     );
@@ -143,7 +144,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
 
   // ------------------------------------------------------------------------------------------- //
 
-  TEST(VorbisTrackDecoderTest, Decodes16BitQuantizedSeparated) {
+  TEST(VorbisTrackDecoderTest, DecodesToSeparated16BitQuantized) {
     std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
       GetResourcesDirectory() + u8"vorbis-stereo-v142.ogg"
     );

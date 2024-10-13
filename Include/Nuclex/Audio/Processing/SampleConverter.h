@@ -454,7 +454,7 @@ namespace Nuclex { namespace Audio { namespace Processing {
       } else { // unsigned involved / both are signed
 
         TTargetSample targetMask = (1 << (targetBitCount - 1)) - 1;
-        targetMask |= 1 << (targetBitCount - 1);
+        targetMask |= 1 << (targetBitCount - 1); // CHECK: This would include the sign bit(!)
         targetMask <<= (sizeof(TTargetSample) * 8 - targetBitCount);
 
         if constexpr(sizeof(TTargetSample) < sizeof(TSourceSample)) {

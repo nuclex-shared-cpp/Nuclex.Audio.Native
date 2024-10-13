@@ -115,5 +115,167 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Waveform {
   }
 
   // ------------------------------------------------------------------------------------------- //
+#if 0
+  TEST(WavPackTrackDecoderTest, DecodesFloatingPointSeparated) {
+    std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
+      GetResourcesDirectory() + u8"wavpack-stereo-float32-v416.wv"
+    );
+
+    WavPackTrackDecoder decoder(file);
+
+    std::size_t frameCount = decoder.CountFrames();
+
+    std::vector<float> leftSamples(frameCount);
+    std::vector<float> rightSamples(frameCount);
+    float *channels[] = { leftSamples.data(), rightSamples.data() };
+    decoder.DecodeSeparated(channels, 0, frameCount);
+
+    TestAudioVerifier::VerifyStereo(leftSamples, rightSamples, 44100);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(WavPackTrackDecoderTest, Decodes24BitQuantizedToFloat) {
+    std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
+      GetResourcesDirectory() + u8"wavpack-stereo-int24-v416.wv"
+    );
+
+    WavPackTrackDecoder decoder(file);
+
+    std::size_t frameCount = decoder.CountFrames();
+    std::size_t channelCount = decoder.CountChannels();
+
+    std::vector<float> samples(frameCount * channelCount);
+    decoder.DecodeInterleaved(samples.data(), 0, frameCount);
+
+    TestAudioVerifier::VerifyStereo(samples, channelCount, 44100);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(WavPackTrackDecoderTest, Decodes24BitQuantizedToFloatSeparated) {
+    std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
+      GetResourcesDirectory() + u8"wavpack-stereo-int24-v416.wv"
+    );
+
+    WavPackTrackDecoder decoder(file);
+
+    std::size_t frameCount = decoder.CountFrames();
+
+    std::vector<float> leftSamples(frameCount);
+    std::vector<float> rightSamples(frameCount);
+    float *channels[] = { leftSamples.data(), rightSamples.data() };
+    decoder.DecodeSeparated(channels, 0, frameCount);
+
+    TestAudioVerifier::VerifyStereo(leftSamples, rightSamples, 44100);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(WavPackTrackDecoderTest, Decodes24BitTo16BitQuantized) {
+    std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
+      GetResourcesDirectory() + u8"wavpack-stereo-int24-v416.wv"
+    );
+
+    WavPackTrackDecoder decoder(file);
+
+    std::size_t frameCount = decoder.CountFrames();
+    std::size_t channelCount = decoder.CountChannels();
+
+    std::vector<std::int16_t> samples(frameCount * channelCount);
+    decoder.DecodeInterleaved(samples.data(), 0, frameCount);
+
+    {
+      std::vector<float> floatSamples(frameCount * channelCount);
+      Processing::SampleConverter::Reconstruct(
+        samples.data(), 16, floatSamples.data(), samples.size()
+      );
+      TestAudioVerifier::VerifyStereo(floatSamples, channelCount, 44100);
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(WavPackTrackDecoderTest, Decodes24BitTo16BitQuantizedSeparated) {
+    std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
+      GetResourcesDirectory() + u8"wavpack-stereo-int24-v416.wv"
+    );
+
+    WavPackTrackDecoder decoder(file);
+
+    std::size_t frameCount = decoder.CountFrames();
+
+    std::vector<std::int16_t> leftSamples(frameCount);
+    std::vector<std::int16_t> rightSamples(frameCount);
+    std::int16_t *channels[] = { leftSamples.data(), rightSamples.data() };
+    decoder.DecodeSeparated(channels, 0, frameCount);
+
+    {
+      std::vector<float> leftFloatSamples(frameCount);
+      std::vector<float> rightFloatSamples(frameCount);
+      Processing::SampleConverter::Reconstruct(
+        leftSamples.data(), 16, leftFloatSamples.data(), frameCount
+      );
+      Processing::SampleConverter::Reconstruct(
+        rightSamples.data(), 16, rightFloatSamples.data(), frameCount
+      );
+      TestAudioVerifier::VerifyStereo(leftFloatSamples, rightFloatSamples, 44100);
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(WavPackTrackDecoderTest, Decodes16BitTo32BitQuantized) {
+    std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
+      GetResourcesDirectory() + u8"wavpack-stereo-int16-v416.wv"
+    );
+
+    WavPackTrackDecoder decoder(file);
+
+    std::size_t frameCount = decoder.CountFrames();
+    std::size_t channelCount = decoder.CountChannels();
+
+    std::vector<std::int32_t> samples(frameCount * channelCount);
+    decoder.DecodeInterleaved(samples.data(), 0, frameCount);
+
+    {
+      std::vector<float> floatSamples(frameCount * channelCount);
+      Processing::SampleConverter::Reconstruct(
+        samples.data(), 32, floatSamples.data(), samples.size()
+      );
+      TestAudioVerifier::VerifyStereo(floatSamples, channelCount, 44100);
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  TEST(WavPackTrackDecoderTest, Decodes16BitTo32BitQuantizedSeparated) {
+    std::shared_ptr<const VirtualFile> file = VirtualFile::OpenRealFileForReading(
+      GetResourcesDirectory() + u8"wavpack-stereo-int16-v416.wv"
+    );
+
+    WavPackTrackDecoder decoder(file);
+
+    std::size_t frameCount = decoder.CountFrames();
+
+    std::vector<std::int32_t> leftSamples(frameCount);
+    std::vector<std::int32_t> rightSamples(frameCount);
+    std::int32_t *channels[] = { leftSamples.data(), rightSamples.data() };
+    decoder.DecodeSeparated(channels, 0, frameCount);
+
+    {
+      std::vector<float> leftFloatSamples(frameCount);
+      std::vector<float> rightFloatSamples(frameCount);
+      Processing::SampleConverter::Reconstruct(
+        leftSamples.data(), 32, leftFloatSamples.data(), frameCount
+      );
+      Processing::SampleConverter::Reconstruct(
+        rightSamples.data(), 32, rightFloatSamples.data(), frameCount
+      );
+      TestAudioVerifier::VerifyStereo(leftFloatSamples, rightFloatSamples, 44100);
+    }
+  }
+#endif
+  // ------------------------------------------------------------------------------------------- //
 
 }}}} // namespace Nuclex::Audio::Storage::Waveform

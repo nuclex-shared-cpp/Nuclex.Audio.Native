@@ -154,7 +154,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     ///   </para>
     /// </remarks>
     public: template<typename TSample>
-    NUCLEX_AUDIO_API void DecodeInterleaved(
+    inline void DecodeInterleaved(
       TSample *buffer, std::uint64_t startFrame, std::size_t frameCount
     ) const;
 
@@ -178,7 +178,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     ///   </para>
     /// </remarks>
     public: template<typename TSample>
-    NUCLEX_AUDIO_API void DecodeSeparated(
+    inline void DecodeSeparated(
       TSample *buffers[], std::uint64_t startFrame, std::size_t frameCount
     ) const;
 
@@ -204,7 +204,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
   // ------------------------------------------------------------------------------------------- //
 
   template<typename TSample>
-  NUCLEX_AUDIO_API inline void AudioTrackDecoder::DecodeInterleaved(
+  inline void AudioTrackDecoder::DecodeInterleaved(
     TSample *buffer, std::uint64_t startFrame, std::size_t frameCount
   ) const {
     static_assert(
@@ -265,7 +265,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
   // ------------------------------------------------------------------------------------------- //
 
   template<typename TSample>
-  NUCLEX_AUDIO_API inline void AudioTrackDecoder::DecodeSeparated(
+  inline void AudioTrackDecoder::DecodeSeparated(
     TSample *buffers[], std::uint64_t startFrame, std::size_t frameCount
   ) const {
     static_assert(
