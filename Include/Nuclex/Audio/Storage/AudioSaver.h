@@ -100,12 +100,12 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// <summary>Stores a sequential list of codecs</summary>
     private: typedef std::vector<std::unique_ptr<AudioCodec>> CodecVector;
 
-    /// <summary>Allows the audio loader to look up a codec by its file extension</summary>
+    /// <summary>Allows the audio saver to look up a codec by its file extension</summary>
     /// <remarks>
     ///   Extensions are stored in UTF-8 folded lowercase for case insensitivity.
     /// </remarks>
     private: ExtensionCodecIndexMap codecsByExtension;
-    /// <summary>Codecs that have been registered with the audio loader</summary>
+    /// <summary>Codecs that have been registered with the audio saver</summary>
     private: CodecVector codecs;
 
   };

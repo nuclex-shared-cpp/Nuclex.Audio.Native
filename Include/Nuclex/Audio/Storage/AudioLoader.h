@@ -17,8 +17,8 @@ limitations under the License.
 */
 #pragma endregion // Apache License 2.0
 
-#ifndef NUCLEX_AUDIO_STORAGE_AUDIOSAVER_H
-#define NUCLEX_AUDIO_STORAGE_AUDIOSAVER_H
+#ifndef NUCLEX_AUDIO_STORAGE_AUDIOLOADER_H
+#define NUCLEX_AUDIO_STORAGE_AUDIOLOADER_H
 
 #include "Nuclex/Audio/Config.h"
 
