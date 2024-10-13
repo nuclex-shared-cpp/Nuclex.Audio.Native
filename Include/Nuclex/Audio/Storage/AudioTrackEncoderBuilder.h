@@ -109,6 +109,25 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// </remarks>
     public: virtual const std::vector<std::size_t> &GetPreferredSampleRates() const = 0;
 
+    /// <summary>Retrieves the channel order preferred by the encoder</summary>
+    /// <param name="channels">Channels that should be put in the preferred order</param>
+    /// <returns>A list of the channel in the mask in their preferred order</returns>
+    /// <remarks>
+    ///   <para>
+    ///     Some audio formats, Vorbis and Opus for example, have their own standard for
+    ///     the order in which channels should be interleaved. Feeding the encoder channels
+    ///     in this order will avoid having to re-weave the input channels
+    ///   </para>
+    ///   <para>
+    ///     Apart from the performance aspect, you can configure an encoder to any
+    ///     channel order you like. If a sample format conversion is needed anyway,
+    ///     the performance loss of also re-weaving the channels is neglegible.
+    ///   </para>
+    /// </remarks>
+    public: virtual std::vector<ChannelPlacement> GetPreferredChannelOrder(
+      ChannelPlacement channels
+    ) const = 0;
+
     /// <summary>Tells whether this audio codec is a lossless one</summary>
     /// <returns>True if the codec is lossless, false if it is lossy</returns>
     /// <remarks>
@@ -142,7 +161,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     ///     though for lossless encoding it is a good idea to have the two match.
     ///   </para>
     /// </remarks>
-    public: AudioTrackEncoderBuilder &SetSampleFormat(
+    public: virtual AudioTrackEncoderBuilder &SetSampleFormat(
       AudioSampleFormat format = AudioSampleFormat::SignedInteger_16
     );
 
@@ -173,36 +192,78 @@ namespace Nuclex { namespace Audio { namespace Storage {
     ///     specify this, the encoder will fail to build with an exception.
     ///   </para>
     /// </remarks>
-    public: AudioTrackEncoderBuilder &SetSampleRate(
+    public: virtual AudioTrackEncoderBuilder &SetSampleRate(
       std::size_t samplesPerSecond = 48000
     );
 
-    /// <summary>Sets the number of audio channels that should be encoded</summary>
-    /// <param name="channelCount">Number of audio channels that will be encoded</param>
+    /// <summary>Sets the number, placement and ordering of the input channels</summary>
+    /// <param name="orderedChannels">
+    ///   A list containing the channels to encode in the order you wish to feed them
+    ///   to the encoder.
+    /// </param>
     /// <returns>The encoder builder such that additional calls can be chained</returns>
     /// <remarks>
     ///   <para>
-    ///     Calling the <see cref="SetChannelPlacements" /> method will automatically
-    ///     increase the channels count to the number of channels that have been placed
-    ///     if it is lower. Setting the channel count to a lower number of channels
-    ///     thereafter results in an exception being thrown.
+    ///     Most audio codecs (including Waveform, Flac, WavPack, Vorbis and Opus) have
+    ///     their own mandatory channel order schemes. This order is for your convenience
+    ///     but will very likely have no effect on the order in which the channels will be
+    ///     interleaved in the audio file being written.
     ///   </para>
     ///   <para>
-    ///     You can use this method if you wish to specify no placements or if you wish
-    ///     to encode more channels than you have specified placements for. In general,
-    ///     for normal encoding tasks, it is safe to only use
-    ///     <see cref="SetChannelPlacements" /> and let the channel count be determined
-    ///     from it.
-    ///   </para>
-    ///   <para>
-    ///     If you do not call either this method or <see cref="SetChannelPlacements" />,
-    ///     the encoder will fail to build because the channel count needs to be known
-    ///     up-front and guessing wrong would lead to garbage audio being encoded.
+    ///     If you specify a channel order that is different form the one the audio codec
+    ///     uses, this library will internally create a reordered copy of each chunk before
+    ///     feeding it to the encoder. If you wish to avoid the overhead this involves, you
+    ///     can use the <see cref="GetPreferredChannelOrder" /> method to obtain the order
+    ///     in which the encoder natively accepts the channels.
     ///   </para>
     /// </remarks>
-    public: AudioTrackEncoderBuilder &SetChannelCount(
-      std::size_t channelCount = 2
+    public: virtual AudioTrackEncoderBuilder &SetChannels(
+      const std::vector<ChannelPlacement> &orderedChannels
     );
+
+    /// <summary>Configures the encoder to use standard stereo channels</summary>
+    /// <returns>The encoder builder such that additional calls can be chained</returns>
+    /// <remarks>
+    ///   With this channel layout, there will be two channels in total, interleaved
+    ///   in the following channel order:
+    ///   <list type="number">
+    ///     <item><description>Front Left</description></item>
+    ///     <item><description>Front Right</description></item>
+    ///   </list>
+    /// </remarks>
+    public: AudioTrackEncoderBuilder &SetStereoChannels();
+
+    /// <summary>Configures the encoder to use standard stereo channels</summary>
+    /// <returns>The encoder builder such that additional calls can be chained</returns>
+    /// <remarks>
+    ///   With this channel layout, there will be six channels in total, interleaved
+    ///   in the following channel order:
+    ///   <list type="number">
+    ///     <item><description>Front Left</description></item>
+    ///     <item><description>Front Right</description></item>
+    ///     <item><description>Front Center</description></item>
+    ///     <item><description>Low Frequency Effects (LFE)</description></item>
+    ///     <item><description>Back Left (or Side Left for 5.1 side)</description></item>
+    ///     <item><description>Back Right (or Side Right for 5.1 side)</description></item>
+    ///   </list>
+    /// </remarks>
+    public: AudioTrackEncoderBuilder &SetFiveDotOneChannels();
+
+    /// <summary>Configures the encoder to use standard stereo channels</summary>
+    /// <returns>The encoder builder such that additional calls can be chained</returns>
+    /// <remarks>
+    ///   With this channel layout, there will be six channels in total, interleaved
+    ///   in the following channel order:
+    ///   <list type="number">
+    ///     <item><description>Front Left</description></item>
+    ///     <item><description>Front Center</description></item>
+    ///     <item><description>Front Right</description></item>
+    ///     <item><description>Back Left</description></item>
+    ///     <item><description>Back Right</description></item>
+    ///     <item><description>Low Frequency Effects (LFE)</description></item>
+    ///   </list>
+    /// </remarks>
+    public: AudioTrackEncoderBuilder &SetFiveDotOneChannelsInVorbisOrder();
 
     /// <summary>Selects the bitrate which the encoder should try to match</summary>
     /// <param name="kilobitsPerSecond">Desired bit rate in kilobits per second</param>
@@ -241,7 +302,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     ///   <para>
     ///     Defaults to maximum because it's 2024 and outside of VoIP or streaming (both
     ///     of which this library is not designed for), any desktop easily handles maximum
-    ///     effort at very decent encoding speeds.
+    ///     effort at very decent encoding speeds. What are you doing even looking at this?
     ///   </para>
     /// </remarks>
     public: AudioTrackEncoderBuilder &SetCompressionEffort(
