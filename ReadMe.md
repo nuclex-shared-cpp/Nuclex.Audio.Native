@@ -9,9 +9,10 @@ different codecs. It is not designed for network streaming.
     A lean and well-designed C++ interface that is easy to understand.
   - ![Modular](./Documents/images/feature-modular.svg)
     Modular codec support, you can register custom codec implementations.
+  - ![Robust](./Documents/images/feature-robust.svg)
+    Robust library design: checks all results and forwards error messages.
   - ![Tested](./Documents/images/feature-tested.svg)
     Unit tested code
-  - Robust library design that properly carries exceptions across C code.
 
 File formats
 
