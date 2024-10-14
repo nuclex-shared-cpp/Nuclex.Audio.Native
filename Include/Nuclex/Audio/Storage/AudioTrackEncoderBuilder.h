@@ -27,6 +27,21 @@ limitations under the License.
 #include <vector> // for std::vector
 #include <memory> // for std::shared_ptr
 
+// This thing should be returned by some 'AudioSaver' (I hate that name, is there
+// a better one that doesn't have 'Encoder' or 'Writer' in it?) class.
+//
+// Said class should allow codecs to be listed and then hand out an encoder builder,
+// the class below, which allows settings for the encoder to be made and then will
+// build the encoder which only needs to be fed with input samples and writes to
+// a VirtualFile.
+//
+// Furthermore, the 'AudioSaver' class should offer the option to directly save
+// a 'Track' (the high level class managing an autonomous or on-the-fly decoding track)
+// and will encode the track with its known settings directly (by filling out
+// the 'AudioTrackEncoderBuilder' itself so the burden is no pushed to individual
+// codec implementations).
+//
+
 namespace Nuclex { namespace Audio { namespace Storage {
 
   // ------------------------------------------------------------------------------------------- //
@@ -41,21 +56,6 @@ namespace Nuclex { namespace Audio { namespace Storage {
 namespace Nuclex { namespace Audio { namespace Storage {
 
   // ------------------------------------------------------------------------------------------- //
-
-  // This thing should be returned by some 'AudioSaver' (I hate that name, is there
-  // a better one that doesn't have 'Encoder' or 'Writer' in it?) class.
-  //
-  // Said class should allow codecs to be listed and then hand out an encoder builder,
-  // the class below, which allows settings for the encoder to be made and then will
-  // build the encoder which only needs to be fed with input samples and writes to
-  // a VirtualFile.
-  //
-  // Furthermore, the 'AudioSaver' class should offer the option to directly save
-  // a 'Track' (the high level class managing an autonomous or on-the-fly decoding track)
-  // and will encode the track with its known settings directly (by filling out
-  // the 'AudioTrackEncoderBuilder' itself so the burden is no pushed to individual
-  // codec implementations).
-  //
 
   /// <summary>Generates audio track encoders</summary>
   class NUCLEX_AUDIO_TYPE AudioTrackEncoderBuilder {
@@ -164,7 +164,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// </remarks>
     public: virtual AudioTrackEncoderBuilder &SetSampleFormat(
       AudioSampleFormat format = AudioSampleFormat::SignedInteger_16
-    );
+    ) = 0;
 
     /// <summary>Tells the encoder the sample rate of your audio data</summary>
     /// <param name="samplesPerSecond">
@@ -195,7 +195,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// </remarks>
     public: virtual AudioTrackEncoderBuilder &SetSampleRate(
       std::size_t samplesPerSecond = 48000
-    );
+    ) = 0;
 
     /// <summary>Sets the number, placement and ordering of the input channels</summary>
     /// <param name="orderedChannels">
@@ -220,7 +220,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// </remarks>
     public: virtual AudioTrackEncoderBuilder &SetChannels(
       const std::vector<ChannelPlacement> &orderedChannels
-    );
+    ) = 0;
 
     /// <summary>Configures the encoder to use standard stereo channels</summary>
     /// <returns>The encoder builder such that additional calls can be chained</returns>
@@ -232,7 +232,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     ///     <item><description>Front Right</description></item>
     ///   </list>
     /// </remarks>
-    public: AudioTrackEncoderBuilder &SetStereoChannels();
+    public: NUCLEX_AUDIO_API AudioTrackEncoderBuilder &SetStereoChannels();
 
     /// <summary>Configures the encoder to use standard stereo channels</summary>
     /// <returns>The encoder builder such that additional calls can be chained</returns>
@@ -248,7 +248,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     ///     <item><description>Back Right (or Side Right for 5.1 side)</description></item>
     ///   </list>
     /// </remarks>
-    public: AudioTrackEncoderBuilder &SetFiveDotOneChannels();
+    public: NUCLEX_AUDIO_API AudioTrackEncoderBuilder &SetFiveDotOneChannels();
 
     /// <summary>Configures the encoder to use standard stereo channels</summary>
     /// <returns>The encoder builder such that additional calls can be chained</returns>
@@ -264,7 +264,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
     ///     <item><description>Low Frequency Effects (LFE)</description></item>
     ///   </list>
     /// </remarks>
-    public: AudioTrackEncoderBuilder &SetFiveDotOneChannelsInVorbisOrder();
+    public: NUCLEX_AUDIO_API AudioTrackEncoderBuilder &SetFiveDotOneChannelsInVorbisOrder();
 
     /// <summary>Selects the bitrate which the encoder should try to match</summary>
     /// <param name="kilobitsPerSecond">Desired bit rate in kilobits per second</param>
@@ -284,7 +284,9 @@ namespace Nuclex { namespace Audio { namespace Storage {
     ///     to be transparent (indistinguishable from the original to listeners) being picked.
     ///   </para>
     /// </remarks>
-    public: AudioTrackEncoderBuilder &SetTargetBitrate(std::size_t kilobitsPerSecond);
+    public: virtual AudioTrackEncoderBuilder &SetTargetBitrate(
+      float kilobitsPerSecond
+    ) = 0;
 
     /// <summary>Requests the amount of effort that should be used to compress</summary>
     /// <param name="effort">Effort as a value from 0.0 to 1.0</param>
@@ -306,14 +308,16 @@ namespace Nuclex { namespace Audio { namespace Storage {
     ///     effort at very decent encoding speeds. What are you doing even looking at this?
     ///   </para>
     /// </remarks>
-    public: AudioTrackEncoderBuilder &SetCompressionEffort(
+    public: virtual AudioTrackEncoderBuilder &SetCompressionEffort(
       float effort = 1.0f
-    );
+    ) = 0;
 
+#if 0
     /// <summary>Sets the title of the audio track</summary>
     /// <param name="title">Human-readable title of the audio track</param>
     /// <returns>The encoder builder such that additional calls can be chained</returns>
     public: AudioTrackEncoderBuilder &SetTitle(const std::string &title);
+#endif
 
     // Do we need the duration early?
     // Writing it in when the encoder stops isn't a big issue,
@@ -322,9 +326,9 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// <summary>Builds an audio track encoder that writes into a file</summary>
     /// <param name="outputFilePath">File into which the new encoder will write</param>
     /// <returns>The new encoder, set up to write into a file in the specified path</returns>
-    public: virtual std::shared_ptr<AudioTrackEncoder> Build(
+    public: NUCLEX_AUDIO_API virtual std::shared_ptr<AudioTrackEncoder> Build(
       const std::string &outputFilePath
-    ) = 0;
+    );
 
     /// <summary>Builds an audio track encoder that writes into a virtual file</summary>
     /// <param name="target">Virtual file that will receive the encoded audio data</param>

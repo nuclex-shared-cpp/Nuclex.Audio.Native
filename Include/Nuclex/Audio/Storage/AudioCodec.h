@@ -33,6 +33,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
   class VirtualFile;
   class AudioTrackDecoder;
+  class AudioTrackEncoderBuilder;
 
   // ------------------------------------------------------------------------------------------- //
 
@@ -46,7 +47,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
   class NUCLEX_AUDIO_TYPE AudioCodec {
 
     /// <summary>Frees all resources owned by the instance</summary>
-    public: virtual ~AudioCodec() = default;
+    public: NUCLEX_AUDIO_API virtual ~AudioCodec() = default;
 
     /// <summary>Gives the name of the file format implemented by this codec</summary>
     /// <returns>The name of the file format this codec implements</returns>
@@ -84,6 +85,28 @@ namespace Nuclex { namespace Audio { namespace Storage {
     //
     //   For now, Nuclex.Audio.Native doesn't worry about complex media containers yet
     //
+
+    /// <summary>Reports whether this codec can be encoded to</summary>
+    /// <returns>True if the codec can provide encoders, false if it decodes only</returns>
+    /// <remarks>
+    ///   The default implementation for this always returns false. If you implement a codec
+    ///   that only decodes audio, you can simply leave this method out.
+    /// </remarks>
+    public: NUCLEX_AUDIO_API virtual bool CanEncode() const;
+
+    /// <summary>
+    ///   Requests a builder through which encoders for this codec can be configured and
+    ///   then created
+    /// </summary>
+    /// <returns>The encoder builder for this codec</returns>
+    /// <remarks>
+    ///   The default implementation throws an exception that reports that this codec
+    ///   does not support encoding. If you implement a codec that only decodes audio,
+    ///   you can leave this method out and let the default implementation do its thing.
+    /// </remarks>
+    public: NUCLEX_AUDIO_API virtual std::shared_ptr<
+      AudioTrackEncoderBuilder
+    > ProvideBuilder() const;
 
     // CreateEncoder()
     // CreateEncodingContext()

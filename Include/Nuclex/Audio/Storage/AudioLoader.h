@@ -27,6 +27,7 @@ limitations under the License.
 #include <atomic> // for std::atomic
 #include <unordered_map> // for std::unordered_map
 #include <memory> // for std::unique_ptr
+#include <string> // for std::string
 
 // Naming
 // ------
@@ -134,11 +135,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
     /// <summary>Registers an audio codec to load a file format</summary>
     /// <param name="TCodec">Type of audio codec that will be registered</param>
-    public: template<typename TCodec>
-    void RegisterCodec() {
-      std::unique_ptr<AudioCodec> codec = std::make_unique<TCodec>();
-      RegisterCodec(std::move(codec));
-    }
+    public: template<typename TCodec> inline void RegisterCodec();
 
     /// <summary>Tries to read informations about an audio file</summary>
     /// <param name="file">File from which informations will be read</param>
@@ -263,6 +260,14 @@ namespace Nuclex { namespace Audio { namespace Storage {
     private: mutable std::atomic<std::size_t> secondMostRecentCodecIndex;
 
   };
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<typename TCodec>
+  inline void AudioLoader::RegisterCodec() {
+    std::unique_ptr<AudioCodec> codec = std::make_unique<TCodec>();
+    RegisterCodec(std::move(codec));
+  }
 
   // ------------------------------------------------------------------------------------------- //
 

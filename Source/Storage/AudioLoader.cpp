@@ -24,11 +24,7 @@ License along with this library
 #include "Nuclex/Audio/Storage/AudioLoader.h"
 #include "Nuclex/Audio/Storage/VirtualFile.h"
 #include "Nuclex/Audio/Storage/AudioCodec.h"
-
 #include "Nuclex/Audio/Errors/UnsupportedFormatError.h"
-
-#include <Nuclex/Support/Text/StringConverter.h> // for StringConverter
-#include <stdexcept> // for std::runtime_error
 
 // Also include the headers for the build-in audio codecs.
 //
@@ -49,7 +45,12 @@ License along with this library
 #if defined(NUCLEX_AUDIO_HAVE_WAVPACK)
 #include "WavPack/WavPackAudioCodec.h"
 #endif
+// Always present, needs no toggleable third-party library
 #include "Waveform/WaveformAudioCodec.h"
+
+#include <Nuclex/Support/Text/StringConverter.h> // for StringConverter
+
+#include <stdexcept> // for std::runtime_error
 
 namespace {
 
@@ -95,6 +96,8 @@ namespace Nuclex { namespace Audio { namespace Storage {
   // ------------------------------------------------------------------------------------------- //
 
   AudioLoader::AudioLoader() :
+    codecsByExtension(),
+    codecs(),
     mostRecentCodecIndex(InvalidIndex),
     secondMostRecentCodecIndex(InvalidIndex) {
 #if defined(NUCLEX_AUDIO_HAVE_FLAC)
@@ -143,12 +146,11 @@ namespace Nuclex { namespace Audio { namespace Storage {
     // Update the extension lookup map for quick codec finding
     std::size_t extensionCount = extensions.size();
     for(std::size_t index = 0; index < extensionCount; ++index) {
-      using Nuclex::Support::Text::StringConverter;
-
       const std::string &extension = extensions[index];
       std::string::size_type extensionLength = extension.length();
-
       if(extensionLength >= 1) {
+        using Nuclex::Support::Text::StringConverter;
+
         if(extension[0] == '.') {
           if(extensionLength >= 2) {
             std::string lowerExtension = StringConverter::FoldedLowercaseFromUtf8(
@@ -158,14 +160,14 @@ namespace Nuclex { namespace Audio { namespace Storage {
               ExtensionCodecIndexMap::value_type(lowerExtension, codecCount)
             );
           }
-        } else {
+        } else { // If extension ^^ includes dot ^^ / vv lacks dot vv
           std::string lowerExtension = StringConverter::FoldedLowercaseFromUtf8(extension);
           this->codecsByExtension.insert(
             ExtensionCodecIndexMap::value_type(lowerExtension, codecCount)
           );
-        }
-      }
-    }
+        } // if extension includes dot / lacks dot
+      } // If extension has non-zero length
+    } // for each provided extension
   }
 
   // ------------------------------------------------------------------------------------------- //

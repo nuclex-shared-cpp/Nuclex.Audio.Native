@@ -22,9 +22,65 @@ limitations under the License.
 
 #include "Nuclex/Audio/Storage/AudioTrackEncoderBuilder.h"
 
-// --------------------------------------------------------------------------------------------- //
+#include "Nuclex/Audio/Storage/VirtualFile.h"
 
-// This file is only here to guarantee that its associated header has no hidden
-// dependencies and can be included on its own
+namespace Nuclex { namespace Audio { namespace Storage {
 
-// --------------------------------------------------------------------------------------------- //
+  // ------------------------------------------------------------------------------------------- //
+
+  AudioTrackEncoderBuilder &AudioTrackEncoderBuilder::SetStereoChannels() {
+    static const std::vector<ChannelPlacement> stereoChannels = {
+      ChannelPlacement::FrontLeft,
+      ChannelPlacement::FrontRight
+    };
+
+    SetChannels(stereoChannels);
+
+    return *this;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  AudioTrackEncoderBuilder &AudioTrackEncoderBuilder::SetFiveDotOneChannels() {
+    static const std::vector<ChannelPlacement> fiveDotOneChannels = {
+      ChannelPlacement::FrontLeft,
+      ChannelPlacement::FrontRight,
+      ChannelPlacement::FrontCenter,
+      ChannelPlacement::LowFrequencyEffects,
+      ChannelPlacement::BackLeft,
+      ChannelPlacement::BackRight
+    };
+
+    SetChannels(fiveDotOneChannels);
+
+    return *this;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  AudioTrackEncoderBuilder &AudioTrackEncoderBuilder::SetFiveDotOneChannelsInVorbisOrder() {
+    static const std::vector<ChannelPlacement> vorbisFiveDotOneChannels = {
+      ChannelPlacement::FrontLeft,
+      ChannelPlacement::FrontCenter,
+      ChannelPlacement::FrontRight,
+      ChannelPlacement::BackLeft,
+      ChannelPlacement::BackRight,
+      ChannelPlacement::LowFrequencyEffects
+    };
+
+    SetChannels(vorbisFiveDotOneChannels);
+
+    return *this;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::shared_ptr<AudioTrackEncoder> AudioTrackEncoderBuilder::Build(
+    const std::string &outputFilePath
+  ) {
+    Build(VirtualFile::OpenRealFileForWriting(outputFilePath));
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+}}} // namespace Nuclex::Audio::Storage

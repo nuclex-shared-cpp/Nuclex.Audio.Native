@@ -22,9 +22,9 @@ limitations under the License.
 
 #include "Nuclex/Audio/Config.h"
 
-#include <unordered_map> // for std::unordered_map
-#include <memory> // for std::unique_ptr
 #include <vector> // for std::vector
+#include <memory> // for std::unique_ptr
+#include <string> // for std::string
 
 // Naming
 // ------
@@ -74,11 +74,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
     /// <summary>Registers an audio codec to save a file format</summary>
     /// <param name="TCodec">Type of audio codec that will be registered</param>
-    public: template<typename TCodec>
-    void RegisterCodec() {
-      std::unique_ptr<AudioCodec> codec = std::make_unique<TCodec>();
-      RegisterCodec(std::move(codec));
-    }
+    public: template<typename TCodec> inline void RegisterCodec();
 
     /// <summary>Provides a list of the names of all registered audio codecs</summary>
     /// <returns>A list containing the names of all usable audio codecs</returns>
@@ -95,20 +91,21 @@ namespace Nuclex { namespace Audio { namespace Storage {
       const std::string &codecName
     ) const;
 
-    /// <summary>Maps file extensions to codec indices</summary>
-    private: typedef std::unordered_map<std::string, std::size_t> ExtensionCodecIndexMap;
     /// <summary>Stores a sequential list of codecs</summary>
     private: typedef std::vector<std::unique_ptr<AudioCodec>> CodecVector;
 
-    /// <summary>Allows the audio saver to look up a codec by its file extension</summary>
-    /// <remarks>
-    ///   Extensions are stored in UTF-8 folded lowercase for case insensitivity.
-    /// </remarks>
-    private: ExtensionCodecIndexMap codecsByExtension;
-    /// <summary>Codecs that have been registered with the audio saver</summary>
+    /// <summary>Codecs that have been registered with the audio loader</summary>
     private: CodecVector codecs;
 
   };
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<typename TCodec>
+  inline void AudioSaver::RegisterCodec() {
+    std::unique_ptr<AudioCodec> codec = std::make_unique<TCodec>();
+    RegisterCodec(std::move(codec));
+  }
 
   // ------------------------------------------------------------------------------------------- //
 
