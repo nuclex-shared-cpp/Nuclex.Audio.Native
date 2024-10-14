@@ -43,7 +43,11 @@ namespace Nuclex { namespace Audio { namespace Storage {
   // ------------------------------------------------------------------------------------------- //
 
   AudioSaver::AudioSaver() :
-    codecs() {}
+    codecs() {
+#if defined(NUCLEX_AUDIO_HAVE_OPUS)
+    RegisterCodec(std::make_unique<Opus::OpusAudioCodec>());
+#endif
+  }
 
   // ------------------------------------------------------------------------------------------- //
 

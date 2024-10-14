@@ -47,7 +47,7 @@ namespace Nuclex { namespace Audio { namespace Platform {
     /// <param name="state">State, will be passed unmodified to all file callbacks</param>
     /// <param name="callbacks">Callbacks through which file accesses will happen</param>
     /// <param name="initialBytes">Extra buffer of bytes that have alraedy been read</param>
-    /// <param name="initialByteCount">Number of bytes in the extra buffere</param>
+    /// <param name="initialByteCount">Number of bytes already in the extra buffer</param>
     /// <returns>
     ///   A shared pointer to the opened opus file which can be used with other functions
     ///   provided by the libopusfile library.

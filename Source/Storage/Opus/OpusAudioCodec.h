@@ -81,6 +81,17 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
       std::size_t trackIndex = 0
     ) const override;
 
+    /// <summary>Reports whether this codec can be encoded to</summary>
+    /// <returns>True if the codec can provide encoders, false if it decodes only</returns>
+    public: bool CanEncode() const override { return true; }
+
+    /// <summary>
+    ///   Requests a builder through which encoders for this codec can be configured and
+    ///   then created
+    /// </summary>
+    /// <returns>The encoder builder for this codec</returns>
+    public: std::shared_ptr<AudioTrackEncoderBuilder> ProvideBuilder() const override;
+
   };
 
   // ------------------------------------------------------------------------------------------- //

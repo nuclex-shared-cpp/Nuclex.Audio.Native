@@ -44,7 +44,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Decodes audio of all channels in one audio track</summary>
+  /// <summary>Encodes interleaved or separatesd audio channels to an audio track</summary>
   class NUCLEX_AUDIO_TYPE AudioTrackEncoder : public AudioTrackEncoderInternal {
 
     /// <summary>Frees all resources owned by the instance</summary>
@@ -56,8 +56,9 @@ namespace Nuclex { namespace Audio { namespace Storage {
     ///   This order is configured in the encode builder and applied to both the interleaved
     ///   ingestion methods and the separated ingestion methods.
     /// </remarks>
-    public: NUCLEX_AUDIO_API
-    virtual const std::vector<ChannelPlacement> &GetChannelOrder() const = 0;
+    public: NUCLEX_AUDIO_API virtual const std::vector<
+      ChannelPlacement
+    > &GetChannelOrder() const = 0;
 
     /// <summary>Encodes a series of audio samples from an interleaved buffer</summary>
     /// <typeparam name="TSample">Type as which the samples will be fed</typeparam>

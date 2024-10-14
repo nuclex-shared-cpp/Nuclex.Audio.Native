@@ -29,6 +29,7 @@ limitations under the License.
 #include "./OpusVirtualFileAdapter.h"
 #include "./OpusTrackDecoder.h"
 #include "./OpusReader.h"
+#include "./OpusTrackEncoderBuilder.h"
 #include "../../Platform/OpusApi.h"
 
 #include <stdexcept> // for std::runtime_error
@@ -110,6 +111,12 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     }
 
     return std::make_shared<OpusTrackDecoder>(source);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  std::shared_ptr<AudioTrackEncoderBuilder> OpusAudioCodec::ProvideBuilder() const {
+    return std::make_shared<OpusTrackEncoderBuilder>();
   }
 
   // ------------------------------------------------------------------------------------------- //
