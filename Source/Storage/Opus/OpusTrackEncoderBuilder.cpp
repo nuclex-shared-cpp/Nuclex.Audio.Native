@@ -24,7 +24,7 @@ limitations under the License.
 
 #if defined(NUCLEX_AUDIO_HAVE_OPUS)
 
-//#include "./OpusTrackEncoder.h"
+#include "./OpusTrackEncoder.h"
 #include "../Shared/ChannelOrderFactory.h" // for ChannelOrderFactory
 
 #include <stdexcept> // for std::runtime_error
@@ -46,8 +46,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
   OpusTrackEncoderBuilder::OpusTrackEncoderBuilder() :
     inputChannelOrder(),
-    samplesPerSecond(),
-    kilobitsPerSecond(),
+    sampleRate(),
+    targetBitrate(),
     effort(1.0f) {}
 
   // ------------------------------------------------------------------------------------------- //
@@ -134,7 +134,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   AudioTrackEncoderBuilder &OpusTrackEncoderBuilder::SetSampleRate(
     std::size_t samplesPerSecond /* = 48000 */
   ) {
-    this->samplesPerSecond = samplesPerSecond;
+    this->sampleRate = samplesPerSecond;
     return *this;
   }
 
@@ -174,7 +174,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   AudioTrackEncoderBuilder &OpusTrackEncoderBuilder::SetTargetBitrate(
     float kilobitsPerSecond
   ) {
-    this->kilobitsPerSecond = kilobitsPerSecond;
+    this->targetBitrate = kilobitsPerSecond;
     return *this;
   }
 
@@ -197,14 +197,20 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
         u8"Input channels and channel order for the encoder have not been set"
       );
     }
-    if(!this->samplesPerSecond.has_value()) {
+    if(!this->sampleRate.has_value()) {
       throw std::runtime_error(u8"Input sample rate for the encoder has not been set");
     }
-    if(!this->kilobitsPerSecond.has_value()) {
+    if(!this->targetBitrate.has_value()) {
       throw std::runtime_error(u8"Target birate for the encder has not been set");
     }
 
-    throw std::runtime_error(u8"Not implemented yet");
+    std::shared_ptr<OpusTrackEncoder> encoder = std::make_shared<OpusTrackEncoder>(
+      target, this->inputChannelOrder, this->sampleRate.value()
+    );
+    encoder->SetBitrate(this->targetBitrate.value());
+    encoder->SetEffort(this->effort);
+
+    return encoder;
   }
 
   // ------------------------------------------------------------------------------------------- //

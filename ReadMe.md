@@ -119,7 +119,7 @@ decoder->DecodeInterleaved<float>(samples.data(), 96000, 48000);
 ```
 
 
-Example: Use custom I/O Routines
+Example: Use Custom I/O Routines
 --------------------------------
 
 Wherever you have seen a path or file name in the examples before, you can
@@ -172,10 +172,10 @@ As you can see from the interface, reads and writes are *cursorless*. That
 means there is no *current position* and no seeking, the I/O interface is
 simply asked to provide data from an absolute offset.
 
-Note how this immediately removes all threading concerns for the interface,
-the same opened file can be shared by any number of threads. It also allows
-for const-correct reading. A `shared_ptr<const VirtualFile>` is fully usable
-because pure readers don't need to alter its state with a `Seek()` method.
+This immediately removes all threading concerns from the interface, the same
+opened file can be shared by any number of threads. It also allows for
+const-correct reading. A `shared_ptr<const VirtualFile>` is fully usable
+because pure readers don't need to alter state with a `Seek()` method.
 
 The `AudioTrackDecoder` follows the same design principle.
 

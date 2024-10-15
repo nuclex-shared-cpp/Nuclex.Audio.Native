@@ -143,6 +143,30 @@
     <ClInclude Include="Include\Nuclex\Audio\TrackInfo.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\Storage\AudioTrackDecoderInternal.h">
+      <Filter>Include\Storage</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\Storage\AudioSaver.h">
+      <Filter>Include\Storage</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\Storage\AudioTrackEncoder.h">
+      <Filter>Include\Storage</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\Storage\AudioTrackEncoderBuilder.h">
+      <Filter>Include\Storage</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Nuclex\Audio\Storage\AudioTrackEncoderInternal.h">
+      <Filter>Include\Storage</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Storage\Opus\OpusTrackEncoder.h">
+      <Filter>Source\Storage\Opus</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Storage\Opus\OpusTrackEncoderBuilder.h">
+      <Filter>Source\Storage\Opus</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Platform\OpusEncoderApi.h">
+      <Filter>Source\Platform</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Errors\CorruptedFileError.cpp">
@@ -441,6 +465,36 @@
     </ClCompile>
     <ClCompile Include="Source\Channel.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\AudioSaver.cpp">
+      <Filter>Source\Storage</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\AudioTrackEncoder.cpp">
+      <Filter>Source\Storage</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\AudioTrackEncoderBuilder.cpp">
+      <Filter>Source\Storage</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\AudioTrackEncoderInternal.cpp">
+      <Filter>Source\Storage</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\Opus\OpusTrackEncoder.cpp">
+      <Filter>Source\Storage\Opus</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\Opus\OpusTrackEncoderBuilder.cpp">
+      <Filter>Source\Storage\Opus</Filter>
+    </ClCompile>
+    <ClCompile Include="Tests\Storage\AudioSaverTests.cpp">
+      <Filter>Tests\Storage</Filter>
+    </ClCompile>
+    <ClCompile Include="Tests\Storage\Opus\OpusTrackEncoderBuilderTest.cpp">
+      <Filter>Tests\Storage\Opus</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\AudioCodec.cpp">
+      <Filter>Source\Storage</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Platform\OpusEncoderApi.cpp">
+      <Filter>Source\Platform</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

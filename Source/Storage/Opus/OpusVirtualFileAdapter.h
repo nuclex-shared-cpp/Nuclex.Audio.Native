@@ -28,7 +28,8 @@ limitations under the License.
 
 #include <memory> // for std::unique_ptr
 
-#include <opusfile.h> // for op
+#include <opusfile.h> // for ::OpusFileCallbacks
+#include <opusenc.h> // for ::OpusEncCallbacks
 
 namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
@@ -77,15 +78,15 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
     /// <summayr>Constructs a virtual file adapter for a writable file</summary>
     /// <param name="writableFile">Virtual file the adapter will write to</param>
-    /// <param name="fileCallbacks">
-    ///   Opus file callback set that will be set up to use the adapter
+    /// <param name="encoderCallbacks">
+    ///   Opus encoder  callback set that will be set up to use the adapter
     /// </param>
     /// <returns>
-    ///   A state that needs to be passed as the 'state' parameter though libopusfile
+    ///   A state that needs to be passed as the 'state' parameter though libopusenc
     /// </returns>
     public: static std::unique_ptr<WritableFileAdapterState> CreateAdapterForWriting(
       const std::shared_ptr<VirtualFile> &writableFile,
-      ::OpusFileCallbacks &fileCallbacks
+      ::OpusEncCallbacks &encoderCallbacks
     );
 
   };

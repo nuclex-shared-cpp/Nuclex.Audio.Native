@@ -110,9 +110,9 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     /// <summary>The order in which the user wishes to feed us the input channels</summary>>
     private: std::vector<ChannelPlacement> inputChannelOrder;
     /// <summary>Sample rate in samples per second (i.e. 44100 or 48000)</summary>
-    private: std::optional<std::size_t> samplesPerSecond;
+    private: std::optional<std::size_t> sampleRate;
     /// <summary>Target bitrate for the audio file being encoded</summary>
-    private: std::optional<float> kilobitsPerSecond;
+    private: std::optional<float> targetBitrate;
     /// <summary>Amount of effort (= CPU time and/or memory) to invest</summary>
     private: float effort;
 

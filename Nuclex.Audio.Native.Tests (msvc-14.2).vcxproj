@@ -107,7 +107,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>NUCLEX_AUDIO_EXECUTABLE;HAVE_CONFIG_H;FLAC__NO_DLL;NUCLEX_AUDIO_HAVE_FLAC;NUCLEX_AUDIO_HAVE_OPUS;NUCLEX_AUDIO_HAVE_VORBIS;NUCLEX_AUDIO_HAVE_WAVPACK;WIN32;_DEBUG;_WINDOWS;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\;$(ProjectDir)..\Nuclex.Support.Native\Include\;$(ProjectDir)..\third-party\nuclex-flac\build\include\;$(ProjectDir)..\third-party\nuclex-opusfile\build\include\;$(ProjectDir)..\third-party\nuclex-opus\build\include\;$(ProjectDir)..\third-party\nuclex-ogg\build\include\;$(ProjectDir)..\third-party\nuclex-vorbis\build\include\;$(ProjectDir)..\third-party\nuclex-wavpack\build\include\;$(ProjectDir)..\third-party\nuclex-moodycamelqueues\build-concurrentqueue;$(ProjectDir)..\third-party\nuclex-googletest\build\googletest\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\;$(ProjectDir)..\Nuclex.Support.Native\Include\;$(ProjectDir)..\third-party\nuclex-flac\build\include\;$(ProjectDir)..\third-party\nuclex-opusenc\build\include\;$(ProjectDir)..\third-party\nuclex-opusfile\build\include\;$(ProjectDir)..\third-party\nuclex-opus\build\include\;$(ProjectDir)..\third-party\nuclex-ogg\build\include\;$(ProjectDir)..\third-party\nuclex-vorbis\build\include\;$(ProjectDir)..\third-party\nuclex-wavpack\build\include\;$(ProjectDir)..\third-party\nuclex-moodycamelqueues\build-concurrentqueue;$(ProjectDir)..\third-party\nuclex-googletest\build\googletest\include\</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <FloatingPointModel>Fast</FloatingPointModel>
@@ -127,7 +127,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>NUCLEX_AUDIO_EXECUTABLE;HAVE_CONFIG_H;FLAC__NO_DLL;NUCLEX_AUDIO_HAVE_FLAC;NUCLEX_AUDIO_HAVE_OPUS;NUCLEX_AUDIO_HAVE_VORBIS;NUCLEX_AUDIO_HAVE_WAVPACK;WIN32;_DEBUG;_WINDOWS;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\;$(ProjectDir)..\Nuclex.Support.Native\Include\;$(ProjectDir)..\third-party\nuclex-flac\build\include\;$(ProjectDir)..\third-party\nuclex-opusfile\build\include\;$(ProjectDir)..\third-party\nuclex-opus\build\include\;$(ProjectDir)..\third-party\nuclex-ogg\build\include\;$(ProjectDir)..\third-party\nuclex-vorbis\build\include\;$(ProjectDir)..\third-party\nuclex-wavpack\build\include\;$(ProjectDir)..\third-party\nuclex-moodycamelqueues\build-concurrentqueue;$(ProjectDir)..\third-party\nuclex-googletest\build\googletest\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\;$(ProjectDir)..\Nuclex.Support.Native\Include\;$(ProjectDir)..\third-party\nuclex-flac\build\include\;$(ProjectDir)..\third-party\nuclex-opusenc\build\include\;$(ProjectDir)..\third-party\nuclex-opusfile\build\include\;$(ProjectDir)..\third-party\nuclex-opus\build\include\;$(ProjectDir)..\third-party\nuclex-ogg\build\include\;$(ProjectDir)..\third-party\nuclex-vorbis\build\include\;$(ProjectDir)..\third-party\nuclex-wavpack\build\include\;$(ProjectDir)..\third-party\nuclex-moodycamelqueues\build-concurrentqueue;$(ProjectDir)..\third-party\nuclex-googletest\build\googletest\include\</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <FloatingPointModel>Fast</FloatingPointModel>
@@ -148,7 +148,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NUCLEX_AUDIO_EXECUTABLE;HAVE_CONFIG_H;FLAC__NO_DLL;NUCLEX_AUDIO_HAVE_FLAC;NUCLEX_AUDIO_HAVE_OPUS;NUCLEX_AUDIO_HAVE_VORBIS;NUCLEX_AUDIO_HAVE_WAVPACK;WIN32;NDEBUG;_WINDOWS;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\;$(ProjectDir)..\Nuclex.Support.Native\Include\;$(ProjectDir)..\third-party\nuclex-flac\build\include\;$(ProjectDir)..\third-party\nuclex-opusfile\build\include\;$(ProjectDir)..\third-party\nuclex-opus\build\include\;$(ProjectDir)..\third-party\nuclex-ogg\build\include\;$(ProjectDir)..\third-party\nuclex-vorbis\build\include\;$(ProjectDir)..\third-party\nuclex-wavpack\build\include\;$(ProjectDir)..\third-party\nuclex-moodycamelqueues\build-concurrentqueue;$(ProjectDir)..\third-party\nuclex-googletest\build\googletest\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\;$(ProjectDir)..\Nuclex.Support.Native\Include\;$(ProjectDir)..\third-party\nuclex-flac\build\include\;$(ProjectDir)..\third-party\nuclex-opusenc\build\include\;$(ProjectDir)..\third-party\nuclex-opusfile\build\include\;$(ProjectDir)..\third-party\nuclex-opus\build\include\;$(ProjectDir)..\third-party\nuclex-ogg\build\include\;$(ProjectDir)..\third-party\nuclex-vorbis\build\include\;$(ProjectDir)..\third-party\nuclex-wavpack\build\include\;$(ProjectDir)..\third-party\nuclex-moodycamelqueues\build-concurrentqueue;$(ProjectDir)..\third-party\nuclex-googletest\build\googletest\include\</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
@@ -176,7 +176,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NUCLEX_AUDIO_EXECUTABLE;HAVE_CONFIG_H;FLAC__NO_DLL;NUCLEX_AUDIO_HAVE_FLAC;NUCLEX_AUDIO_HAVE_OPUS;NUCLEX_AUDIO_HAVE_VORBIS;NUCLEX_AUDIO_HAVE_WAVPACK;WIN32;NDEBUG;_WINDOWS;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)Include\;$(ProjectDir)..\Nuclex.Support.Native\Include\;$(ProjectDir)..\third-party\nuclex-flac\build\include\;$(ProjectDir)..\third-party\nuclex-opusfile\build\include\;$(ProjectDir)..\third-party\nuclex-opus\build\include\;$(ProjectDir)..\third-party\nuclex-ogg\build\include\;$(ProjectDir)..\third-party\nuclex-vorbis\build\include\;$(ProjectDir)..\third-party\nuclex-wavpack\build\include\;$(ProjectDir)..\third-party\nuclex-moodycamelqueues\build-concurrentqueue;$(ProjectDir)..\third-party\nuclex-googletest\build\googletest\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Include\;$(ProjectDir)..\Nuclex.Support.Native\Include\;$(ProjectDir)..\third-party\nuclex-flac\build\include\;$(ProjectDir)..\third-party\nuclex-opusenc\build\include\;$(ProjectDir)..\third-party\nuclex-opusfile\build\include\;$(ProjectDir)..\third-party\nuclex-opus\build\include\;$(ProjectDir)..\third-party\nuclex-ogg\build\include\;$(ProjectDir)..\third-party\nuclex-vorbis\build\include\;$(ProjectDir)..\third-party\nuclex-wavpack\build\include\;$(ProjectDir)..\third-party\nuclex-moodycamelqueues\build-concurrentqueue;$(ProjectDir)..\third-party\nuclex-googletest\build\googletest\include\</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
@@ -210,7 +210,12 @@
     <ClInclude Include="Include\Nuclex\Audio\Processing\VolumeDetector.h" />
     <ClInclude Include="Include\Nuclex\Audio\Storage\AudioCodec.h" />
     <ClInclude Include="Include\Nuclex\Audio\Storage\AudioLoader.h" />
+    <ClInclude Include="Include\Nuclex\Audio\Storage\AudioSaver.h" />
     <ClInclude Include="Include\Nuclex\Audio\Storage\AudioTrackDecoder.h" />
+    <ClInclude Include="Include\Nuclex\Audio\Storage\AudioTrackDecoderInternal.h" />
+    <ClInclude Include="Include\Nuclex\Audio\Storage\AudioTrackEncoder.h" />
+    <ClInclude Include="Include\Nuclex\Audio\Storage\AudioTrackEncoderBuilder.h" />
+    <ClInclude Include="Include\Nuclex\Audio\Storage\AudioTrackEncoderInternal.h" />
     <ClInclude Include="Include\Nuclex\Audio\Storage\VirtualFile.h" />
     <ClInclude Include="Include\Nuclex\Audio\AudioSampleFormat.h" />
     <ClInclude Include="Include\Nuclex\Audio\Channel.h" />
@@ -229,7 +234,9 @@
     <ClInclude Include="Source\Platform\LinuxFileApi.h" />
     <ClCompile Include="Source\Platform\OpusApi.cpp" />
     <ClInclude Include="Source\Platform\OpusApi.h" />
+    <ClCompile Include="Source\Platform\OpusEncoderApi.cpp" />
     <ClCompile Include="Source\Platform\PosixApi.cpp" />
+    <ClInclude Include="Source\Platform\OpusEncoderApi.h" />
     <ClInclude Include="Source\Platform\PosixApi.h" />
     <ClCompile Include="Source\Platform\PosixFileApi.cpp" />
     <ClInclude Include="Source\Platform\PosixFileApi.h" />
@@ -247,6 +254,11 @@
     <ClCompile Include="Source\Processing\Reconstruction.cpp" />
     <ClCompile Include="Source\Processing\SampleConverter.cpp" />
     <ClCompile Include="Source\Processing\VolumeDetector.cpp" />
+    <ClCompile Include="Source\Storage\AudioCodec.cpp" />
+    <ClCompile Include="Source\Storage\AudioSaver.cpp" />
+    <ClCompile Include="Source\Storage\AudioTrackEncoder.cpp" />
+    <ClCompile Include="Source\Storage\AudioTrackEncoderBuilder.cpp" />
+    <ClCompile Include="Source\Storage\AudioTrackEncoderInternal.cpp" />
     <ClCompile Include="Source\Storage\Flac\FlacAudioCodec.cpp" />
     <ClInclude Include="Source\Storage\Flac\FlacAudioCodec.h" />
     <ClCompile Include="Source\Storage\Flac\FlacDetection.cpp" />
@@ -265,7 +277,11 @@
     <ClInclude Include="Source\Storage\Opus\OpusReader.h" />
     <ClCompile Include="Source\Storage\Opus\OpusTrackDecoder.cpp" />
     <ClInclude Include="Source\Storage\Opus\OpusTrackDecoder.h" />
+    <ClCompile Include="Source\Storage\Opus\OpusTrackEncoder.cpp" />
+    <ClCompile Include="Source\Storage\Opus\OpusTrackEncoderBuilder.cpp" />
     <ClCompile Include="Source\Storage\Opus\OpusVirtualFileAdapter.cpp" />
+    <ClInclude Include="Source\Storage\Opus\OpusTrackEncoder.h" />
+    <ClInclude Include="Source\Storage\Opus\OpusTrackEncoderBuilder.h" />
     <ClInclude Include="Source\Storage\Opus\OpusVirtualFileAdapter.h" />
     <ClCompile Include="Source\Storage\Shared\ChannelOrderFactory.cpp" />
     <ClInclude Include="Source\Storage\Shared\ChannelOrderFactory.h" />
@@ -329,6 +345,7 @@
     <ClCompile Include="Tests\Processing\SineWaveDetectorTest.cpp" />
     <ClCompile Include="Tests\Processing\SineWaveDetector.cpp" />
     <ClInclude Include="Tests\Processing\SineWaveDetector.h" />
+    <ClCompile Include="Tests\Storage\AudioSaverTests.cpp" />
     <ClCompile Include="Tests\Storage\Flac\FlacAudioCodecTests.cpp" />
     <ClCompile Include="Tests\Storage\Flac\FlacDetectionTests.cpp" />
     <ClCompile Include="Tests\Storage\Flac\FlacTrackDecoderTest.cpp" />
@@ -336,6 +353,7 @@
     <ClCompile Include="Tests\Storage\Opus\OpusDetectionTests.cpp" />
     <ClCompile Include="Tests\Storage\Opus\OpusReaderTest.cpp" />
     <ClCompile Include="Tests\Storage\Opus\OpusTrackDecoderTest.cpp" />
+    <ClCompile Include="Tests\Storage\Opus\OpusTrackEncoderBuilderTest.cpp" />
     <ClCompile Include="Tests\Storage\Shared\ChannelOrderFactoryTest.cpp" />
     <ClCompile Include="Tests\Storage\Shared\VirtualFileAdapterStateTest.cpp" />
     <ClCompile Include="Tests\Storage\Vorbis\VorbisAudioCodecTests.cpp" />

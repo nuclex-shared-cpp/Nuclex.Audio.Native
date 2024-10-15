@@ -78,7 +78,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
   std::shared_ptr<AudioTrackEncoder> AudioTrackEncoderBuilder::Build(
     const std::string &outputFilePath
   ) {
-    Build(VirtualFile::OpenRealFileForWriting(outputFilePath));
+    return Build(VirtualFile::OpenRealFileForWriting(outputFilePath));
   }
 
   // ------------------------------------------------------------------------------------------- //

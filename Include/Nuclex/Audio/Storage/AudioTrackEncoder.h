@@ -44,7 +44,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
 
   // ------------------------------------------------------------------------------------------- //
 
-  /// <summary>Encodes interleaved or separatesd audio channels to an audio track</summary>
+  /// <summary>Encodes interleaved or separated audio channels to audio files</summary>
   class NUCLEX_AUDIO_TYPE AudioTrackEncoder : public AudioTrackEncoderInternal {
 
     /// <summary>Frees all resources owned by the instance</summary>
@@ -73,6 +73,24 @@ namespace Nuclex { namespace Audio { namespace Storage {
     /// <param name="frameCount">Number of frames (samples per channel) to encode</param>
     public: template<typename TSample>
     inline void EncodeSeparated(const TSample *buffers[], std::size_t frameCount);
+
+    /// <summary>Flushes any audio samples remaining in the buffer</summary>
+    /// <remarks>
+    ///   <para>
+    ///     Encoders can process samples in blocks, even variably-sized ones, so some samples
+    ///     might be held back in internal buffers until a whole block can be encoded. This
+    ///     method should be called after all samples have been fed to the encoder in order
+    ///     to finalize the stream.
+    ///   </para>
+    ///   <para>
+    ///     This method should not be omitted. Some file formats may record their length
+    ///     in the file header, which then needs to be updated after knowing how many frames
+    ///     the file contains. Certain formats might require tagging information to be
+    ///     appended at the end of the file. In either case, not calling it may produce
+    ///     an incomplete or non-conforming output file.
+    ///   </para>
+    /// </remarks>
+    public: virtual void Flush() = 0;
 
   };
 

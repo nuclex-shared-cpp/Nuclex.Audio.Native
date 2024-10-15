@@ -104,10 +104,36 @@ namespace Nuclex { namespace Audio { namespace Platform {
   void OpusEncoderApi::ControlEncoder(
     const std::shared_ptr<::OggOpusEnc> &encoder, int request, int value
   ) {
-    int errorCode = ::ope_encoder_ctl(encoder.get(), request, value);
-    if(unlikely(errorCode != OPE_OK)) {
+    int result = ::ope_encoder_ctl(encoder.get(), request, value);
+    if(unlikely(result != OPE_OK)) {
       std::string message(u8"Error sending Opus encoder control message: ", 44);
-      message.append(stringFromOpusEncErrorCode(errorCode));
+      message.append(stringFromOpusEncErrorCode(result));
+      throw std::runtime_error(message);
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void OpusEncoderApi::WriteFloats(
+    const std::shared_ptr<::OggOpusEnc> &encoder, const float *samples, std::size_t frameCount
+  ) {
+    int result = ::ope_encoder_write_float(encoder.get(), samples, frameCount);
+    if(unlikely(result != OPE_OK)) {
+      std::string message(u8"Error feeding audio samples to the Opus encoder: ", 49);
+      message.append(stringFromOpusEncErrorCode(result));
+      throw std::runtime_error(message);
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  void OpusEncoderApi::Drain(
+    const std::shared_ptr<::OggOpusEnc> &encoder
+  ) {
+    int result = ::ope_encoder_drain(encoder.get());
+    if(result != OPE_OK) {
+      std::string message(u8"Error draining the final samples from the encoder: ", 51);
+      message.append(stringFromOpusEncErrorCode(result));
       throw std::runtime_error(message);
     }
   }

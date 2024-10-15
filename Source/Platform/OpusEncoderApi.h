@@ -72,6 +72,18 @@ namespace Nuclex { namespace Audio { namespace Platform {
       const std::shared_ptr<::OggOpusEnc> &encoder, int request, int value
     );
 
+    /// <summary>Feeds the encoder raw floating point audio samples to encode</summary>
+    /// <param name="encoder">Encoder that will be fed the audio samples</param>
+    /// <param name="samples">Buffer holding the samples to be fed</param>
+    /// <param name="frameCount">Number of frames stored in the buffer</param>
+    public: static void WriteFloats(
+      const std::shared_ptr<::OggOpusEnc> &encoder, const float *samples, std::size_t frameCount
+    );
+
+    /// <summary>Processes any remaining samples lingering in the encoders buffers</summary>
+    /// <param name="encoder">Encoder whose buffered samples should be processed</param>
+    public: static void Drain(const std::shared_ptr<::OggOpusEnc> &encoder);
+
   };
 
   // ------------------------------------------------------------------------------------------- //

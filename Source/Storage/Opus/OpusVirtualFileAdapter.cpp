@@ -88,6 +88,35 @@ namespace {
 
   // ------------------------------------------------------------------------------------------- //
 
+  /// <summary>Write <see cref="byteCount" /> bytes of data into a virtual file</summary>
+  /// <param name="stateAsVoid">State of the virtual file adapter class</param>
+  /// <param name="data">Buffer contianing the data that will be written</param>
+  /// <param name="byteCount">Number of bytes to write</param>
+  /// <returns>The numberof bytes successfully read, or a negative value on error</returns>
+  int opusWriteBytes(void *stateAsVoid, const std::uint8_t *data, ::opus_int32 byteCount) {
+    Nuclex::Audio::Storage::Opus::WritableFileAdapterState &state = (
+      *reinterpret_cast<Nuclex::Audio::Storage::Opus::WritableFileAdapterState *>(stateAsVoid)
+    );
+
+    try {
+      state.File->WriteAt(
+        state.FileCursor,
+        byteCount,
+        reinterpret_cast<const std::byte *>(data)
+      );
+    }
+    catch(const std::exception &) {
+      state.Error = std::current_exception();
+      return -1;
+    }
+
+    state.FileCursor += byteCount;
+
+    return 0;
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
   /// <summary>Moves the file cursor to a different position within the virtual file</summary>
   /// <typeparam name="TAdapterState">
   ///   Type of state the seek is done on (because we don't want to const_cast here)
@@ -219,7 +248,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
 
   std::unique_ptr<WritableFileAdapterState> FileAdapterFactory::CreateAdapterForWriting(
     const std::shared_ptr<VirtualFile> &writableFile,
-    ::OpusFileCallbacks &fileCallbacks
+    ::OpusEncCallbacks &encoderCallbacks
   ) {
     std::unique_ptr<WritableFileAdapterState> adapter = (
       std::make_unique<WritableFileAdapterState>()
@@ -230,10 +259,8 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     adapter->Error = std::exception_ptr();
     adapter->File = writableFile;
 
-    fileCallbacks.read = &opusReadBytes<WritableFileAdapterState>;
-    fileCallbacks.seek = &opusSeek<WritableFileAdapterState>;
-    fileCallbacks.tell = &opusTell;
-    fileCallbacks.close = &opusClose<WritableFileAdapterState>;
+    encoderCallbacks.write = &opusWriteBytes;
+    encoderCallbacks.close = &opusClose<WritableFileAdapterState>;
 
     return adapter;
   }

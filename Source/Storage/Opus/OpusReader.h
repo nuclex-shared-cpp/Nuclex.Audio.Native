@@ -136,7 +136,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     void decodeInterleavedConvertAndSeparate(TSample *targets[], std::size_t frameCount);
 
     /// <summary>File the reader is accessing</summary>
-    private: std::shared_ptr<const VirtualFile> file;
+    private: std::shared_ptr<const VirtualFile> file; // TOOD: Can this be removed?
     /// <summary>Holds the function pointers to the file I/O functions</summary>
     /// <remarks>
     ///   libopusfile takes a pointer to these, so we try to err on the side of caution
@@ -145,7 +145,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     private: ::OpusFileCallbacks fileCallbacks;
     /// <summary>State (emulated file cursor, errors) of the virtual file adapter</summary>
     private: std::unique_ptr<ReadOnlyFileAdapterState> state;
-    /// <summary>Manages the state and decoder state of the opened Opus file</summary>
+    /// <summary>Manages the decoder state of the opened Opus file</summary>
     private: std::shared_ptr<::OggOpusFile> opusFile;
 
     /// <summary>Number of channels in the Opus file</summary>
