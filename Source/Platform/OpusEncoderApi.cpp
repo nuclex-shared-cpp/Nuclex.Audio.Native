@@ -117,7 +117,9 @@ namespace Nuclex { namespace Audio { namespace Platform {
   void OpusEncoderApi::WriteFloats(
     const std::shared_ptr<::OggOpusEnc> &encoder, const float *samples, std::size_t frameCount
   ) {
-    int result = ::ope_encoder_write_float(encoder.get(), samples, frameCount);
+    int result = ::ope_encoder_write_float(
+      encoder.get(), samples, static_cast<int>(frameCount)
+    );
     if(unlikely(result != OPE_OK)) {
       std::string message(u8"Error feeding audio samples to the Opus encoder: ", 49);
       message.append(stringFromOpusEncErrorCode(result));

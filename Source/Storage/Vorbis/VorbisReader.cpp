@@ -132,8 +132,11 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Vorbis {
   std::vector<ChannelPlacement> VorbisReader::GetChannelOrder() const {
     const ::vorbis_info &info = Platform::VorbisApi::GetStreamInformation(this->vorbisFile);
 
+    // The channel order factory is shared between Vorbis and Opus and exposes
+    // the "mapping family" introduced by Opus. The Vorbis channel layouts are
+    // contained in mapping family 1, so that's what we'll specify here.
     return Shared::ChannelOrderFactory::FromVorbisFamilyAndCount(
-      0, info.channels
+      1, info.channels
     );
   }
 

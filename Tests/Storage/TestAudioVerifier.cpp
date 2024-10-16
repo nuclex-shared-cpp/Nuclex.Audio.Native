@@ -44,7 +44,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
       left.DetectAmplitude(samples.data(), frameCount, channelCount);
       left.AddSamples(samples.data(), frameCount, channelCount);
 
-      EXPECT_RANGE(left.GetFrequency(sampleRate), 24.9f, 25.1f);
+      EXPECT_RANGE(left.GetFrequency(static_cast<float>(sampleRate)), 24.9f, 25.1f);
       EXPECT_RANGE(left.GetAmplitude(), 0.9f, 1.1f);
       EXPECT_RANGE(left.GetPhase360(), -0.5f, 0.5f);
       EXPECT_LT(left.GetError(), 0.0001f);
@@ -56,7 +56,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
       right.DetectAmplitude(samples.data() + 1, frameCount, channelCount);
       right.AddSamples(samples.data() + 1, frameCount, channelCount);
 
-      EXPECT_RANGE(right.GetFrequency(sampleRate), 24.9f, 25.1f);
+      EXPECT_RANGE(right.GetFrequency(static_cast<float>(sampleRate)), 24.9f, 25.1f);
       EXPECT_RANGE(right.GetAmplitude(), 0.9f, 1.1f);
       EXPECT_RANGE(right.GetPhase360(), 179.5f, 180.5f); // or -180.0 .. -179.5...
       EXPECT_LT(right.GetError(), 0.0001f);
@@ -79,7 +79,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
       left.DetectAmplitude(leftSamples.data(), frameCount);
       left.AddSamples(leftSamples.data(), frameCount);
 
-      EXPECT_RANGE(left.GetFrequency(sampleRate), 24.9f, 25.1f);
+      EXPECT_RANGE(left.GetFrequency(static_cast<float>(sampleRate)), 24.9f, 25.1f);
       EXPECT_RANGE(left.GetAmplitude(), 0.9f, 1.1f);
       EXPECT_RANGE(left.GetPhase360(), -0.5f, 0.5f);
       EXPECT_LT(left.GetError(), 0.0001f);
@@ -91,7 +91,7 @@ namespace Nuclex { namespace Audio { namespace Storage {
       right.DetectAmplitude(rightSamples.data(), frameCount);
       right.AddSamples(rightSamples.data(), frameCount);
 
-      EXPECT_RANGE(right.GetFrequency(sampleRate), 24.9f, 25.1f);
+      EXPECT_RANGE(right.GetFrequency(static_cast<float>(sampleRate)), 24.9f, 25.1f);
       EXPECT_RANGE(right.GetAmplitude(), 0.9f, 1.1f);
       EXPECT_RANGE(right.GetPhase360(), 179.5f, 180.5f); // or -180.0 .. -179.5...
       EXPECT_LT(right.GetError(), 0.0001f);
