@@ -53,6 +53,13 @@
     <Filter Include="Include\Processing">
       <UniqueIdentifier>{4d1d7030-3d8e-43f3-b088-3682931218f7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Documents">
+      <UniqueIdentifier>{8638e602-0449-4f06-a8d1-c0b51456e4cc}</UniqueIdentifier>
+      <Extensions>md;txt;pdf</Extensions>
+    </Filter>
+    <Filter Include="Documents\Reference">
+      <UniqueIdentifier>{5008df7e-8d17-40b5-aba1-3fb80313827a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Nuclex\Audio\Errors\UnsupportedFormatError.h">
@@ -135,6 +142,9 @@
     </ClInclude>
     <ClInclude Include="Source\Platform\OpusEncoderApi.h">
       <Filter>Source\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Storage\Shared\ChannelOrderTransformer.h">
+      <Filter>Source\Storage\Shared</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -459,14 +469,62 @@
     <ClCompile Include="Source\Platform\OpusEncoderApi.cpp">
       <Filter>Source\Platform</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Storage\Shared\ChannelOrderTransformer.cpp">
+      <Filter>Source\Storage\Shared</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Nuclex.Audio.Native.def">
       <Filter>Resources</Filter>
     </None>
+    <None Include="Documents\ContainerFormatOverview.md">
+      <Filter>Documents</Filter>
+    </None>
+    <None Include="Documents\Designs.md">
+      <Filter>Documents</Filter>
+    </None>
+    <None Include="Documents\WavPackSeeking.md">
+      <Filter>Documents</Filter>
+    </None>
+    <None Include="Documents\Reference\Apple Core Audio Format Specification 1.0 (2011).pdf">
+      <Filter>Documents\Reference</Filter>
+    </None>
+    <None Include="Documents\Reference\MBWF W64 - An Extended File Format for Audio (2009).pdf">
+      <Filter>Documents\Reference</Filter>
+    </None>
+    <None Include="Documents\Reference\Multimedia Programming Interface and Data Specifications 1.0 (1991).pdf">
+      <Filter>Documents\Reference</Filter>
+    </None>
+    <None Include="Documents\Reference\New Multimedia Data Types and Data Techniques (1994).pdf">
+      <Filter>Documents\Reference</Filter>
+    </None>
+    <None Include="Documents\Reference\Sony Wave64 (2003).pdf">
+      <Filter>Documents\Reference</Filter>
+    </None>
+    <None Include="Documents\Reference\Vorbis 1 Specification (2020).pdf">
+      <Filter>Documents\Reference</Filter>
+    </None>
+    <None Include="Documents\Reference\WavPack 4 and 5 Binary File Format (2020).pdf">
+      <Filter>Documents\Reference</Filter>
+    </None>
+    <None Include="Documents\Reference\WavPack 5 Library Documentation (2024).pdf">
+      <Filter>Documents\Reference</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Documents\EventBenchmark.md" />
+    <Text Include="Documents\Reference\IETF Free Lossless Audio Codec (2024).txt">
+      <Filter>Documents\Reference</Filter>
+    </Text>
+    <Text Include="Documents\Reference\RFC 3533 The Ogg Encapsulation Format Version 0 (2003).txt">
+      <Filter>Documents\Reference</Filter>
+    </Text>
+    <Text Include="Documents\Reference\RFC 6716 Definition of the Opus Audio Codec (2012).txt">
+      <Filter>Documents\Reference</Filter>
+    </Text>
+    <Text Include="Documents\Reference\RFC 7845 Ogg Encapsulation for the Opus Audio Codec (2016).txt">
+      <Filter>Documents\Reference</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.md" />

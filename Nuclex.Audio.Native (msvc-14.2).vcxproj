@@ -202,6 +202,7 @@
     <Text Include="Documents\EventBenchmark.md" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Storage\Shared\ChannelOrderTransformer.h" />
     <ClInclude Include="Include\Nuclex\Audio\Processing\BitExtension.h" />
     <ClInclude Include="Include\Nuclex\Audio\Processing\DecibelConverter.h" />
     <ClInclude Include="Include\Nuclex\Audio\Errors\CorruptedFileError.h" />
@@ -228,6 +229,7 @@
     <ClInclude Include="Include\Nuclex\Audio\TrackInfo.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Storage\Shared\ChannelOrderTransformer.cpp" />
     <ClCompile Include="Source\Errors\CorruptedFileError.cpp" />
     <ClCompile Include="Source\Errors\UnsupportedFormatError.cpp" />
     <ClCompile Include="Source\Platform\FlacApi.cpp" />
@@ -340,7 +342,22 @@
     <ClCompile Include="Source\Track.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Documents\ContainerFormatOverview.md" />
+    <None Include="Documents\Designs.md" />
+    <None Include="Documents\Reference\Apple Core Audio Format Specification 1.0 (2011).pdf" />
+    <None Include="Documents\Reference\MBWF W64 - An Extended File Format for Audio (2009).pdf" />
+    <None Include="Documents\Reference\Multimedia Programming Interface and Data Specifications 1.0 (1991).pdf" />
+    <None Include="Documents\Reference\New Multimedia Data Types and Data Techniques (1994).pdf" />
+    <None Include="Documents\Reference\Sony Wave64 (2003).pdf" />
+    <None Include="Documents\Reference\Vorbis 1 Specification (2020).pdf" />
+    <None Include="Documents\Reference\WavPack 4 and 5 Binary File Format (2020).pdf" />
+    <None Include="Documents\Reference\WavPack 5 Library Documentation (2024).pdf" />
+    <None Include="Documents\WavPackSeeking.md" />
     <None Include="Nuclex.Audio.Native.def" />
+    <Text Include="Documents\Reference\IETF Free Lossless Audio Codec (2024).txt" />
+    <Text Include="Documents\Reference\RFC 3533 The Ogg Encapsulation Format Version 0 (2003).txt" />
+    <Text Include="Documents\Reference\RFC 6716 Definition of the Opus Audio Codec (2012).txt" />
+    <Text Include="Documents\Reference\RFC 7845 Ogg Encapsulation for the Opus Audio Codec (2016).txt" />
     <Text Include="ReadMe.md" />
     <Text Include="Notice.md" />
     <Text Include="License.md" />

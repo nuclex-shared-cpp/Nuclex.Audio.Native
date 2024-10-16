@@ -226,6 +226,7 @@
     <ClInclude Include="Include\Nuclex\Audio\TrackInfo.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Tests\Storage\Shared\ChannelOrderTransformerTests.cpp" />
     <ClCompile Include="Source\Errors\CorruptedFileError.cpp" />
     <ClCompile Include="Source\Errors\UnsupportedFormatError.cpp" />
     <ClCompile Include="Source\Platform\FlacApi.cpp" />
@@ -285,7 +286,9 @@
     <ClInclude Include="Source\Storage\Opus\OpusVirtualFileAdapter.h" />
     <ClCompile Include="Source\Storage\Shared\ChannelOrderFactory.cpp" />
     <ClInclude Include="Source\Storage\Shared\ChannelOrderFactory.h" />
+    <ClCompile Include="Source\Storage\Shared\ChannelOrderTransformer.cpp" />
     <ClCompile Include="Source\Storage\Shared\VirtualFileAdapterState.cpp" />
+    <ClInclude Include="Source\Storage\Shared\ChannelOrderTransformer.h" />
     <ClInclude Include="Source\Storage\Shared\VirtualFileAdapterState.h" />
     <ClCompile Include="Source\Storage\Vorbis\VorbisAudioCodec.cpp" />
     <ClInclude Include="Source\Storage\Vorbis\VorbisAudioCodec.h" />

@@ -139,6 +139,9 @@
     <ClInclude Include="Source\Platform\OpusEncoderApi.h">
       <Filter>Source\Platform</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Storage\Shared\ChannelOrderTransformer.h">
+      <Filter>Source\Storage\Shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Errors\CorruptedFileError.cpp">
@@ -461,6 +464,9 @@
     </ClCompile>
     <ClCompile Include="Source\Platform\OpusEncoderApi.cpp">
       <Filter>Source\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Storage\Shared\ChannelOrderTransformer.cpp">
+      <Filter>Source\Storage\Shared</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

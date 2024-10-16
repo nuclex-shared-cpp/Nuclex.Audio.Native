@@ -285,7 +285,9 @@
     <ClInclude Include="Source\Storage\Opus\OpusVirtualFileAdapter.h" />
     <ClCompile Include="Source\Storage\Shared\ChannelOrderFactory.cpp" />
     <ClInclude Include="Source\Storage\Shared\ChannelOrderFactory.h" />
+    <ClCompile Include="Source\Storage\Shared\ChannelOrderTransformer.cpp" />
     <ClCompile Include="Source\Storage\Shared\VirtualFileAdapterState.cpp" />
+    <ClInclude Include="Source\Storage\Shared\ChannelOrderTransformer.h" />
     <ClInclude Include="Source\Storage\Shared\VirtualFileAdapterState.h" />
     <ClCompile Include="Source\Storage\Vorbis\VorbisAudioCodec.cpp" />
     <ClInclude Include="Source\Storage\Vorbis\VorbisAudioCodec.h" />
