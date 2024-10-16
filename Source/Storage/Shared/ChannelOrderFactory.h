@@ -31,7 +31,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Shared {
   // ------------------------------------------------------------------------------------------- //
 
   /// <summary>Creates channel ordering lists according to diffeent conventions</summary>
-  struct ChannelOrderFactory {
+  class ChannelOrderFactory {
 
     /// <summary>
     ///   Generates an ordered channel list according to the conventions used by

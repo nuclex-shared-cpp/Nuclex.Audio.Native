@@ -71,6 +71,11 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Shared {
     std::vector<ChannelPlacement> channelOrder;
     channelOrder.reserve(channelCount);
 
+    // The "mapping family" was introduced with Opus to allow to additional layouts.
+    // Mapping family 1 matches the Vorbis channel layout and mapping family 0
+    // seems to be a subset only covering mono and stereo. Since nothing prevents
+    // writing applications from having more channels in family 0, we treat both
+    // as using the Vorbis channel layout.
     if((mappingFamily == 0) || (mappingFamily == 1)) {
       std::size_t originalChannelCount = channelCount;
       if(originalChannelCount == 1) {

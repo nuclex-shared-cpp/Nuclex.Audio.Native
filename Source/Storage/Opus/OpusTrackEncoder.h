@@ -146,8 +146,27 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
       const double *buffers[], std::size_t frameCount
     ) override;
 
+    /// <summary>Encodes audio frames, interleaved, into the virtual file</summary>
+    /// <typeparam name="TSample">Type of samples that will be encoded</typeparam>
+    /// <param name="buffer">Buffer holding the samples that will be encoded</param>
+    /// <param name="frameCount">Number of audio frames that will be encoded</param>
+    template<typename TSample>
+    void encodeInterleaved(const TSample *buffer, std::size_t frameCount);
+
+    /// <summary>Encodes audio frames, separated, into the virtual file</summary>
+    /// <typeparam name="TSample">Type of samples that will be encoded</typeparam>
+    /// <param name="buffers">Buffer holding the channels that will be encoded</param>
+    /// <param name="frameCount">Number of audio frames that will be encoded</param>
+    template<typename TSample>
+    void encodeSeparated(const TSample *buffers[], std::size_t frameCount);
+
     /// <summary>Order in which the channels will be fed to the encoder</summary>
     private: std::vector<ChannelPlacement> inputChannelOrder;
+    /// <summary>Whether the channel order matches the Vorbis ordering</summary>
+    /// <remarks>
+    ///   If this is true, interleaved floating point sampels can be fed as-is.
+    /// </remarks>
+    private: bool isVorbisChannelOrder;
     /// <summary>Holds the function pointers to the file I/O functions</summary>
     /// <remarks>
     ///   libopusenc takes a pointer to these, so we try to err on the side of caution

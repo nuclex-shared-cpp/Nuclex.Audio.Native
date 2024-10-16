@@ -25,7 +25,7 @@ limitations under the License.
 #if defined(NUCLEX_AUDIO_HAVE_OPUS)
 
 #include "Nuclex/Audio/Processing/SampleConverter.h"
-
+#include "../Shared/ChannelOrderFactory.h"
 #include "../../Platform/OpusEncoderApi.h"
 
 #include <cassert> // for assert()
@@ -47,6 +47,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
     std::size_t sampleRate
   ) :
     inputChannelOrder(inputChannelOrder),
+    isVorbisChannelOrder(false),
     encoderCallbacks(),
     state(),
     opusComments(),
@@ -87,6 +88,15 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
       this->opusEncoder, OPUS_SET_SIGNAL_REQUEST, OPUS_SIGNAL_MUSIC
     );
     #endif
+
+    // Finally, check if the channel order matches the Vorbis channel order.
+    // If it's identical, it means we can feed interleaved float samples directly
+    // to the Opus encoder without having to re-weave the channels.
+    std::size_t channelCount = this->inputChannelOrder.size();
+    std::vector<ChannelPlacement> vorbisChannelOrder = (
+      Shared::ChannelOrderFactory::FromVorbisFamilyAndCount(1, channelCount)
+    );
+    this->isVorbisChannelOrder = (this->inputChannelOrder == vorbisChannelOrder);
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -136,7 +146,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   void OpusTrackEncoder::EncodeInterleavedUint8(
     const std::uint8_t *buffer, std::size_t frameCount
   ) {
-    throw std::runtime_error(u8"Not implemented yet");
+    encodeInterleaved(buffer, frameCount);
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -144,7 +154,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   void OpusTrackEncoder::EncodeInterleavedInt16(
     const std::int16_t *buffer, std::size_t frameCount
   ) {
-    throw std::runtime_error(u8"Not implemented yet");
+    encodeInterleaved(buffer, frameCount);
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -152,7 +162,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   void OpusTrackEncoder::EncodeInterleavedInt32(
     const std::int32_t *buffer, std::size_t frameCount
   ) {
-    throw std::runtime_error(u8"Not implemented yet");
+    encodeInterleaved(buffer, frameCount);
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -160,10 +170,14 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   void OpusTrackEncoder::EncodeInterleavedFloat(
     const float *buffer, std::size_t frameCount
   ) {
-    Platform::OpusEncoderApi::WriteFloats(
-      this->opusEncoder, buffer, frameCount
-    );
-    FileAdapterState::RethrowPotentialException(*state);
+    if(this->isVorbisChannelOrder) {
+      Platform::OpusEncoderApi::WriteFloats(
+        this->opusEncoder, buffer, frameCount
+      );
+      FileAdapterState::RethrowPotentialException(*state);
+    } else {
+      encodeInterleaved(buffer, frameCount);
+    }
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -171,7 +185,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   void OpusTrackEncoder::EncodeInterleavedDouble(
     const double *buffer, std::size_t frameCount
   ) {
-    throw std::runtime_error(u8"Not implemented yet");
+    encodeInterleaved(buffer, frameCount);
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -179,7 +193,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   void OpusTrackEncoder::EncodeSeparatedUint8(
     const std::uint8_t *buffers[], std::size_t frameCount
   ) {
-    throw std::runtime_error(u8"Not implemented yet");
+    encodeSeparated(buffers, frameCount);
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -187,7 +201,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   void OpusTrackEncoder::EncodeSeparatedInt16(
     const std::int16_t *buffers[], std::size_t frameCount
   ) {
-    throw std::runtime_error(u8"Not implemented yet");
+    encodeSeparated(buffers, frameCount);
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -195,7 +209,7 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   void OpusTrackEncoder::EncodeSeparatedInt32(
     const std::int32_t *buffers[], std::size_t frameCount
   ) {
-    throw std::runtime_error(u8"Not implemented yet");
+    encodeSeparated(buffers, frameCount);
   }
 
   // ------------------------------------------------------------------------------------------- //
@@ -203,13 +217,40 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   void OpusTrackEncoder::EncodeSeparatedFloat(
     const float *buffers[], std::size_t frameCount
   ) {
-    throw std::runtime_error(u8"Not implemented yet");
+    encodeSeparated(buffers, frameCount);
   }
 
   // ------------------------------------------------------------------------------------------- //
 
   void OpusTrackEncoder::EncodeSeparatedDouble(
     const double *buffers[], std::size_t frameCount
+  ) {
+    encodeSeparated(buffers, frameCount);
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<typename TSample>
+  void OpusTrackEncoder::encodeInterleaved(
+    const TSample *buffer, std::size_t frameCount
+  ) {
+    constexpr bool samplesAreFloatingPoint = (
+      std::is_same<TSample, float>::value ||
+      std::is_same<TSample, double>::value
+    );
+    if constexpr(samplesAreFloatingPoint) {
+      //std::vector<float> convertedSamples(frameCount * this->inputChannelOrder.size()) {
+      //}
+    }
+
+    throw std::runtime_error(u8"Not implemented yet");
+  }
+
+  // ------------------------------------------------------------------------------------------- //
+
+  template<typename TSample>
+  void OpusTrackEncoder::encodeSeparated(
+    const TSample *buffers[], std::size_t frameCount
   ) {
     throw std::runtime_error(u8"Not implemented yet");
   }

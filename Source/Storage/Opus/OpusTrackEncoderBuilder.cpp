@@ -181,9 +181,9 @@ namespace Nuclex { namespace Audio { namespace Storage { namespace Opus {
   // ------------------------------------------------------------------------------------------- //
 
   AudioTrackEncoderBuilder &OpusTrackEncoderBuilder::SetCompressionEffort(
-    float effort /* = 1.0f */
+    float newEffort /* = 1.0f */
   ) {
-    this->effort = effort;
+    this->effort = newEffort;
     return *this;
   }
 
